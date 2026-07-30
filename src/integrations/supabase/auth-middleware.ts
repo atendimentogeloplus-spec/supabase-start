@@ -13,8 +13,8 @@ export const requireSupabaseAuth = createMiddleware().server(
     const token = authHeader.replace("Bearer ", "");
 
     // Create a client authenticated as the requesting user (RLS applies).
-    const supabaseUrl = process.env.SUPABASE_URL!;
-    const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY!;
+    const supabaseUrl = process.env.VITE_SUPABASE_URL!;
+    const publishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY!;
 
     const supabase = createClient<Database>(supabaseUrl, publishableKey, {
       auth: {
