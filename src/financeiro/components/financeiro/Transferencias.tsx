@@ -46,7 +46,7 @@ export default function Transferencias({ userId, reload }: { userId?: string; re
       const idx = (t.notes || "").indexOf(TRF_TAG);
       if (idx < 0) return;
       const token = (t.notes as string).slice(idx + TRF_TAG.length).split(/\s/)[0];
-      const existing = map.get(token) || { token, date: t.date, amount: Number(t.amount), from: "", to: "", ids: [] };
+      const existing = map.get(token) || { token, date: t.date, amount: Number(t.amount), from: "", to: "", ids: [] as string[] };
       if (t.type === "saida") existing.from = t.payment_method;
       else existing.to = t.payment_method;
       existing.ids.push(t.id);
