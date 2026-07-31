@@ -1,0 +1,1 @@
+ALTER TABLE public.fin_transactions ADD COLUMN IF NOT EXISTS account TEXT;

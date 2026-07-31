@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN payment_type text NOT NULL DEFAULT 'avulso';

@@ -1,0 +1,1 @@
+ALTER TABLE public.route_clients ADD COLUMN observations text DEFAULT null;
