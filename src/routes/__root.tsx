@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { getSupabasePublicConfig } from "@/integrations/supabase/config.functions";
 
 function NotFoundComponent() {
   return (
@@ -76,6 +77,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: () => getSupabasePublicConfig(),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -105,12 +107,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const publicConfig = Route.useLoaderData();
+  const serializedConfig = JSON.stringify(publicConfig).replace(/</g, "\\u003c");
+
   return (
     <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__SUPABASE_PUBLIC_CONFIG__=${serializedConfig}`,
+          }}
+        />
         {children}
         <Scripts />
       </body>
