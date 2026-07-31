@@ -1,0 +1,1 @@
+ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS is_overdue boolean NOT NULL DEFAULT false;

@@ -1,0 +1,1 @@
+ALTER TABLE public.routes ADD COLUMN IF NOT EXISTS driver_id uuid REFERENCES public.drivers(id) ON DELETE SET NULL;

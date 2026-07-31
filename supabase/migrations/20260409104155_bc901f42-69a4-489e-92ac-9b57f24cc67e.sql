@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN default_price_table text DEFAULT NULL;

@@ -1,0 +1,2 @@
+ALTER TABLE public.freezers DROP CONSTRAINT IF EXISTS freezers_freezer_type_check;
+ALTER TABLE public.freezers ADD CONSTRAINT freezers_freezer_type_check CHECK (freezer_type IN ('horizontal','vertical','mini_camara'));

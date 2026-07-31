@@ -1,0 +1,1 @@
+ALTER TABLE public.sales ADD COLUMN batch_number text;

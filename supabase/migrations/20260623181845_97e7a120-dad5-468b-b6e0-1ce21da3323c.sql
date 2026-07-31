@@ -1,0 +1,1 @@
+ALTER TABLE public.fin_categories ADD COLUMN IF NOT EXISTS closing_group TEXT;

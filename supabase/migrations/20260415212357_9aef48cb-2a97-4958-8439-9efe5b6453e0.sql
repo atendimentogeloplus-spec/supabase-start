@@ -1,0 +1,1 @@
+ALTER TABLE public.routes ADD COLUMN batch_number text DEFAULT NULL;
