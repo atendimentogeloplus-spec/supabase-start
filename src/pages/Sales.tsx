@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,8 @@ interface CartItem {
 
 export default function Sales() {
   const qc = useQueryClient();
-  const [searchParams] = useSearchParams();
+  const searchStr = useLocation({ select: (l) => l.searchStr });
+  const searchParams = new URLSearchParams(searchStr);
   const routeClientParam = searchParams.get("clientId") || "";
   const hasRouteTransfer = Boolean(routeClientParam && sessionStorage.getItem("routeCart"));
   const [clientId, setClientId] = useState(() => routeClientParam);

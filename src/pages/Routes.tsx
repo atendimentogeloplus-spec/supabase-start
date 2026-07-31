@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, memo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -904,7 +904,7 @@ export default function Routes() {
       routeDate.setDate(today.getDate() + diff);
       sessionStorage.setItem("routeDate", routeDate.toISOString());
     }
-    navigate(`/sales?clientId=${first.client_id}`);
+    navigate({ to: "/sales", search: { clientId: String(first.client_id) } });
   };
 
   const handleOrderClient = (clientId: string) => {
@@ -943,7 +943,7 @@ export default function Routes() {
       routeDate.setDate(today.getDate() + diff);
       sessionStorage.setItem("routeDate", routeDate.toISOString());
     }
-    navigate(`/sales?clientId=${clientId}`);
+    navigate({ to: "/sales", search: { clientId: String(clientId) } });
   };
 
   // Unique clients in the route
