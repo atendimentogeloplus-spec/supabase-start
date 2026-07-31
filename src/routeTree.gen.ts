@@ -10,33 +10,193 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppCashFlowRouteImport } from './routes/_app/cash-flow'
+import { Route as AppClientsRouteImport } from './routes/_app/clients'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppDriversRouteImport } from './routes/_app/drivers'
+import { Route as AppFinanceiroRouteImport } from './routes/_app/financeiro'
+import { Route as AppFleetRouteImport } from './routes/_app/fleet'
+import { Route as AppLeadsRouteImport } from './routes/_app/leads'
+import { Route as AppOrdersRouteImport } from './routes/_app/orders'
+import { Route as AppReportsRouteImport } from './routes/_app/reports'
+import { Route as AppRoutesRouteImport } from './routes/_app/routes'
+import { Route as AppSalesRouteImport } from './routes/_app/sales'
+import { Route as AppWeekPlanRouteImport } from './routes/_app/week-plan'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppCashFlowRoute = AppCashFlowRouteImport.update({
+  id: '/_app/cash-flow',
+  path: '/cash-flow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppClientsRoute = AppClientsRouteImport.update({
+  id: '/_app/clients',
+  path: '/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/_app/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppDriversRoute = AppDriversRouteImport.update({
+  id: '/_app/drivers',
+  path: '/drivers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppFinanceiroRoute = AppFinanceiroRouteImport.update({
+  id: '/_app/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppFleetRoute = AppFleetRouteImport.update({
+  id: '/_app/fleet',
+  path: '/fleet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppLeadsRoute = AppLeadsRouteImport.update({
+  id: '/_app/leads',
+  path: '/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppOrdersRoute = AppOrdersRouteImport.update({
+  id: '/_app/orders',
+  path: '/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/_app/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoutesRoute = AppRoutesRouteImport.update({
+  id: '/_app/routes',
+  path: '/routes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppSalesRoute = AppSalesRouteImport.update({
+  id: '/_app/sales',
+  path: '/sales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppWeekPlanRoute = AppWeekPlanRouteImport.update({
+  id: '/_app/week-plan',
+  path: '/week-plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cash-flow': typeof AppCashFlowRoute
+  '/clients': typeof AppClientsRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/drivers': typeof AppDriversRoute
+  '/financeiro': typeof AppFinanceiroRoute
+  '/fleet': typeof AppFleetRoute
+  '/leads': typeof AppLeadsRoute
+  '/orders': typeof AppOrdersRoute
+  '/reports': typeof AppReportsRoute
+  '/routes': typeof AppRoutesRoute
+  '/sales': typeof AppSalesRoute
+  '/week-plan': typeof AppWeekPlanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cash-flow': typeof AppCashFlowRoute
+  '/clients': typeof AppClientsRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/drivers': typeof AppDriversRoute
+  '/financeiro': typeof AppFinanceiroRoute
+  '/fleet': typeof AppFleetRoute
+  '/leads': typeof AppLeadsRoute
+  '/orders': typeof AppOrdersRoute
+  '/reports': typeof AppReportsRoute
+  '/routes': typeof AppRoutesRoute
+  '/sales': typeof AppSalesRoute
+  '/week-plan': typeof AppWeekPlanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app/cash-flow': typeof AppCashFlowRoute
+  '/_app/clients': typeof AppClientsRoute
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/drivers': typeof AppDriversRoute
+  '/_app/financeiro': typeof AppFinanceiroRoute
+  '/_app/fleet': typeof AppFleetRoute
+  '/_app/leads': typeof AppLeadsRoute
+  '/_app/orders': typeof AppOrdersRoute
+  '/_app/reports': typeof AppReportsRoute
+  '/_app/routes': typeof AppRoutesRoute
+  '/_app/sales': typeof AppSalesRoute
+  '/_app/week-plan': typeof AppWeekPlanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/cash-flow'
+    | '/clients'
+    | '/dashboard'
+    | '/drivers'
+    | '/financeiro'
+    | '/fleet'
+    | '/leads'
+    | '/orders'
+    | '/reports'
+    | '/routes'
+    | '/sales'
+    | '/week-plan'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/cash-flow'
+    | '/clients'
+    | '/dashboard'
+    | '/drivers'
+    | '/financeiro'
+    | '/fleet'
+    | '/leads'
+    | '/orders'
+    | '/reports'
+    | '/routes'
+    | '/sales'
+    | '/week-plan'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app/cash-flow'
+    | '/_app/clients'
+    | '/_app/dashboard'
+    | '/_app/drivers'
+    | '/_app/financeiro'
+    | '/_app/fleet'
+    | '/_app/leads'
+    | '/_app/orders'
+    | '/_app/reports'
+    | '/_app/routes'
+    | '/_app/sales'
+    | '/_app/week-plan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppCashFlowRoute: typeof AppCashFlowRoute
+  AppClientsRoute: typeof AppClientsRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppDriversRoute: typeof AppDriversRoute
+  AppFinanceiroRoute: typeof AppFinanceiroRoute
+  AppFleetRoute: typeof AppFleetRoute
+  AppLeadsRoute: typeof AppLeadsRoute
+  AppOrdersRoute: typeof AppOrdersRoute
+  AppReportsRoute: typeof AppReportsRoute
+  AppRoutesRoute: typeof AppRoutesRoute
+  AppSalesRoute: typeof AppSalesRoute
+  AppWeekPlanRoute: typeof AppWeekPlanRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +208,107 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/cash-flow': {
+      id: '/_app/cash-flow'
+      path: '/cash-flow'
+      fullPath: '/cash-flow'
+      preLoaderRoute: typeof AppCashFlowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/clients': {
+      id: '/_app/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof AppClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/drivers': {
+      id: '/_app/drivers'
+      path: '/drivers'
+      fullPath: '/drivers'
+      preLoaderRoute: typeof AppDriversRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/financeiro': {
+      id: '/_app/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof AppFinanceiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/fleet': {
+      id: '/_app/fleet'
+      path: '/fleet'
+      fullPath: '/fleet'
+      preLoaderRoute: typeof AppFleetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/leads': {
+      id: '/_app/leads'
+      path: '/leads'
+      fullPath: '/leads'
+      preLoaderRoute: typeof AppLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/orders': {
+      id: '/_app/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof AppOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/routes': {
+      id: '/_app/routes'
+      path: '/routes'
+      fullPath: '/routes'
+      preLoaderRoute: typeof AppRoutesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/sales': {
+      id: '/_app/sales'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof AppSalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/week-plan': {
+      id: '/_app/week-plan'
+      path: '/week-plan'
+      fullPath: '/week-plan'
+      preLoaderRoute: typeof AppWeekPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppCashFlowRoute: AppCashFlowRoute,
+  AppClientsRoute: AppClientsRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppDriversRoute: AppDriversRoute,
+  AppFinanceiroRoute: AppFinanceiroRoute,
+  AppFleetRoute: AppFleetRoute,
+  AppLeadsRoute: AppLeadsRoute,
+  AppOrdersRoute: AppOrdersRoute,
+  AppReportsRoute: AppReportsRoute,
+  AppRoutesRoute: AppRoutesRoute,
+  AppSalesRoute: AppSalesRoute,
+  AppWeekPlanRoute: AppWeekPlanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
