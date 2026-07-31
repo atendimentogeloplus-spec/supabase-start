@@ -16,11 +16,15 @@ import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppDriversRouteImport } from './routes/_app/drivers'
 import { Route as AppFinanceiroRouteImport } from './routes/_app/financeiro'
 import { Route as AppFleetRouteImport } from './routes/_app/fleet'
+import { Route as AppFreezersRouteImport } from './routes/_app/freezers'
 import { Route as AppLeadsRouteImport } from './routes/_app/leads'
 import { Route as AppOrdersRouteImport } from './routes/_app/orders'
+import { Route as AppPriceTablesRouteImport } from './routes/_app/price-tables'
+import { Route as AppProductsRouteImport } from './routes/_app/products'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as AppRoutesRouteImport } from './routes/_app/routes'
 import { Route as AppSalesRouteImport } from './routes/_app/sales'
+import { Route as AppStockRouteImport } from './routes/_app/stock'
 import { Route as AppWeekPlanRouteImport } from './routes/_app/week-plan'
 
 const IndexRoute = IndexRouteImport.update({
@@ -58,6 +62,11 @@ const AppFleetRoute = AppFleetRouteImport.update({
   path: '/fleet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppFreezersRoute = AppFreezersRouteImport.update({
+  id: '/_app/freezers',
+  path: '/freezers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppLeadsRoute = AppLeadsRouteImport.update({
   id: '/_app/leads',
   path: '/leads',
@@ -66,6 +75,16 @@ const AppLeadsRoute = AppLeadsRouteImport.update({
 const AppOrdersRoute = AppOrdersRouteImport.update({
   id: '/_app/orders',
   path: '/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppPriceTablesRoute = AppPriceTablesRouteImport.update({
+  id: '/_app/price-tables',
+  path: '/price-tables',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppProductsRoute = AppProductsRouteImport.update({
+  id: '/_app/products',
+  path: '/products',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppReportsRoute = AppReportsRouteImport.update({
@@ -83,6 +102,11 @@ const AppSalesRoute = AppSalesRouteImport.update({
   path: '/sales',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppStockRoute = AppStockRouteImport.update({
+  id: '/_app/stock',
+  path: '/stock',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppWeekPlanRoute = AppWeekPlanRouteImport.update({
   id: '/_app/week-plan',
   path: '/week-plan',
@@ -97,11 +121,15 @@ export interface FileRoutesByFullPath {
   '/drivers': typeof AppDriversRoute
   '/financeiro': typeof AppFinanceiroRoute
   '/fleet': typeof AppFleetRoute
+  '/freezers': typeof AppFreezersRoute
   '/leads': typeof AppLeadsRoute
   '/orders': typeof AppOrdersRoute
+  '/price-tables': typeof AppPriceTablesRoute
+  '/products': typeof AppProductsRoute
   '/reports': typeof AppReportsRoute
   '/routes': typeof AppRoutesRoute
   '/sales': typeof AppSalesRoute
+  '/stock': typeof AppStockRoute
   '/week-plan': typeof AppWeekPlanRoute
 }
 export interface FileRoutesByTo {
@@ -112,11 +140,15 @@ export interface FileRoutesByTo {
   '/drivers': typeof AppDriversRoute
   '/financeiro': typeof AppFinanceiroRoute
   '/fleet': typeof AppFleetRoute
+  '/freezers': typeof AppFreezersRoute
   '/leads': typeof AppLeadsRoute
   '/orders': typeof AppOrdersRoute
+  '/price-tables': typeof AppPriceTablesRoute
+  '/products': typeof AppProductsRoute
   '/reports': typeof AppReportsRoute
   '/routes': typeof AppRoutesRoute
   '/sales': typeof AppSalesRoute
+  '/stock': typeof AppStockRoute
   '/week-plan': typeof AppWeekPlanRoute
 }
 export interface FileRoutesById {
@@ -128,11 +160,15 @@ export interface FileRoutesById {
   '/_app/drivers': typeof AppDriversRoute
   '/_app/financeiro': typeof AppFinanceiroRoute
   '/_app/fleet': typeof AppFleetRoute
+  '/_app/freezers': typeof AppFreezersRoute
   '/_app/leads': typeof AppLeadsRoute
   '/_app/orders': typeof AppOrdersRoute
+  '/_app/price-tables': typeof AppPriceTablesRoute
+  '/_app/products': typeof AppProductsRoute
   '/_app/reports': typeof AppReportsRoute
   '/_app/routes': typeof AppRoutesRoute
   '/_app/sales': typeof AppSalesRoute
+  '/_app/stock': typeof AppStockRoute
   '/_app/week-plan': typeof AppWeekPlanRoute
 }
 export interface FileRouteTypes {
@@ -145,11 +181,15 @@ export interface FileRouteTypes {
     | '/drivers'
     | '/financeiro'
     | '/fleet'
+    | '/freezers'
     | '/leads'
     | '/orders'
+    | '/price-tables'
+    | '/products'
     | '/reports'
     | '/routes'
     | '/sales'
+    | '/stock'
     | '/week-plan'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -160,11 +200,15 @@ export interface FileRouteTypes {
     | '/drivers'
     | '/financeiro'
     | '/fleet'
+    | '/freezers'
     | '/leads'
     | '/orders'
+    | '/price-tables'
+    | '/products'
     | '/reports'
     | '/routes'
     | '/sales'
+    | '/stock'
     | '/week-plan'
   id:
     | '__root__'
@@ -175,11 +219,15 @@ export interface FileRouteTypes {
     | '/_app/drivers'
     | '/_app/financeiro'
     | '/_app/fleet'
+    | '/_app/freezers'
     | '/_app/leads'
     | '/_app/orders'
+    | '/_app/price-tables'
+    | '/_app/products'
     | '/_app/reports'
     | '/_app/routes'
     | '/_app/sales'
+    | '/_app/stock'
     | '/_app/week-plan'
   fileRoutesById: FileRoutesById
 }
@@ -191,11 +239,15 @@ export interface RootRouteChildren {
   AppDriversRoute: typeof AppDriversRoute
   AppFinanceiroRoute: typeof AppFinanceiroRoute
   AppFleetRoute: typeof AppFleetRoute
+  AppFreezersRoute: typeof AppFreezersRoute
   AppLeadsRoute: typeof AppLeadsRoute
   AppOrdersRoute: typeof AppOrdersRoute
+  AppPriceTablesRoute: typeof AppPriceTablesRoute
+  AppProductsRoute: typeof AppProductsRoute
   AppReportsRoute: typeof AppReportsRoute
   AppRoutesRoute: typeof AppRoutesRoute
   AppSalesRoute: typeof AppSalesRoute
+  AppStockRoute: typeof AppStockRoute
   AppWeekPlanRoute: typeof AppWeekPlanRoute
 }
 
@@ -250,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFleetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/freezers': {
+      id: '/_app/freezers'
+      path: '/freezers'
+      fullPath: '/freezers'
+      preLoaderRoute: typeof AppFreezersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/leads': {
       id: '/_app/leads'
       path: '/leads'
@@ -262,6 +321,20 @@ declare module '@tanstack/react-router' {
       path: '/orders'
       fullPath: '/orders'
       preLoaderRoute: typeof AppOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/price-tables': {
+      id: '/_app/price-tables'
+      path: '/price-tables'
+      fullPath: '/price-tables'
+      preLoaderRoute: typeof AppPriceTablesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/products': {
+      id: '/_app/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof AppProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/reports': {
@@ -285,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSalesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/stock': {
+      id: '/_app/stock'
+      path: '/stock'
+      fullPath: '/stock'
+      preLoaderRoute: typeof AppStockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/week-plan': {
       id: '/_app/week-plan'
       path: '/week-plan'
@@ -303,11 +383,15 @@ const rootRouteChildren: RootRouteChildren = {
   AppDriversRoute: AppDriversRoute,
   AppFinanceiroRoute: AppFinanceiroRoute,
   AppFleetRoute: AppFleetRoute,
+  AppFreezersRoute: AppFreezersRoute,
   AppLeadsRoute: AppLeadsRoute,
   AppOrdersRoute: AppOrdersRoute,
+  AppPriceTablesRoute: AppPriceTablesRoute,
+  AppProductsRoute: AppProductsRoute,
   AppReportsRoute: AppReportsRoute,
   AppRoutesRoute: AppRoutesRoute,
   AppSalesRoute: AppSalesRoute,
+  AppStockRoute: AppStockRoute,
   AppWeekPlanRoute: AppWeekPlanRoute,
 }
 export const routeTree = rootRouteImport
