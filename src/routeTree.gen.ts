@@ -9,8 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppCashFlowRouteImport } from './routes/_app/cash-flow'
 import { Route as AppClientsRouteImport } from './routes/_app/clients'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
@@ -28,14 +30,24 @@ import { Route as AppSalesRouteImport } from './routes/_app/sales'
 import { Route as AppStockRouteImport } from './routes/_app/stock'
 import { Route as AppWeekPlanRouteImport } from './routes/_app/week-plan'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCashFlowRoute = AppCashFlowRouteImport.update({
   id: '/cash-flow',
@@ -119,7 +131,9 @@ const AppWeekPlanRoute = AppWeekPlanRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/login': typeof LoginRoute
+  '/admin': typeof AppAdminRoute
   '/cash-flow': typeof AppCashFlowRoute
   '/clients': typeof AppClientsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -138,7 +152,8 @@ export interface FileRoutesByFullPath {
   '/week-plan': typeof AppWeekPlanRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/admin': typeof AppAdminRoute
   '/cash-flow': typeof AppCashFlowRoute
   '/clients': typeof AppClientsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -155,11 +170,13 @@ export interface FileRoutesByTo {
   '/sales': typeof AppSalesRoute
   '/stock': typeof AppStockRoute
   '/week-plan': typeof AppWeekPlanRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_app/admin': typeof AppAdminRoute
   '/_app/cash-flow': typeof AppCashFlowRoute
   '/_app/clients': typeof AppClientsRoute
   '/_app/dashboard': typeof AppDashboardRoute
@@ -176,11 +193,14 @@ export interface FileRoutesById {
   '/_app/sales': typeof AppSalesRoute
   '/_app/stock': typeof AppStockRoute
   '/_app/week-plan': typeof AppWeekPlanRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
+    | '/admin'
     | '/cash-flow'
     | '/clients'
     | '/dashboard'
@@ -199,7 +219,8 @@ export interface FileRouteTypes {
     | '/week-plan'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
+    | '/login'
+    | '/admin'
     | '/cash-flow'
     | '/clients'
     | '/dashboard'
@@ -216,10 +237,12 @@ export interface FileRouteTypes {
     | '/sales'
     | '/stock'
     | '/week-plan'
+    | '/'
   id:
     | '__root__'
-    | '/'
     | '/_app'
+    | '/login'
+    | '/_app/admin'
     | '/_app/cash-flow'
     | '/_app/clients'
     | '/_app/dashboard'
@@ -236,28 +259,43 @@ export interface FileRouteTypes {
     | '/_app/sales'
     | '/_app/stock'
     | '/_app/week-plan'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_app': {
       id: '/_app'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/cash-flow': {
       id: '/_app/cash-flow'
@@ -375,6 +413,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppCashFlowRoute: typeof AppCashFlowRoute
   AppClientsRoute: typeof AppClientsRoute
   AppDashboardRoute: typeof AppDashboardRoute
@@ -391,9 +430,11 @@ interface AppRouteChildren {
   AppSalesRoute: typeof AppSalesRoute
   AppStockRoute: typeof AppStockRoute
   AppWeekPlanRoute: typeof AppWeekPlanRoute
+  AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppCashFlowRoute: AppCashFlowRoute,
   AppClientsRoute: AppClientsRoute,
   AppDashboardRoute: AppDashboardRoute,
@@ -410,13 +451,14 @@ const AppRouteChildren: AppRouteChildren = {
   AppSalesRoute: AppSalesRoute,
   AppStockRoute: AppStockRoute,
   AppWeekPlanRoute: AppWeekPlanRoute,
+  AppIndexRoute: AppIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
