@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import PendingApproval from "@/pages/PendingApproval";
 
 export const Route = createFileRoute("/_app")({
+  ssr: false,
   component: AppGate,
 });
 
