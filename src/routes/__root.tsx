@@ -108,7 +108,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   const publicConfig = Route.useLoaderData();
-  const serializedConfig = JSON.stringify(publicConfig).replace(/</g, "\\u003c");
+  const serializedConfig = publicConfig
+    ? JSON.stringify(publicConfig).replace(/</g, "\\u003c")
+    : undefined;
 
   return (
     <html lang="pt-BR">
@@ -116,11 +118,13 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.__SUPABASE_PUBLIC_CONFIG__=${serializedConfig}`,
-          }}
-        />
+        {serializedConfig ? (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.__SUPABASE_PUBLIC_CONFIG__=${serializedConfig}`,
+            }}
+          />
+        ) : null}
         {children}
         <Scripts />
       </body>
