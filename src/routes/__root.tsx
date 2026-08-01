@@ -108,6 +108,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   const publicConfig = Route.useLoaderData();
+  const { queryClient } = Route.useRouteContext();
   const serializedConfig = publicConfig
     ? JSON.stringify(publicConfig).replace(/</g, "\\u003c")
     : undefined;
@@ -125,7 +126,14 @@ function RootShell({ children }: { children: ReactNode }) {
             }}
           />
         ) : null}
-        {children}
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <TooltipProvider>
+              <Sonner />
+              {children}
+            </TooltipProvider>
+          </AuthProvider>
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>
@@ -133,17 +141,5 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Sonner />
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  );
+  return <Outlet />;
 }
