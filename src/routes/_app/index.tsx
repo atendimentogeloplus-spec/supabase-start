@@ -18,15 +18,9 @@ export const Route = createFileRoute("/_app/")({
 });
 
 function IndexRedirect() {
-  const { isAdmin, isLoading: roleLoading } = useUserRole();
-  const { allowed, isLoading } = useUserTabs();
-
-  if (roleLoading || isLoading) {
-    return <p className="text-muted-foreground">Carregando...</p>;
-  }
-
-  const first = ALL_TABS.find((t) => isAdmin || allowed.has(t.key));
-  if (!first) return <PendingApproval />;
-
-  return <Navigate to={first.path} replace />;
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <p className="text-lg">vou trazer um arquivo csv aqui do meu banco de dados, voce consegue puxar ?</p>
+    </div>
+  );
 }
