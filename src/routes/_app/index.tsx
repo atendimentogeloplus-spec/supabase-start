@@ -20,7 +20,10 @@ export const Route = createFileRoute("/_app/")({
 function IndexRedirect() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <p className="text-lg">segue.</p>
+      <p className="text-lg text-center">
+        O sistema está configurado para o seu Supabase externo.<br />
+        Deseja importar o arquivo CSV agora?
+      </p>
     </div>
   );
 }
