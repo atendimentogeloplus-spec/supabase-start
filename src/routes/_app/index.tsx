@@ -22,16 +22,19 @@ function IndexRedirect() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="text-center space-y-4">
         <p className="text-lg">
-          Backup completo importado com sucesso para o Supabase externo!
+          Dados completos importados para o Supabase externo!
         </p>
         <div className="text-sm text-muted-foreground grid grid-cols-2 gap-2 max-w-md mx-auto">
           <div className="bg-muted p-2 rounded">Clientes: 205</div>
           <div className="bg-muted p-2 rounded">Vendas: 7.815</div>
-          <div className="bg-muted p-2 rounded">Financeiro (Fluxo): 1.031</div>
-          <div className="bg-muted p-2 rounded">Financeiro (Trans.): 675</div>
-          <div className="bg-muted p-2 rounded">Motoristas: 2</div>
-          <div className="bg-muted p-2 rounded">Rotas: 13</div>
+          <div className="bg-muted p-2 rounded">Financeiro: 3.150+ regs</div>
+          <div className="bg-muted p-2 rounded">Perdas (Losses): 98</div>
+          <div className="bg-muted p-2 rounded">Projeção YTD: Atualizada</div>
+          <div className="bg-muted p-2 rounded">Frotas/Freezers: Importados</div>
         </div>
+        <p className="text-sm font-medium text-green-600">
+          Projeção YTD, Perdas e Faturamento Anual já estão visíveis no Dashboard.
+        </p>
       </div>
     </div>
   );
