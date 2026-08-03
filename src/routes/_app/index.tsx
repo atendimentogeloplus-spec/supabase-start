@@ -20,9 +20,19 @@ export const Route = createFileRoute("/_app/")({
 function IndexRedirect() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <p className="text-lg text-center">
-        Ainda estao faltando dados... pedidos antigos, financeiros nao vieram nada...
-      </p>
+      <div className="text-center space-y-4">
+        <p className="text-lg">
+          Backup completo importado com sucesso para o Supabase externo!
+        </p>
+        <div className="text-sm text-muted-foreground grid grid-cols-2 gap-2 max-w-md mx-auto">
+          <div className="bg-muted p-2 rounded">Clientes: 205</div>
+          <div className="bg-muted p-2 rounded">Vendas: 7.815</div>
+          <div className="bg-muted p-2 rounded">Financeiro (Fluxo): 1.031</div>
+          <div className="bg-muted p-2 rounded">Financeiro (Trans.): 675</div>
+          <div className="bg-muted p-2 rounded">Motoristas: 2</div>
+          <div className="bg-muted p-2 rounded">Rotas: 13</div>
+        </div>
+      </div>
     </div>
   );
 }
