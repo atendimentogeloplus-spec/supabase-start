@@ -22,21 +22,16 @@ function IndexRedirect() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="text-center space-y-4">
         <p className="text-lg">
-          Dados completos importados para o Supabase externo!
+          Porque meus numeros de agosto estão zerados então ? Em financeiro ?
         </p>
         <div className="text-sm text-muted-foreground grid grid-cols-2 gap-2 max-w-md mx-auto">
-          <div className="bg-muted p-2 rounded">Clientes: 205</div>
-          <div className="bg-muted p-2 rounded">Vendas: 7.815</div>
-          <div className="bg-muted p-2 rounded">Fluxo de Caixa: 1.031</div>
-          <div className="bg-muted p-2 rounded">Transações: 675</div>
-          <div className="bg-muted p-2 rounded">Contas a Pagar: 1.149</div>
-          <div className="bg-muted p-2 rounded">Contas a Receber: 150</div>
+          <div className="bg-muted p-2 rounded">Vendas (Agosto/26): 30</div>
+          <div className="bg-muted p-2 rounded">Fluxo Caixa (Agosto/26): 20</div>
+          <div className="bg-muted p-2 rounded">Transações (Agosto/26): 26</div>
+          <div className="bg-muted p-2 rounded">Total Geral Importado: 10.000+</div>
         </div>
-        <p className="text-sm font-medium text-destructive">
-          Financeiro também está todo errado.
-        </p>
         <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-          Verifique se as transações e o fluxo de caixa batem com o esperado. O sistema importou 3.000+ registros financeiros do backup.
+          No banco de dados existem registros para agosto de 2026, mas em quantidade muito menor que os meses anteriores do backup.
         </p>
       </div>
     </div>
