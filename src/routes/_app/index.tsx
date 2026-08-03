@@ -27,13 +27,16 @@ function IndexRedirect() {
         <div className="text-sm text-muted-foreground grid grid-cols-2 gap-2 max-w-md mx-auto">
           <div className="bg-muted p-2 rounded">Clientes: 205</div>
           <div className="bg-muted p-2 rounded">Vendas: 7.815</div>
-          <div className="bg-muted p-2 rounded">Financeiro: 3.150+ regs</div>
-          <div className="bg-muted p-2 rounded">Perdas (Losses): 98</div>
-          <div className="bg-muted p-2 rounded">Projeção YTD: Atualizada</div>
-          <div className="bg-muted p-2 rounded">Frotas/Freezers: Importados</div>
+          <div className="bg-muted p-2 rounded">Fluxo de Caixa: 1.031</div>
+          <div className="bg-muted p-2 rounded">Transações: 675</div>
+          <div className="bg-muted p-2 rounded">Contas a Pagar: 1.149</div>
+          <div className="bg-muted p-2 rounded">Contas a Receber: 150</div>
         </div>
-        <p className="text-sm font-medium text-green-600">
-          Projeção YTD, Perdas e Faturamento Anual já estão visíveis no Dashboard.
+        <p className="text-sm font-medium text-destructive">
+          Financeiro também está todo errado.
+        </p>
+        <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+          Verifique se as transações e o fluxo de caixa batem com o esperado. O sistema importou 3.000+ registros financeiros do backup.
         </p>
       </div>
     </div>
