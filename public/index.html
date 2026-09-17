@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="description" content="Acompanhamento e gestao de leads para equipes de vendas.">
+  <title>LeadTrack - Acompanhamento de Leads</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="LeadTrack">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="toast"></div>
+  <div id="modal-root"></div>
+
+  <div id="auth-screen" class="auth-screen hidden">
+    <div class="auth-stack">
+      <div id="auth-card" class="auth-card"></div>
+      <button type="button" id="auth-install" class="install-hint hidden">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>
+        Instalar aplicativo
+      </button>
+    </div>
+  </div>
+
+  <div id="app-shell" class="hidden">
+    <header class="topbar">
+      <div class="brand"><span id="brand-name">LeadTrack</span><span class="dot">.</span></div>
+      <div class="topbar-actions">
+        <button class="btn sm hidden" id="install-btn" title="Instalar aplicativo" aria-label="Instalar aplicativo"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg><span class="install-label">Instalar app</span></button>
+        <button class="bell" id="bell-btn" title="Notificacoes" aria-label="Notificacoes">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+          <span class="badge hidden" id="bell-badge">0</span>
+        </button>
+        <button class="user-chip clickable" id="user-chip" type="button" title="Minha conta">
+          <span class="nm" id="user-name">-</span>
+          <span class="rl" id="user-role">-</span>
+        </button>
+        <button class="btn ghost sm" id="logout-btn" title="Sair">Sair</button>
+      </div>
+    </header>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar"></aside>
+      <main class="view" id="view"></main>
+    </div>
+    <nav class="tabbar" id="tabbar"></nav>
+  </div>
+
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/kanban.js"></script>
+  <script src="/js/leads.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/users.js"></script>
+  <script src="/js/settings.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/pwa.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

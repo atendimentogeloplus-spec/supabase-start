@@ -1,0 +1,53 @@
+{
+  "id": "/?source=pwa",
+  "name": "LeadTrack - Acompanhamento de Leads",
+  "short_name": "LeadTrack",
+  "description": "Acompanhamento e gestao de leads para equipes de vendas com representantes internos e externos.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f1f5f9",
+  "theme_color": "#4f46e5",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Kanban",
+      "short_name": "Kanban",
+      "url": "/#/kanban"
+    },
+    {
+      "name": "Leads",
+      "short_name": "Leads",
+      "url": "/#/leads"
+    },
+    {
+      "name": "Notificacoes",
+      "short_name": "Avisos",
+      "url": "/#/notifications"
+    }
+  ]
+}
