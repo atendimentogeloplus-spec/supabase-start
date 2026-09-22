@@ -90,15 +90,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
       </nav>
-      <div className="shrink-0 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-sidebar-border">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground"
-          onClick={signOut}
-        >
-          <LogOut className="h-4 w-4 mr-3" /> Sair
-        </Button>
-      </div>
     </div>
   );
 }
