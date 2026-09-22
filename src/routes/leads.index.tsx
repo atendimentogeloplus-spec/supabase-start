@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLeadTrackBase } from "@/lib/leadtrack-data";
 import { useAuth } from "@/hooks/useAuth";
 import { daysSince, formatCurrency, heatClass, whatsappLeadLink, type Lead } from "@/lib/leadtrack";
-import { MessageCircle } from "lucide-react";
+import { AlertTriangle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
