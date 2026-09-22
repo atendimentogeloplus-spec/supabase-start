@@ -255,6 +255,18 @@ function LeadsPage() {
                       {days}d
                     </span>
                   </td>
+                  <td className="p-3">
+                    {waLink ? (
+                      <Button asChild size="sm" variant="outline">
+                        <a href={waLink} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="h-4 w-4" />
+                          <span className="hidden sm:inline">WhatsApp</span>
+                        </a>
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Sem telefone</span>
+                    )}
+                  </td>
                 </tr>
               );
             })}
