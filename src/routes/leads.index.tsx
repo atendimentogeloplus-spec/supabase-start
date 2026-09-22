@@ -234,6 +234,8 @@ function LeadsPage() {
           <tbody>
             {filtered.map((lead) => {
               const days = daysSince(lead.last_interaction_at ?? lead.updated_at);
+              const owner = profiles.find((p) => p.id === lead.owner_id);
+              const waLink = whatsappLeadLink(lead, owner?.phone);
               return (
                 <tr key={lead.id} className="border-t">
                   <td className="p-3">
