@@ -39,6 +39,7 @@ function LeadsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [open, setOpen] = useState(false);
+  const [notify, setNotify] = useState<{ link: string; ownerName: string; leadName: string } | null>(null);
   const [form, setForm] = useState({
     contact_name: "",
     company: "",
@@ -91,16 +92,10 @@ function LeadsPage() {
       toast.error(error.message);
       return;
     }
-    const ownerPhone = profiles.find((p) => p.id === ownerId)?.phone ?? null;
-    const link = created ? whatsappLeadLink(created as Lead, ownerPhone) : null;
-    if (link) {
-      toast.success("Lead criado.", {
-        action: { label: "Avisar no WhatsApp", onClick: () => window.open(link, "_blank", "noopener") },
-        duration: 10000,
-      });
-    } else {
-      toast.success("Lead criado.");
-    }
+    const owner = profiles.find((p) => p.id === ownerId);
+    const link = created ? whatsappLeadLink(created as Lead, owner?.phone) : null;
+    toast.success("Lead criado.");
+    if (link) setNotify({ link, ownerName: owner?.name ?? "o responsável", leadName: form.contact_name.trim() });
     setOpen(false);
     setForm({ contact_name: "", company: "", phone: "", email: "", source_id: "", owner_id: "", estimated_value: "", notes: "" });
     void qc.invalidateQueries({ queryKey: ["leads"] });
@@ -280,6 +275,32 @@ function LeadsPage() {
           </tbody>
         </table>
       </div>
+
+      <Dialog open={!!notify} onOpenChange={(v) => !v && setNotify(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Avisar o responsável?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Enviar uma mensagem no WhatsApp de {notify?.ownerName} sobre o lead {notify?.leadName}.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row-reverse">
+            <Button
+              className="sm:flex-1"
+              onClick={() => {
+                if (notify) window.open(notify.link, "_blank", "noopener");
+                setNotify(null);
+              }}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Avisar no WhatsApp
+            </Button>
+            <Button variant="outline" className="sm:flex-1" onClick={() => setNotify(null)}>
+              Agora não
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
