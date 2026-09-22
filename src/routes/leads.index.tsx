@@ -288,7 +288,7 @@ function LeadsPage() {
             <Button
               className="sm:flex-1"
               onClick={() => {
-                if (notify) window.open(notify.link, "_blank", "noopener");
+                if (notify) window.open(notify.link, "_blank", "noopener,noreferrer");
                 setNotify(null);
               }}
             >
