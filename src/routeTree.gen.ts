@@ -9,456 +9,201 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppAdminRouteImport } from './routes/_app/admin'
-import { Route as AppCashFlowRouteImport } from './routes/_app/cash-flow'
-import { Route as AppClientsRouteImport } from './routes/_app/clients'
-import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
-import { Route as AppDriversRouteImport } from './routes/_app/drivers'
-import { Route as AppFinanceiroRouteImport } from './routes/_app/financeiro'
-import { Route as AppFleetRouteImport } from './routes/_app/fleet'
-import { Route as AppFreezersRouteImport } from './routes/_app/freezers'
-import { Route as AppLeadsRouteImport } from './routes/_app/leads'
-import { Route as AppOrdersRouteImport } from './routes/_app/orders'
-import { Route as AppPriceTablesRouteImport } from './routes/_app/price-tables'
-import { Route as AppProductsRouteImport } from './routes/_app/products'
-import { Route as AppReportsRouteImport } from './routes/_app/reports'
-import { Route as AppRoutesRouteImport } from './routes/_app/routes'
-import { Route as AppSalesRouteImport } from './routes/_app/sales'
-import { Route as AppStockRouteImport } from './routes/_app/stock'
-import { Route as AppWeekPlanRouteImport } from './routes/_app/week-plan'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AvisosRouteImport } from './routes/avisos'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as PainelRouteImport } from './routes/painel'
+import { Route as UsuariosRouteImport } from './routes/usuarios'
+import { Route as LeadsIndexRouteImport } from './routes/leads.index'
+import { Route as LeadsLeadIdRouteImport } from './routes/leads.$leadId'
 
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppIndexRoute = AppIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppAdminRoute = AppAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AppRoute,
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppCashFlowRoute = AppCashFlowRouteImport.update({
-  id: '/cash-flow',
-  path: '/cash-flow',
-  getParentRoute: () => AppRoute,
+const AvisosRoute = AvisosRouteImport.update({
+  id: '/avisos',
+  path: '/avisos',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppClientsRoute = AppClientsRouteImport.update({
-  id: '/clients',
-  path: '/clients',
-  getParentRoute: () => AppRoute,
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppRoute,
+const PainelRoute = PainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppDriversRoute = AppDriversRouteImport.update({
-  id: '/drivers',
-  path: '/drivers',
-  getParentRoute: () => AppRoute,
+const UsuariosRoute = UsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppFinanceiroRoute = AppFinanceiroRouteImport.update({
-  id: '/financeiro',
-  path: '/financeiro',
-  getParentRoute: () => AppRoute,
+const LeadsIndexRoute = LeadsIndexRouteImport.update({
+  id: '/leads/',
+  path: '/leads/',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppFleetRoute = AppFleetRouteImport.update({
-  id: '/fleet',
-  path: '/fleet',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFreezersRoute = AppFreezersRouteImport.update({
-  id: '/freezers',
-  path: '/freezers',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLeadsRoute = AppLeadsRouteImport.update({
-  id: '/leads',
-  path: '/leads',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOrdersRoute = AppOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPriceTablesRoute = AppPriceTablesRouteImport.update({
-  id: '/price-tables',
-  path: '/price-tables',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProductsRoute = AppProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppReportsRoute = AppReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRoutesRoute = AppRoutesRouteImport.update({
-  id: '/routes',
-  path: '/routes',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSalesRoute = AppSalesRouteImport.update({
-  id: '/sales',
-  path: '/sales',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppStockRoute = AppStockRouteImport.update({
-  id: '/stock',
-  path: '/stock',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppWeekPlanRoute = AppWeekPlanRouteImport.update({
-  id: '/week-plan',
-  path: '/week-plan',
-  getParentRoute: () => AppRoute,
+const LeadsLeadIdRoute = LeadsLeadIdRouteImport.update({
+  id: '/leads/$leadId',
+  path: '/leads/$leadId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
-  '/login': typeof LoginRoute
-  '/admin': typeof AppAdminRoute
-  '/cash-flow': typeof AppCashFlowRoute
-  '/clients': typeof AppClientsRoute
-  '/dashboard': typeof AppDashboardRoute
-  '/drivers': typeof AppDriversRoute
-  '/financeiro': typeof AppFinanceiroRoute
-  '/fleet': typeof AppFleetRoute
-  '/freezers': typeof AppFreezersRoute
-  '/leads': typeof AppLeadsRoute
-  '/orders': typeof AppOrdersRoute
-  '/price-tables': typeof AppPriceTablesRoute
-  '/products': typeof AppProductsRoute
-  '/reports': typeof AppReportsRoute
-  '/routes': typeof AppRoutesRoute
-  '/sales': typeof AppSalesRoute
-  '/stock': typeof AppStockRoute
-  '/week-plan': typeof AppWeekPlanRoute
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/avisos': typeof AvisosRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/painel': typeof PainelRoute
+  '/usuarios': typeof UsuariosRoute
+  '/leads/$leadId': typeof LeadsLeadIdRoute
+  '/leads/': typeof LeadsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/login': typeof LoginRoute
-  '/admin': typeof AppAdminRoute
-  '/cash-flow': typeof AppCashFlowRoute
-  '/clients': typeof AppClientsRoute
-  '/dashboard': typeof AppDashboardRoute
-  '/drivers': typeof AppDriversRoute
-  '/financeiro': typeof AppFinanceiroRoute
-  '/fleet': typeof AppFleetRoute
-  '/freezers': typeof AppFreezersRoute
-  '/leads': typeof AppLeadsRoute
-  '/orders': typeof AppOrdersRoute
-  '/price-tables': typeof AppPriceTablesRoute
-  '/products': typeof AppProductsRoute
-  '/reports': typeof AppReportsRoute
-  '/routes': typeof AppRoutesRoute
-  '/sales': typeof AppSalesRoute
-  '/stock': typeof AppStockRoute
-  '/week-plan': typeof AppWeekPlanRoute
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/avisos': typeof AvisosRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/painel': typeof PainelRoute
+  '/usuarios': typeof UsuariosRoute
+  '/leads/$leadId': typeof LeadsLeadIdRoute
+  '/leads': typeof LeadsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_app': typeof AppRouteWithChildren
-  '/login': typeof LoginRoute
-  '/_app/admin': typeof AppAdminRoute
-  '/_app/cash-flow': typeof AppCashFlowRoute
-  '/_app/clients': typeof AppClientsRoute
-  '/_app/dashboard': typeof AppDashboardRoute
-  '/_app/drivers': typeof AppDriversRoute
-  '/_app/financeiro': typeof AppFinanceiroRoute
-  '/_app/fleet': typeof AppFleetRoute
-  '/_app/freezers': typeof AppFreezersRoute
-  '/_app/leads': typeof AppLeadsRoute
-  '/_app/orders': typeof AppOrdersRoute
-  '/_app/price-tables': typeof AppPriceTablesRoute
-  '/_app/products': typeof AppProductsRoute
-  '/_app/reports': typeof AppReportsRoute
-  '/_app/routes': typeof AppRoutesRoute
-  '/_app/sales': typeof AppSalesRoute
-  '/_app/stock': typeof AppStockRoute
-  '/_app/week-plan': typeof AppWeekPlanRoute
-  '/_app/': typeof AppIndexRoute
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/avisos': typeof AvisosRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/painel': typeof PainelRoute
+  '/usuarios': typeof UsuariosRoute
+  '/leads/$leadId': typeof LeadsLeadIdRoute
+  '/leads/': typeof LeadsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/login'
-    | '/admin'
-    | '/cash-flow'
-    | '/clients'
-    | '/dashboard'
-    | '/drivers'
-    | '/financeiro'
-    | '/fleet'
-    | '/freezers'
-    | '/leads'
-    | '/orders'
-    | '/price-tables'
-    | '/products'
-    | '/reports'
-    | '/routes'
-    | '/sales'
-    | '/stock'
-    | '/week-plan'
+    | '/auth'
+    | '/avisos'
+    | '/configuracoes'
+    | '/painel'
+    | '/usuarios'
+    | '/leads/$leadId'
+    | '/leads/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/login'
-    | '/admin'
-    | '/cash-flow'
-    | '/clients'
-    | '/dashboard'
-    | '/drivers'
-    | '/financeiro'
-    | '/fleet'
-    | '/freezers'
-    | '/leads'
-    | '/orders'
-    | '/price-tables'
-    | '/products'
-    | '/reports'
-    | '/routes'
-    | '/sales'
-    | '/stock'
-    | '/week-plan'
     | '/'
+    | '/auth'
+    | '/avisos'
+    | '/configuracoes'
+    | '/painel'
+    | '/usuarios'
+    | '/leads/$leadId'
+    | '/leads'
   id:
     | '__root__'
-    | '/_app'
-    | '/login'
-    | '/_app/admin'
-    | '/_app/cash-flow'
-    | '/_app/clients'
-    | '/_app/dashboard'
-    | '/_app/drivers'
-    | '/_app/financeiro'
-    | '/_app/fleet'
-    | '/_app/freezers'
-    | '/_app/leads'
-    | '/_app/orders'
-    | '/_app/price-tables'
-    | '/_app/products'
-    | '/_app/reports'
-    | '/_app/routes'
-    | '/_app/sales'
-    | '/_app/stock'
-    | '/_app/week-plan'
-    | '/_app/'
+    | '/'
+    | '/auth'
+    | '/avisos'
+    | '/configuracoes'
+    | '/painel'
+    | '/usuarios'
+    | '/leads/$leadId'
+    | '/leads/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRouteWithChildren
-  LoginRoute: typeof LoginRoute
+  IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  AvisosRoute: typeof AvisosRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  PainelRoute: typeof PainelRoute
+  UsuariosRoute: typeof UsuariosRoute
+  LeadsLeadIdRoute: typeof LeadsLeadIdRoute
+  LeadsIndexRoute: typeof LeadsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app/': {
-      id: '/_app/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/admin': {
-      id: '/_app/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AppAdminRouteImport
-      parentRoute: typeof AppRoute
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/cash-flow': {
-      id: '/_app/cash-flow'
-      path: '/cash-flow'
-      fullPath: '/cash-flow'
-      preLoaderRoute: typeof AppCashFlowRouteImport
-      parentRoute: typeof AppRoute
+    '/avisos': {
+      id: '/avisos'
+      path: '/avisos'
+      fullPath: '/avisos'
+      preLoaderRoute: typeof AvisosRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/clients': {
-      id: '/_app/clients'
-      path: '/clients'
-      fullPath: '/clients'
-      preLoaderRoute: typeof AppClientsRouteImport
-      parentRoute: typeof AppRoute
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRoute
+    '/painel': {
+      id: '/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof PainelRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/drivers': {
-      id: '/_app/drivers'
-      path: '/drivers'
-      fullPath: '/drivers'
-      preLoaderRoute: typeof AppDriversRouteImport
-      parentRoute: typeof AppRoute
+    '/usuarios': {
+      id: '/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof UsuariosRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/financeiro': {
-      id: '/_app/financeiro'
-      path: '/financeiro'
-      fullPath: '/financeiro'
-      preLoaderRoute: typeof AppFinanceiroRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/fleet': {
-      id: '/_app/fleet'
-      path: '/fleet'
-      fullPath: '/fleet'
-      preLoaderRoute: typeof AppFleetRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/freezers': {
-      id: '/_app/freezers'
-      path: '/freezers'
-      fullPath: '/freezers'
-      preLoaderRoute: typeof AppFreezersRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/leads': {
-      id: '/_app/leads'
+    '/leads/': {
+      id: '/leads/'
       path: '/leads'
-      fullPath: '/leads'
-      preLoaderRoute: typeof AppLeadsRouteImport
-      parentRoute: typeof AppRoute
+      fullPath: '/leads/'
+      preLoaderRoute: typeof LeadsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/orders': {
-      id: '/_app/orders'
-      path: '/orders'
-      fullPath: '/orders'
-      preLoaderRoute: typeof AppOrdersRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/price-tables': {
-      id: '/_app/price-tables'
-      path: '/price-tables'
-      fullPath: '/price-tables'
-      preLoaderRoute: typeof AppPriceTablesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/products': {
-      id: '/_app/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof AppProductsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/reports': {
-      id: '/_app/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AppReportsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/routes': {
-      id: '/_app/routes'
-      path: '/routes'
-      fullPath: '/routes'
-      preLoaderRoute: typeof AppRoutesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/sales': {
-      id: '/_app/sales'
-      path: '/sales'
-      fullPath: '/sales'
-      preLoaderRoute: typeof AppSalesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/stock': {
-      id: '/_app/stock'
-      path: '/stock'
-      fullPath: '/stock'
-      preLoaderRoute: typeof AppStockRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/week-plan': {
-      id: '/_app/week-plan'
-      path: '/week-plan'
-      fullPath: '/week-plan'
-      preLoaderRoute: typeof AppWeekPlanRouteImport
-      parentRoute: typeof AppRoute
+    '/leads/$leadId': {
+      id: '/leads/$leadId'
+      path: '/leads/$leadId'
+      fullPath: '/leads/$leadId'
+      preLoaderRoute: typeof LeadsLeadIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface AppRouteChildren {
-  AppAdminRoute: typeof AppAdminRoute
-  AppCashFlowRoute: typeof AppCashFlowRoute
-  AppClientsRoute: typeof AppClientsRoute
-  AppDashboardRoute: typeof AppDashboardRoute
-  AppDriversRoute: typeof AppDriversRoute
-  AppFinanceiroRoute: typeof AppFinanceiroRoute
-  AppFleetRoute: typeof AppFleetRoute
-  AppFreezersRoute: typeof AppFreezersRoute
-  AppLeadsRoute: typeof AppLeadsRoute
-  AppOrdersRoute: typeof AppOrdersRoute
-  AppPriceTablesRoute: typeof AppPriceTablesRoute
-  AppProductsRoute: typeof AppProductsRoute
-  AppReportsRoute: typeof AppReportsRoute
-  AppRoutesRoute: typeof AppRoutesRoute
-  AppSalesRoute: typeof AppSalesRoute
-  AppStockRoute: typeof AppStockRoute
-  AppWeekPlanRoute: typeof AppWeekPlanRoute
-  AppIndexRoute: typeof AppIndexRoute
-}
-
-const AppRouteChildren: AppRouteChildren = {
-  AppAdminRoute: AppAdminRoute,
-  AppCashFlowRoute: AppCashFlowRoute,
-  AppClientsRoute: AppClientsRoute,
-  AppDashboardRoute: AppDashboardRoute,
-  AppDriversRoute: AppDriversRoute,
-  AppFinanceiroRoute: AppFinanceiroRoute,
-  AppFleetRoute: AppFleetRoute,
-  AppFreezersRoute: AppFreezersRoute,
-  AppLeadsRoute: AppLeadsRoute,
-  AppOrdersRoute: AppOrdersRoute,
-  AppPriceTablesRoute: AppPriceTablesRoute,
-  AppProductsRoute: AppProductsRoute,
-  AppReportsRoute: AppReportsRoute,
-  AppRoutesRoute: AppRoutesRoute,
-  AppSalesRoute: AppSalesRoute,
-  AppStockRoute: AppStockRoute,
-  AppWeekPlanRoute: AppWeekPlanRoute,
-  AppIndexRoute: AppIndexRoute,
-}
-
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
-  AppRoute: AppRouteWithChildren,
-  LoginRoute: LoginRoute,
+  IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  AvisosRoute: AvisosRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  PainelRoute: PainelRoute,
+  UsuariosRoute: UsuariosRoute,
+  LeadsLeadIdRoute: LeadsLeadIdRoute,
+  LeadsIndexRoute: LeadsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

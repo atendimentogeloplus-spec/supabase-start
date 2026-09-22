@@ -1,1 +1,0 @@
-ALTER TABLE public.freezers ADD COLUMN IF NOT EXISTS at_factory boolean NOT NULL DEFAULT false;

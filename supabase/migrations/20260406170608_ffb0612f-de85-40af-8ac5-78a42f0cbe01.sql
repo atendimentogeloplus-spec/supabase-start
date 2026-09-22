@@ -1,1 +1,0 @@
-ALTER TABLE public.clients ADD COLUMN opening_date date DEFAULT CURRENT_DATE;

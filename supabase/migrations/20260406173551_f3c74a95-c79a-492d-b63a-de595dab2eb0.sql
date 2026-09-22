@@ -1,1 +1,0 @@
-ALTER TABLE public.clients ADD COLUMN contact text;
