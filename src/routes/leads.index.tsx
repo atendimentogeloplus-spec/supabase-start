@@ -228,6 +228,7 @@ function LeadsPage() {
               <th className="p-3">Responsável</th>
               <th className="p-3">Valor</th>
               <th className="p-3">Sem contato</th>
+              <th className="p-3">Avisar</th>
             </tr>
           </thead>
           <tbody>
