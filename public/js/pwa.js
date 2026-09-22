@@ -119,5 +119,5 @@ const PWA = (() => {
 
   document.addEventListener('DOMContentLoaded', init);
 
-  return { init, promptInstall, isStandalone, isInstallable };
+  return { init, promptInstall, isStandalone, isInstallable, isIos };
 })();

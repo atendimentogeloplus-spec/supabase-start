@@ -22,8 +22,31 @@ const Notifications = (() => {
     State.unreadCount = data.unreadCount;
     App.updateBadges();
 
+    const pushOk = typeof PushNotify !== 'undefined' && PushNotify.supported();
+    const pushState = pushOk ? await PushNotify.getState() : null;
+    const pushGranted = !!(pushState && pushState.permission === 'granted');
+    const pushDenied = !!(pushState && pushState.permission === 'denied');
+    const needIosInstall = !!(pushState && pushState.ios && !pushState.standalone);
+    const notSubscribed = !!(pushState && pushGranted && !pushState.subscribed);
+
     view.innerHTML = `
       ${App.pageHead('Notificacoes', `<button class="btn secondary sm" id="nt-readall" ${data.unreadCount ? '' : 'disabled'}>Marcar todas como lidas</button>`)}
+      ${pushOk ? `
+      <div class="panel mb" id="push-panel">
+        <h3 class="panel-title">Avisos no celular / PWA</h3>
+        <p class="small muted mb">${UI.esc(PushNotify.statusLabel(pushState))}.</p>
+        ${needIosInstall ? `
+        <div class="form-error mb">
+          Voce esta no Safari, nao no app instalado. No iPhone: Compartilhar &gt; Adicionar a Tela de Inicio, depois abra o icone do LeadTrack e toque em Ativar avisos.
+        </div>` : ''}
+        ${notSubscribed && !needIosInstall ? `
+        <div class="form-error mb">A permissao esta liberada, mas este aparelho ainda nao foi inscrito no servidor. Toque em Ativar avisos.</div>` : ''}
+        <div class="flex flex-wrap">
+          <button class="btn sm" id="nt-enable">${pushState && pushState.subscribed ? 'Reativar neste aparelho' : 'Ativar avisos'}</button>
+          <button class="btn secondary sm" id="nt-test" ${pushGranted || !needIosInstall ? '' : 'disabled'}>Enviar teste</button>
+        </div>
+        ${pushDenied ? '<div class="form-error mt">O navegador bloqueou as notificacoes. Libere-as em Ajustes &gt; Notificacoes e recarregue.</div>' : ''}
+      </div>` : ''}
       <div class="panel">
         ${items.length ? items.map((n) => `
           <div class="notif-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}" data-lead="${n.lead_id || ''}" style="cursor:pointer">
@@ -37,6 +60,28 @@ const Notifications = (() => {
           : '<div class="empty-state"><h3>Sem notificacoes</h3><p>Voce esta em dia.</p></div>'}
       </div>
     `;
+
+    const enableBtn = view.querySelector('#nt-enable');
+    if (enableBtn) enableBtn.onclick = async () => {
+      try {
+        await PushNotify.enable();
+        UI.toast('Avisos ativados neste aparelho.', 'success');
+        render(view);
+      } catch (err) { UI.toast(err.message, 'error'); }
+    };
+    const testBtn = view.querySelector('#nt-test');
+    if (testBtn) testBtn.onclick = async () => {
+      testBtn.disabled = true;
+      try {
+        const result = await PushNotify.sendTest();
+        UI.toast(result.message, result.remote ? 'success' : 'info');
+        if (!result.remote) render(view);
+      } catch (err) {
+        UI.toast(err.message, 'error');
+      } finally {
+        testBtn.disabled = false;
+      }
+    };
 
     const readAll = view.querySelector('#nt-readall');
     if (readAll) readAll.onclick = async () => {

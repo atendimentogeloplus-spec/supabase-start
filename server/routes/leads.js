@@ -4,7 +4,7 @@ const express = require('express');
 const { db, getColumn, firstColumn, getSetting } = require('../db');
 const { requireAuth } = require('../auth');
 const { createNotification, adminIds, notifyAdmins } = require('../notify');
-const { now, str, intOrNull, numberOrNull, daysSince, likeParam } = require('../util');
+const { now, str, intOrNull, numberOrNull, daysSince, minutesSince, addMinutes, likeParam } = require('../util');
 
 const router = express.Router();
 
@@ -12,8 +12,9 @@ const INTERACTION_TYPES = ['call', 'whatsapp', 'email', 'meeting', 'visit', 'oth
 
 const LEAD_SELECT = `
   SELECT l.*,
-         u.name AS owner_name,
-         u.role AS owner_role,
+          u.name AS owner_name,
+          u.phone AS owner_phone,
+          u.role AS owner_role,
          s.name AS source_name,
          c.label AS status_label,
          c.color AS status_color,
@@ -33,11 +34,78 @@ function stalledDays() {
   return Number.isFinite(n) && n >= 0 ? n : 7;
 }
 
+function parseSlaMinutes(value) {
+  const n = intOrNull(value);
+  if (n === null) return null;
+  if (n < 1) return null;
+  return Math.min(n, 7 * 24 * 60);
+}
+
+function defaultSlaMinutes() {
+  return parseSlaMinutes(getSetting('default_response_sla_minutes', '30')) || 30;
+}
+
 function decorate(lead, threshold = stalledDays()) {
   if (!lead) return lead;
   const base = lead.updated_at || lead.created_at;
   const days = daysSince(base);
-  return { ...lead, days_stalled: days, stalled: !lead.is_won && !lead.is_lost && days >= threshold };
+  const sla = decorateSla(lead);
+  return {
+    ...lead,
+    days_stalled: days,
+    stalled: !lead.is_won && !lead.is_lost && days >= threshold,
+    ...sla
+  };
+}
+
+function decorateSla(lead) {
+  const minutes = intOrNull(lead.response_sla_minutes);
+  const assignedAt = lead.assigned_at || null;
+  const firstResponseAt = lead.first_response_at || null;
+  if (!minutes || !assignedAt) {
+    return {
+      sla_minutes: minutes,
+      sla_deadline: null,
+      sla_remaining_minutes: null,
+      sla_elapsed_minutes: null,
+      sla_status: firstResponseAt ? 'met' : 'none'
+    };
+  }
+  const deadline = addMinutes(assignedAt, minutes);
+  const elapsed = minutesSince(assignedAt);
+  const remaining = minutes - elapsed;
+  if (firstResponseAt) {
+    const responseElapsed = minutesSince(assignedAt) - minutesSince(firstResponseAt);
+    const met = new Date(firstResponseAt).getTime() <= new Date(deadline).getTime();
+    return {
+      sla_minutes: minutes,
+      sla_deadline: deadline,
+      sla_remaining_minutes: 0,
+      sla_elapsed_minutes: Math.max(0, elapsed - minutesSince(firstResponseAt)),
+      sla_status: met ? 'met' : 'late'
+    };
+  }
+  return {
+    sla_minutes: minutes,
+    sla_deadline: deadline,
+    sla_remaining_minutes: remaining,
+    sla_elapsed_minutes: elapsed,
+    sla_status: remaining < 0 ? 'overdue' : (remaining <= Math.max(5, Math.ceil(minutes * 0.2)) ? 'due_soon' : 'open')
+  };
+}
+
+function notifyOwnerOfAssignment(leadId, ownerId, contactName, company, slaMinutes, assignedByName) {
+  if (!ownerId) return;
+  const slaTxt = slaMinutes
+    ? ` Prazo para assumir e registrar a primeira resposta: ${slaMinutes} minuto(s).`
+    : '';
+  createNotification({
+    userId: ownerId,
+    type: 'lead_assigned',
+    title: 'Novo lead atribuido a voce',
+    body: `${contactName}${company ? ' - ' + company : ''}.${slaTxt}${assignedByName ? ' Atribuido por ' + assignedByName + '.' : ''}`,
+    leadId
+  });
 }
 
 function canAccess(user, lead) {
@@ -118,10 +186,45 @@ router.get('/', (req, res) => {
   });
 });
 
+function findLeadByName(name, excludeId) {
+  const normalized = str(name);
+  if (!normalized) return null;
+  if (excludeId) {
+    return db.prepare(`${LEAD_SELECT} WHERE LOWER(TRIM(l.contact_name)) = LOWER(?) AND l.id != ? LIMIT 1`)
+      .get(normalized, excludeId);
+  }
+  return db.prepare(`${LEAD_SELECT} WHERE LOWER(TRIM(l.contact_name)) = LOWER(?) LIMIT 1`).get(normalized);
+}
+
+router.get('/suggest', (req, res) => {
+  const q = str(req.query.q);
+  const excludeId = intOrNull(req.query.exclude_id);
+  if (!q || q.length < 1) return res.json({ leads: [], duplicate: null });
+  const where = ['(l.contact_name LIKE ? ESCAPE \'\\\' OR l.company LIKE ? ESCAPE \'\\\')'];
+  const params = [likeParam(q), likeParam(q)];
+  if (excludeId) {
+    where.push('l.id != ?');
+    params.push(excludeId);
+  }
+  if (req.user.role !== 'admin') {
+    where.push('l.owner_id = ?');
+    params.push(req.user.id);
+  }
+  const rows = db.prepare(`${LEAD_SELECT} WHERE ${where.join(' AND ')} ORDER BY l.updated_at DESC LIMIT 8`)
+    .all(...params)
+    .map((l) => decorate(l));
+  const duplicate = findLeadByName(q, excludeId);
+  res.json({ leads: rows, duplicate: duplicate ? decorate(duplicate) : null });
+});
+
 router.post('/', (req, res) => {
   const user = req.user;
   const contactName = str(req.body?.contact_name);
   if (!contactName) return res.status(400).json({ error: 'Informe o nome do contato ou empresa.' });
+  const duplicate = findLeadByName(contactName);
+  if (duplicate) {
+    return res.status(409).json({ error: 'Lead ja cadastrado com esse nome.', existingId: duplicate.id });
+  }
 
   const column = req.body?.status ? getColumn(str(req.body.status)) : firstColumn();
   if (!column) return res.status(400).json({ error: 'Status inicial invalido.' });
@@ -189,6 +292,10 @@ router.patch('/:id', (req, res) => {
 
   const contactName = 'contact_name' in req.body ? str(req.body.contact_name) : lead.contact_name;
   if (!contactName) return res.status(400).json({ error: 'Nome do contato nao pode ficar vazio.' });
+  const duplicate = findLeadByName(contactName, id);
+  if (duplicate) {
+    return res.status(409).json({ error: 'Lead ja cadastrado com esse nome.', existingId: duplicate.id });
+  }
 
   let sourceId = lead.source_id;
   if ('source_id' in req.body) {

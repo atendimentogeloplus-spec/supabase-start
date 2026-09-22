@@ -118,11 +118,26 @@ function migrate() {
     CREATE INDEX IF NOT EXISTS idx_leads_updated  ON leads(updated_at);
     CREATE INDEX IF NOT EXISTS idx_int_lead       ON interactions(lead_id, created_at);
     CREATE INDEX IF NOT EXISTS idx_notif_user     ON notifications(user_id, is_read);
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      endpoint   TEXT NOT NULL UNIQUE,
+      p256dh     TEXT NOT NULL,
+      auth       TEXT NOT NULL,
+      user_agent TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_sessions_user  ON sessions(user_id);
+    CREATE INDEX IF NOT EXISTS idx_push_user      ON push_subscriptions(user_id);
   `);
 
   // Colunas adicionadas em versoes posteriores (migrations idempotentes).
   ensureColumn('users', 'must_change_password', 'INTEGER NOT NULL DEFAULT 0');
+  ensureColumn('leads', 'response_sla_minutes', 'INTEGER');
+  ensureColumn('leads', 'assigned_at', 'TEXT');
+  ensureColumn('leads', 'first_response_at', 'TEXT');
 }
 
 function ensureColumn(table, column, definition) {
@@ -165,7 +180,8 @@ function seed() {
   const defaults = {
     stalled_days: '7',
     stalled_alert_enabled: '1',
-    company_name: 'Minha Empresa'
+    company_name: 'Minha Empresa',
+    default_response_sla_minutes: '30'
   };
   const setIfAbsent = db.prepare('INSERT OR IGNORE INTO settings (key,value) VALUES (?,?)');
   for (const [k, v] of Object.entries(defaults)) setIfAbsent.run(k, v);

@@ -30,6 +30,7 @@ const Api = (() => {
       const err = new Error((data && data.error) || `Erro ${res.status}`);
       err.status = res.status;
       err.code = data && data.code;
+      err.existingId = data && data.existingId;
       if (res.status === 401 && !options.skipAuthRedirect) {
         if (window.App && App.onUnauthorized) App.onUnauthorized();
       }

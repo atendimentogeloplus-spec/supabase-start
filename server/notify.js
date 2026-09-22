@@ -10,7 +10,9 @@ function createNotification({ userId, type, title, body = null, leadId = null, d
       INSERT INTO notifications (user_id,type,title,body,lead_id,dedupe_key,created_at)
       VALUES (?,?,?,?,?,?,?)
     `).run(userId, type, title, body, leadId, dedupeKey, now());
-    return info.lastInsertRowid;
+    const id = info.lastInsertRowid;
+    dispatchPush(userId, { id, type, title, body, leadId }).catch(() => {});
+    return id;
   } catch (err) {
     if (String(err.message || '').includes('UNIQUE')) return null;
     throw err;
@@ -32,4 +34,18 @@ function unreadCount(userId) {
   return row ? row.n : 0;
 }
 
-module.exports = { createNotification, notifyAdmins, adminIds, unreadCount };
+async function dispatchPush(userId, { id, type, title, body, leadId }) {
+  const push = require('./push');
+  const url = leadId ? `/#/leads/${leadId}` : '/#/notifications';
+  await push.sendToUser(userId, {
+    title: title || 'LeadTrack',
+    body: body || '',
+    url,
+    leadId: leadId || null,
+    notificationId: id,
+    type,
+    tag: type && id ? `${type}-${id}` : 'leadtrack'
+  });
+}
+
+module.exports = { createNotification, notifyAdmins, adminIds, unreadCount, dispatchPush };

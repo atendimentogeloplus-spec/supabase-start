@@ -274,9 +274,101 @@ test('PWA: index referencia manifest, icones e registra o service worker', async
   assert.match(html, /apple-touch-icon/);
   assert.match(html, /theme-color/);
   assert.match(html, /\/js\/pwa\.js/);
+  assert.match(html, /\/js\/push\.js/);
   const pwa = await (await fetch(base + '/js/pwa.js')).text();
   assert.match(pwa, /serviceWorker\.register\('\/sw\.js'\)/);
   assert.match(pwa, /beforeinstallprompt/);
+  const sw = await (await fetch(base + '/sw.js')).text();
+  assert.match(sw, /addEventListener\('push'/);
+  assert.match(sw, /addEventListener\('notificationclick'/);
+});
+
+test('web push: chave publica, inscricao e teste sem dispositivo', async () => {
+  let r = await api('POST', '/api/auth/login', { email: 'admin@test.local', password: 'admin123' });
+  assert.equal(r.status, 200);
+
+  r = await api('GET', '/api/config');
+  assert.equal(r.status, 200);
+  assert.ok(r.data.vapidPublicKey && r.data.vapidPublicKey.length > 20);
+
+  r = await api('GET', '/api/notifications/push/public-key');
+  assert.equal(r.status, 200);
+  assert.equal(r.data.supported, true);
+  assert.ok(r.data.publicKey && r.data.publicKey.length > 20);
+  const cfg = await api('GET', '/api/config');
+  assert.equal(r.data.publicKey, cfg.data.vapidPublicKey);
+
+  r = await api('POST', '/api/notifications/push/subscribe', { endpoint: 'https://example.test/push' });
+  assert.equal(r.status, 400);
+
+  r = await api('GET', '/api/notifications/push/status');
+  assert.equal(r.status, 200);
+  assert.equal(r.data.subscribed, false);
+
+  r = await api('POST', '/api/notifications/push/test', {});
+  assert.equal(r.status, 400);
+
+  r = await api('POST', '/api/notifications/push/subscribe', {
+    endpoint: 'https://example.test/push-leadtrack',
+    keys: { p256dh: 'dGVzdC1wMjU2ZGg', auth: 'dGVzdC1hdXRo' }
+  });
+  assert.equal(r.status, 200);
+  const row = db.prepare('SELECT * FROM push_subscriptions WHERE endpoint = ?').get('https://example.test/push-leadtrack');
+  assert.ok(row);
+  assert.equal(row.p256dh, 'dGVzdC1wMjU2ZGg');
+  r = await api('GET', '/api/notifications/push/status');
+  assert.equal(r.data.subscribed, true);
+
+  r = await api('POST', '/api/notifications/push/unsubscribe', { endpoint: 'https://example.test/push-leadtrack' });
+  assert.equal(r.status, 200);
+  const gone = db.prepare('SELECT * FROM push_subscriptions WHERE endpoint = ?').get('https://example.test/push-leadtrack');
+  assert.equal(gone, undefined);
+});
+
+test('nao permite dois leads com o mesmo nome e sugere ao digitar', async () => {
+  let r = await api('POST', '/api/auth/login', { email: 'admin@test.local', password: 'admin123' });
+  assert.equal(r.status, 200);
+
+  const unique = `Cliente Auto ${Date.now()}`;
+  r = await api('POST', '/api/leads', { contact_name: unique });
+  assert.equal(r.status, 201);
+  const existingId = r.data.lead.id;
+
+  r = await api('POST', '/api/leads', { contact_name: unique });
+  assert.equal(r.status, 409);
+  assert.equal(r.data.error, 'Lead ja cadastrado com esse nome.');
+  assert.equal(r.data.existingId, existingId);
+
+  r = await api('POST', '/api/leads', { contact_name: unique.toUpperCase() });
+  assert.equal(r.status, 409);
+
+  r = await api('GET', `/api/leads/suggest?q=${encodeURIComponent(unique.slice(0, 8))}`);
+  assert.equal(r.status, 200);
+  assert.ok(r.data.leads.some((l) => l.id === existingId));
+  assert.equal(r.data.duplicate, null);
+
+  r = await api('GET', `/api/leads/suggest?q=${encodeURIComponent(unique)}`);
+  assert.equal(r.status, 200);
+  assert.ok(r.data.duplicate);
+  assert.equal(r.data.duplicate.id, existingId);
+
+  r = await api('POST', '/api/leads', { contact_name: unique + ' Filho' });
+  assert.equal(r.status, 201);
+  const otherId = r.data.lead.id;
+  r = await api('PATCH', `/api/leads/${otherId}`, { contact_name: unique });
+  assert.equal(r.status, 409);
+  assert.equal(r.data.error, 'Lead ja cadastrado com esse nome.');
+});
+
+test('lista de leads expoe botao de exportar PDF com os filtros atuais', async () => {
+  const res = await fetch(base + '/js/leads.js');
+  assert.equal(res.status, 200);
+  const js = await res.text();
+  assert.match(js, /id="ld-pdf"/);
+  assert.match(js, /Exportar para pdf/);
+  assert.match(js, /function exportPdf/);
+  assert.match(js, /window\.print/);
+  assert.match(js, /Filtros:/);
 });
 
 test('scheduler gera notificacao para leads parados', () => {

@@ -34,6 +34,19 @@ function daysSince(iso) {
   return Math.floor((Date.now() - then) / 86400000);
 }
 
+function minutesSince(iso) {
+  if (!iso) return 0;
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return 0;
+  return Math.floor((Date.now() - then) / 60000);
+}
+
+function addMinutes(iso, minutes) {
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return null;
+  return new Date(then + Number(minutes) * 60000).toISOString();
+}
+
 function toIsoDateOnly(d) {
   return d.toISOString().slice(0, 10);
 }
@@ -59,6 +72,8 @@ module.exports = {
   numberOrNull,
   boolInt,
   daysSince,
+  minutesSince,
+  addMinutes,
   toIsoDateOnly,
   likeParam,
   isEmail,

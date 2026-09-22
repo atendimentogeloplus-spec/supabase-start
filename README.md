@@ -106,6 +106,20 @@ Detalhes técnicos:
 > Requisito: o PWA precisa ser acessado via **HTTPS** (ou `localhost`) para o service worker ser
 > registrado. A URL de preview já usa HTTPS.
 
+## Avisos no celular (Web Push / PWA)
+
+Além do sino interno, o sistema pode mostrar **notificação nativa** no aparelho:
+
+- **Android / Chrome / PWA instalado**: ative os avisos uma vez (banner, "Minha conta" ou tela
+  Avisos). O servidor envia Web Push; o aviso chega mesmo com o app fechado.
+- **App aberto em segundo plano**: se o push não estiver inscrito, o sistema ainda mostra um
+  aviso local quando chega um item novo (polling a cada 30s).
+- **iPhone**: instale o app na tela inicial (Safari) e ative as notificações. O iOS só entrega
+  push nativo de forma confiável em PWA instalado e com permissão concedida.
+
+Há um botão **Enviar teste** na tela de Avisos. As chaves VAPID são geradas automaticamente na
+primeira execução (ou defina `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` no `.env`).
+
 ## Senhas: troca, recuperação e reset
 
 Como a primeira versão não envia e-mail, a recuperação funciona via administrador:

@@ -42,7 +42,8 @@ app.get('/api/config', requireAuth, (req, res) => {
     company_name: getSetting('company_name', 'Minha Empresa'),
     stalled_days: Number.parseInt(getSetting('stalled_days', '7'), 10),
     columns: getColumns(),
-    isAdmin: req.user.role === 'admin'
+    isAdmin: req.user.role === 'admin',
+    vapidPublicKey: require('./push').getPublicKey()
   });
 });
 

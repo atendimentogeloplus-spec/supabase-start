@@ -49,7 +49,10 @@ const Leads = (() => {
       .concat(State.sources.map((s) => ({ value: s.id, label: s.name })));
 
     view.innerHTML = `
-      ${App.pageHead('Leads', `<button class="btn sm" id="ld-new">${UI.icon('plus')} Novo lead</button>`)}
+      ${App.pageHead('Leads', `
+        <button class="btn secondary sm" id="ld-pdf" ${leads.length ? '' : 'disabled'}>${UI.icon('download')} Exportar para pdf</button>
+        <button class="btn sm" id="ld-new">${UI.icon('plus')} Novo lead</button>
+      `)}
       <div class="panel">
         <div class="toolbar">
           <input class="search" id="ld-q" placeholder="Buscar por contato, empresa, e-mail ou telefone" value="${UI.esc(filters.q)}">
@@ -58,10 +61,10 @@ const Leads = (() => {
           ${isAdmin ? `<select id="ld-owner"><option value="all">Todos os representantes</option>${UI.options(reps, filters.owner_id, 'id', 'name')}</select>` : ''}
           <input type="date" id="ld-from" value="${UI.esc(filters.from)}" title="Criado de">
           <input type="date" id="ld-to" value="${UI.esc(filters.to)}" title="Criado ate">
-          <label class="flex small nowrap" style="margin:0"><input type="checkbox" id="ld-stalled" style="width:auto" ${filters.stalled ? 'checked' : ''}> Somente parados</label>
-          <button class="btn secondary sm" id="ld-clear">Limpar</button>
-        </div>
-        <div class="flex small muted mb">${leads.length} lead(s) encontrado(s)</div>
+           <label class="flex small nowrap" style="margin:0"><input type="checkbox" id="ld-stalled" style="width:auto" ${filters.stalled ? 'checked' : ''}> Somente parados</label>
+           <button class="btn secondary sm" id="ld-clear">Limpar</button>
+         </div>
+         <div class="flex small muted mb">${leads.length} lead(s) encontrado(s)</div>
         <div class="table-wrap">
           <table class="data">
             <thead><tr>
@@ -108,7 +111,12 @@ const Leads = (() => {
       renderList(view);
     };
 
+    let listSearchTimer = null;
     view.querySelector('#ld-q').addEventListener('keydown', (e) => { if (e.key === 'Enter') apply(); });
+    view.querySelector('#ld-q').addEventListener('input', () => {
+      clearTimeout(listSearchTimer);
+      listSearchTimer = setTimeout(apply, 180);
+    });
     ['#ld-status', '#ld-source', '#ld-from', '#ld-to', '#ld-stalled'].forEach((sel) => {
       view.querySelector(sel).addEventListener('change', apply);
     });
@@ -119,6 +127,175 @@ const Leads = (() => {
       renderList(view);
     };
     view.querySelector('#ld-new').onclick = () => openForm({ onSaved: () => renderList(view) });
+    const pdfBtn = view.querySelector('#ld-pdf');
+    if (pdfBtn) pdfBtn.onclick = () => exportPdf(leads, { isAdmin, reps });
+  }
+
+  function filterSummary(reps) {
+    const parts = [];
+    if (filters.q) parts.push('Busca: ' + filters.q);
+    if (filters.status) {
+      const col = (State.columns || []).find((c) => c.key === filters.status);
+      parts.push('Etapa: ' + (col ? col.label : filters.status));
+    }
+    if (filters.source_id) {
+      const src = (State.sources || []).find((s) => String(s.id) === String(filters.source_id));
+      parts.push('Origem: ' + (src ? src.name : filters.source_id));
+    }
+    if (filters.owner_id && filters.owner_id !== 'all') {
+      const rep = (reps || []).find((r) => String(r.id) === String(filters.owner_id));
+      parts.push('Representante: ' + (rep ? rep.name : filters.owner_id));
+    }
+    if (filters.from) parts.push('De: ' + filters.from.split('-').reverse().join('/'));
+    if (filters.to) parts.push('Ate: ' + filters.to.split('-').reverse().join('/'));
+    if (filters.stalled) parts.push('Somente parados');
+    return parts.length ? parts.join('  |  ') : 'Nenhum filtro aplicado (todos os leads visiveis)';
+  }
+
+  function exportPdf(leads, { isAdmin, reps }) {
+    if (!leads || !leads.length) {
+      UI.toast('Nenhum lead para exportar com os filtros atuais.', 'error');
+      return;
+    }
+    const company = (State.config && State.config.company_name) || 'LeadTrack';
+    const generated = UI.fmtDateTime(new Date().toISOString());
+    const summary = filterSummary(reps);
+    const totalValue = leads.reduce((acc, l) => acc + (Number(l.estimated_value) || 0), 0);
+
+    const rows = leads.map((l, i) => {
+      const contact = [l.phone, l.email].filter(Boolean).join(' / ') || '-';
+      return `<tr>
+        <td>${i + 1}</td>
+        <td>${UI.esc(l.contact_name)}</td>
+        <td>${UI.esc(l.company || '-')}</td>
+        <td>${UI.esc(contact)}</td>
+        ${isAdmin ? `<td>${UI.esc(l.owner_name || 'Sem resp.')}</td>` : ''}
+        <td>${UI.esc(l.status_label || l.status)}</td>
+        <td class="num">${l.estimated_value ? UI.esc(UI.currency(l.estimated_value)) : '-'}</td>
+        <td>${UI.esc(UI.daysLabel(l.days_stalled))}</td>
+        <td class="num">${UI.esc(l.interaction_count)}</td>
+      </tr>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Leads - ${UI.esc(company)}</title>
+  <style>
+    @page { size: A4 landscape; margin: 12mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; font-size: 11px; margin: 0; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .meta { color: #64748b; margin-bottom: 10px; line-height: 1.45; }
+    .meta b { color: #0f172a; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #cbd5e1; padding: 5px 6px; text-align: left; vertical-align: top; }
+    th { background: #eef2ff; font-size: 10px; text-transform: uppercase; letter-spacing: .02em; }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    .num { text-align: right; white-space: nowrap; }
+    .foot { margin-top: 10px; color: #64748b; display: flex; justify-content: space-between; }
+    @media print { .no-print { display: none !important; } }
+    .no-print { margin-bottom: 12px; }
+    .no-print button {
+      background: #4f46e5; color: #fff; border: 0; border-radius: 6px;
+      padding: 8px 14px; font-weight: 600; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print"><button type="button" onclick="window.print()">Salvar / imprimir PDF</button></div>
+  <h1>${UI.esc(company)} - Relatorio de leads</h1>
+  <div class="meta">
+    Gerado em ${UI.esc(generated)} por ${UI.esc(State.user.name)}<br>
+    Filtros: ${UI.esc(summary)}<br>
+    <b>${leads.length}</b> lead(s)  |  Valor estimado total: <b>${UI.esc(UI.currency(totalValue) || 'R$ 0,00')}</b>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Contato</th>
+        <th>Empresa</th>
+        <th>Telefone / E-mail</th>
+        ${isAdmin ? '<th>Responsavel</th>' : ''}
+        <th>Etapa</th>
+        <th>Valor</th>
+        <th>Parado ha</th>
+        <th>Inter.</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="foot">
+    <span>LeadTrack - acompanhamento de leads</span>
+    <span>${leads.length} registro(s)</span>
+  </div>
+  <script>window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 250); });<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) {
+      UI.toast('Permita pop-ups neste site para exportar o PDF.', 'error');
+      return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  }
+
+  function firstName(name) {
+    const parts = String(name || '').trim().split(/\s+/);
+    return parts[0] || name || '';
+  }
+
+  function whatsappDigits(phone) {
+    const digits = String(phone || '').replace(/\D/g, '');
+    if (!digits) return '';
+    if (digits.length >= 12 && digits.startsWith('55')) return digits;
+    if (digits.length >= 10 && digits.length <= 11) return '55' + digits;
+    return digits;
+  }
+
+  function offerWhatsAppNotify(lead, reps, existingModal) {
+    if (!lead || !lead.owner_id) return false;
+    const ownerFromList = (reps || []).find((r) => String(r.id) === String(lead.owner_id));
+    const ownerName = lead.owner_name || (ownerFromList && ownerFromList.name) || 'responsavel';
+    const ownerPhone = lead.owner_phone || (ownerFromList && ownerFromList.phone) || '';
+    const phone = whatsappDigits(ownerPhone);
+    const text = `OI ${firstName(ownerName)}, acabou de chegar um lead pra voce. Abra o sistema e de andamento por gentileza.`;
+    const encoded = encodeURIComponent(text);
+    const href = phone
+      ? `https://wa.me/${phone}?text=${encoded}`
+      : `https://wa.me/?text=${encoded}`;
+
+    const html = phone
+      ? `<p class="mb">Lead cadastrado e atribuido a <b>${UI.esc(ownerName)}</b>.</p>
+         <p>Avise pelo WhatsApp para dar andamento:</p>
+         <p class="small muted mt">"${UI.esc(text)}"</p>`
+      : `<p class="mb">Lead cadastrado e atribuido a <b>${UI.esc(ownerName)}</b>, mas este representante nao tem telefone no cadastro.</p>
+         <p>Abra o WhatsApp e escolha o contato. Cadastre o telefone em Usuarios para o aviso ir direto.</p>
+         <p class="small muted mt">"${UI.esc(text)}"</p>`;
+
+    const footer = `<button class="btn secondary" data-act="skip">Agora nao</button>
+      <a class="btn" data-act="wa" href="${href}" target="_blank" rel="noopener">${UI.icon('whatsapp')} Avisar ${UI.esc(firstName(ownerName))} no WhatsApp</a>`;
+
+    if (existingModal) {
+      existingModal.card.querySelector('.modal-head h3').textContent = 'Avisar responsavel';
+      existingModal.body.innerHTML = html;
+      if (existingModal.foot) existingModal.foot.innerHTML = footer;
+      existingModal.foot.querySelector('[data-act="skip"]').onclick = () => existingModal.close();
+      existingModal.foot.querySelector('[data-act="wa"]').onclick = () => existingModal.close();
+      return true;
+    }
+
+    const body = document.createElement('div');
+    body.innerHTML = html;
+    const modal = UI.modal({ title: 'Avisar responsavel', body, footer });
+    modal.foot.querySelector('[data-act="skip"]').onclick = () => modal.close();
+    modal.foot.querySelector('[data-act="wa"]').onclick = () => modal.close();
+    return true;
   }
 
   async function openForm({ lead = null, onSaved } = {}) {
@@ -137,7 +314,11 @@ const Leads = (() => {
     form.innerHTML = `
       <div class="field">
         <label for="lf-name">Contato / empresa *</label>
-        <input id="lf-name" required value="${UI.esc(lead ? lead.contact_name : '')}" placeholder="Nome do contato ou empresa">
+        <div class="name-suggest">
+          <input id="lf-name" required autocomplete="off" value="${UI.esc(lead ? lead.contact_name : '')}" placeholder="Nome do contato ou empresa">
+          <div class="name-suggest-list hidden" id="lf-suggest"></div>
+        </div>
+        <div class="form-error hidden" id="lf-dup">Lead ja cadastrado com esse nome.</div>
       </div>
       <div class="field-row">
         <div class="field">
@@ -187,9 +368,84 @@ const Leads = (() => {
     });
 
     m.foot.querySelector('[data-act="cancel"]').onclick = () => m.close();
-    m.foot.querySelector('[data-act="save"]').onclick = async () => {
+    const saveBtn = m.foot.querySelector('[data-act="save"]');
+    const nameInput = form.querySelector('#lf-name');
+    const suggestBox = form.querySelector('#lf-suggest');
+    const dupBox = form.querySelector('#lf-dup');
+    let nameCheckTimer = null;
+    let duplicateLead = null;
+
+    function setDuplicate(found) {
+      duplicateLead = found || null;
+      if (duplicateLead) {
+        dupBox.classList.remove('hidden');
+        dupBox.textContent = 'Lead ja cadastrado com esse nome.';
+        saveBtn.disabled = true;
+      } else {
+        dupBox.classList.add('hidden');
+        saveBtn.disabled = false;
+      }
+    }
+
+    function hideSuggest() {
+      suggestBox.classList.add('hidden');
+      suggestBox.innerHTML = '';
+    }
+
+    function renderSuggest(items) {
+      if (!items.length) {
+        hideSuggest();
+        return;
+      }
+      suggestBox.classList.remove('hidden');
+      suggestBox.innerHTML = items.map((l) => `
+        <button type="button" class="name-suggest-item" data-id="${l.id}">
+          <b>${UI.esc(l.contact_name)}</b>
+          <span>${UI.esc(l.company || l.status_label || '')}${l.owner_name ? ' · ' + UI.esc(l.owner_name) : ''}</span>
+        </button>
+      `).join('');
+      suggestBox.querySelectorAll('[data-id]').forEach((btn) => {
+        btn.onclick = () => {
+          m.close();
+          location.hash = `#/leads/${btn.dataset.id}`;
+        };
+      });
+    }
+
+    async function checkName() {
+      const q = nameInput.value.trim();
+      if (q.length < 1) {
+        hideSuggest();
+        setDuplicate(null);
+        return;
+      }
+      try {
+        const params = new URLSearchParams({ q });
+        if (lead) params.set('exclude_id', String(lead.id));
+        const data = await Api.get('/api/leads/suggest?' + params.toString());
+        const matches = data.leads || [];
+        renderSuggest(matches);
+        setDuplicate(data.duplicate || null);
+      } catch {
+        hideSuggest();
+      }
+    }
+
+    nameInput.addEventListener('input', () => {
+      saveBtn.disabled = false;
+      clearTimeout(nameCheckTimer);
+      nameCheckTimer = setTimeout(checkName, 180);
+    });
+    nameInput.addEventListener('focus', () => {
+      if (nameInput.value.trim().length >= 1) checkName();
+    });
+    form.addEventListener('click', (e) => {
+      if (!suggestBox.contains(e.target) && e.target !== nameInput) hideSuggest();
+    });
+
+    saveBtn.onclick = async () => {
       const payload = {
-        contact_name: form.querySelector('#lf-name').value.trim(),
+        contact_name: nameInput.value.trim(),
         company: form.querySelector('#lf-company').value.trim(),
         source_id: form.querySelector('#lf-source').value || null,
         phone: form.querySelector('#lf-phone').value.trim(),
@@ -198,24 +454,37 @@ const Leads = (() => {
         notes: form.querySelector('#lf-notes').value.trim()
       };
       if (!payload.contact_name) { UI.toast('Informe o contato ou empresa.', 'error'); return; }
+      if (duplicateLead) {
+        UI.toast('Lead ja cadastrado com esse nome.', 'error');
+        return;
+      }
       const ownerSel = form.querySelector('#lf-owner');
       if (ownerSel) payload.owner_id = ownerSel.value || null;
 
-      const btn = m.foot.querySelector('[data-act="save"]');
-      btn.disabled = true;
+      saveBtn.disabled = true;
       try {
         if (lead) {
           await Api.patch(`/api/leads/${lead.id}`, payload);
           UI.toast('Lead atualizado.', 'success');
+          m.close();
+          if (typeof onSaved === 'function') onSaved();
         } else {
-          await Api.post('/api/leads', payload);
+          const created = await Api.post('/api/leads', payload);
           UI.toast('Lead cadastrado.', 'success');
+          const savedLead = (created && created.lead) || created || { owner_id: payload.owner_id };
+          if (!savedLead.owner_id && payload.owner_id) savedLead.owner_id = payload.owner_id;
+          const showed = offerWhatsAppNotify(savedLead, reps, m);
+          if (!showed) m.close();
+          if (typeof onSaved === 'function') onSaved();
         }
-        m.close();
-        if (typeof onSaved === 'function') onSaved();
       } catch (err) {
-        btn.disabled = false;
-        UI.toast(err.message, 'error');
+        saveBtn.disabled = false;
+        if (err.status === 409) {
+          setDuplicate({ id: err.existingId });
+          UI.toast('Lead ja cadastrado com esse nome.', 'error');
+        } else {
+          UI.toast(err.message, 'error');
+        }
       }
     };
   }
@@ -242,8 +511,9 @@ const Leads = (() => {
     view.innerHTML = `
       ${backButton()}
       ${App.pageHead(lead.contact_name, `
-        <button class="btn secondary sm" id="dt-edit">${UI.icon('edit')} Editar</button>
-        ${isAdmin ? '<button class="btn secondary sm" id="dt-assign">Atribuir</button>' : ''}
+         <button class="btn secondary sm" id="dt-edit">${UI.icon('edit')} Editar</button>
+         ${lead.owner_id ? `<button class="btn secondary sm" id="dt-wa">${UI.icon('whatsapp')} Avisar no WhatsApp</button>` : ''}
+         ${isAdmin ? '<button class="btn secondary sm" id="dt-assign">Atribuir</button>' : ''}
         ${!isAdmin ? '<button class="btn secondary sm" id="dt-help">Solicitar ajuda</button>' : ''}
       `)}
       <div class="panel mb">
@@ -323,6 +593,8 @@ const Leads = (() => {
 
     wireBack(view);
     view.querySelector('#dt-edit').onclick = () => openForm({ lead, onSaved: () => renderDetail(view, id) });
+    const waBtn = view.querySelector('#dt-wa');
+    if (waBtn) waBtn.onclick = () => offerWhatsAppNotify(lead, []);
     const assignBtn = view.querySelector('#dt-assign');
     if (assignBtn) assignBtn.onclick = () => openAssign(lead, () => renderDetail(view, id));
     const helpBtn = view.querySelector('#dt-help');

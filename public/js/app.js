@@ -54,6 +54,12 @@ const App = (() => {
     if (!notifTimer) notifTimer = setInterval(loadNotifications, 30000);
     route();
     if (State.user.mustChangePassword) openAccountModal({ forced: true });
+    if (typeof PushNotify !== 'undefined') {
+      setTimeout(() => PushNotify.maybePrompt().catch(() => {}), 1800);
+      if (PushNotify.permission() === 'granted') {
+        PushNotify.subscribePush().catch(() => {});
+      }
+    }
   }
 
   async function refreshConfig() {
@@ -83,9 +89,12 @@ const App = (() => {
   async function loadNotifications() {
     if (!State.user) return;
     try {
-      const data = await Api.get('/api/notifications?unread=1&limit=1', { skipAuthRedirect: true });
+      const data = await Api.get('/api/notifications?unread=1&limit=20', { skipAuthRedirect: true });
       State.unreadCount = data.unreadCount;
       updateBadges();
+      if (typeof PushNotify !== 'undefined') {
+        PushNotify.handleNewItems(data.notifications || [], data.unreadCount);
+      }
     } catch { /* ignore polling errors */ }
   }
 
@@ -189,6 +198,27 @@ const App = (() => {
       installRow.innerHTML = '<button type="button" class="btn secondary block sm" id="ac-install">Instalar aplicativo no dispositivo</button>';
       form.appendChild(installRow);
       installRow.querySelector('#ac-install').onclick = () => PWA.promptInstall();
+    }
+
+    if (!forced && typeof PushNotify !== 'undefined' && PushNotify.supported()) {
+      const pushRow = document.createElement('div');
+      pushRow.className = 'mt';
+      const granted = PushNotify.permission() === 'granted';
+      pushRow.innerHTML = `
+        <div class="small muted mb">${UI.esc(PushNotify.statusLabel())}</div>
+        <button type="button" class="btn ${granted ? 'secondary' : ''} block sm" id="ac-push">
+          ${granted ? 'Ativar / reinscrever avisos neste aparelho' : 'Ativar avisos no celular'}
+        </button>
+      `;
+      form.appendChild(pushRow);
+      pushRow.querySelector('#ac-push').onclick = async () => {
+        try {
+          await PushNotify.enable();
+          UI.toast('Avisos ativados neste aparelho.', 'success');
+        } catch (err) {
+          UI.toast(err.message, 'error');
+        }
+      };
     }
 
     const errBox = form.querySelector('#ac-error');
