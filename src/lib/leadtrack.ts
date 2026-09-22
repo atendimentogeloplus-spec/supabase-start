@@ -97,6 +97,31 @@ export function formatDateTime(value: string | null): string {
   return new Date(value).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 }
 
+/** Converte telefone em formato E.164 sem símbolos (assume Brasil quando faltar DDI). */
+export function toWhatsappNumber(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  let digits = phone.replace(/\D/g, "");
+  if (digits.length < 10) return null;
+  if (!digits.startsWith("55")) digits = `55${digits}`;
+  return digits;
+}
+
+/** Link wa.me que abre o app ou o WhatsApp Web com o aviso do novo lead. */
+export function whatsappLeadLink(lead: Lead, ownerPhone: string | null | undefined): string | null {
+  const number = toWhatsappNumber(ownerPhone);
+  if (!number) return null;
+  const lines = [
+    "Novo lead para você!",
+    `Contato: ${lead.contact_name}`,
+    lead.company ? `Empresa: ${lead.company}` : null,
+    lead.phone ? `Telefone: ${lead.phone}` : null,
+    lead.email ? `E-mail: ${lead.email}` : null,
+    lead.estimated_value != null ? `Valor estimado: ${formatCurrency(lead.estimated_value)}` : null,
+    lead.notes ? `Observações: ${lead.notes}` : null,
+  ].filter(Boolean);
+  return `https://wa.me/${number}?text=${encodeURIComponent(lines.join("\n"))}`;
+}
+
 /** Regras de movimentação de etapa aplicadas antes de salvar. */
 export function validateMove(
   column: KanbanColumn,

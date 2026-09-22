@@ -5,7 +5,8 @@ import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useLeadTrackBase } from "@/lib/leadtrack-data";
 import { useAuth } from "@/hooks/useAuth";
-import { daysSince, formatCurrency, heatClass, type Lead } from "@/lib/leadtrack";
+import { daysSince, formatCurrency, heatClass, whatsappLeadLink, type Lead } from "@/lib/leadtrack";
+import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,23 +70,37 @@ function LeadsPage() {
   async function createLead(e: React.FormEvent) {
     e.preventDefault();
     const first = columns[0];
-    const { error } = await supabase.from("leads").insert({
-      contact_name: form.contact_name.trim(),
-      company: form.company.trim() || null,
-      phone: form.phone.trim() || null,
-      email: form.email.trim() || null,
-      source_id: form.source_id || null,
-      owner_id: form.owner_id || user?.id || null,
-      estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
-      notes: form.notes.trim() || null,
-      status: first?.key ?? "new",
-      created_by: user?.id ?? null,
-    });
+    const ownerId = form.owner_id || user?.id || null;
+    const { data: created, error } = await supabase
+      .from("leads")
+      .insert({
+        contact_name: form.contact_name.trim(),
+        company: form.company.trim() || null,
+        phone: form.phone.trim() || null,
+        email: form.email.trim() || null,
+        source_id: form.source_id || null,
+        owner_id: ownerId,
+        estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
+        notes: form.notes.trim() || null,
+        status: first?.key ?? "new",
+        created_by: user?.id ?? null,
+      })
+      .select()
+      .maybeSingle();
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Lead criado.");
+    const ownerPhone = profiles.find((p) => p.id === ownerId)?.phone ?? null;
+    const link = created ? whatsappLeadLink(created as Lead, ownerPhone) : null;
+    if (link) {
+      toast.success("Lead criado.", {
+        action: { label: "Avisar no WhatsApp", onClick: () => window.open(link, "_blank", "noopener") },
+        duration: 10000,
+      });
+    } else {
+      toast.success("Lead criado.");
+    }
     setOpen(false);
     setForm({ contact_name: "", company: "", phone: "", email: "", source_id: "", owner_id: "", estimated_value: "", notes: "" });
     void qc.invalidateQueries({ queryKey: ["leads"] });
@@ -213,11 +228,14 @@ function LeadsPage() {
               <th className="p-3">Responsável</th>
               <th className="p-3">Valor</th>
               <th className="p-3">Sem contato</th>
+              <th className="p-3">Avisar</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((lead) => {
               const days = daysSince(lead.last_interaction_at ?? lead.updated_at);
+              const owner = profiles.find((p) => p.id === lead.owner_id);
+              const waLink = whatsappLeadLink(lead, owner?.phone);
               return (
                 <tr key={lead.id} className="border-t">
                   <td className="p-3">
@@ -237,12 +255,24 @@ function LeadsPage() {
                       {days}d
                     </span>
                   </td>
+                  <td className="p-3">
+                    {waLink ? (
+                      <Button asChild size="sm" variant="outline">
+                        <a href={waLink} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="h-4 w-4" />
+                          <span className="hidden sm:inline">WhatsApp</span>
+                        </a>
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Sem telefone</span>
+                    )}
+                  </td>
                 </tr>
               );
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-muted-foreground">
+                <td colSpan={7} className="p-6 text-center text-muted-foreground">
                   Nenhum lead encontrado.
                 </td>
               </tr>
