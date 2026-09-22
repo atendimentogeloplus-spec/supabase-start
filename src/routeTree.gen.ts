@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AvisosRouteImport } from './routes/avisos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
@@ -25,6 +26,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvisosRoute = AvisosRouteImport.update({
+  id: '/avisos',
+  path: '/avisos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
@@ -56,6 +62,7 @@ const LeadsLeadIdRoute = LeadsLeadIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/avisos': typeof AvisosRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/painel': typeof PainelRoute
   '/usuarios': typeof UsuariosRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/avisos': typeof AvisosRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/painel': typeof PainelRoute
   '/usuarios': typeof UsuariosRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/avisos': typeof AvisosRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/painel': typeof PainelRoute
   '/usuarios': typeof UsuariosRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/avisos'
     | '/configuracoes'
     | '/painel'
     | '/usuarios'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/avisos'
     | '/configuracoes'
     | '/painel'
     | '/usuarios'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/avisos'
     | '/configuracoes'
     | '/painel'
     | '/usuarios'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  AvisosRoute: typeof AvisosRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   PainelRoute: typeof PainelRoute
   UsuariosRoute: typeof UsuariosRoute
@@ -135,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avisos': {
+      id: '/avisos'
+      path: '/avisos'
+      fullPath: '/avisos'
+      preLoaderRoute: typeof AvisosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/configuracoes': {
@@ -178,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  AvisosRoute: AvisosRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   PainelRoute: PainelRoute,
   UsuariosRoute: UsuariosRoute,
