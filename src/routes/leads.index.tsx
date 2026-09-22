@@ -74,22 +74,33 @@ function LeadsPage() {
     const { data: created, error } = await supabase
       .from("leads")
       .insert({
-      contact_name: form.contact_name.trim(),
-      company: form.company.trim() || null,
-      phone: form.phone.trim() || null,
-      email: form.email.trim() || null,
-      source_id: form.source_id || null,
-      owner_id: form.owner_id || user?.id || null,
-      estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
-      notes: form.notes.trim() || null,
-      status: first?.key ?? "new",
-      created_by: user?.id ?? null,
-    });
+        contact_name: form.contact_name.trim(),
+        company: form.company.trim() || null,
+        phone: form.phone.trim() || null,
+        email: form.email.trim() || null,
+        source_id: form.source_id || null,
+        owner_id: ownerId,
+        estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
+        notes: form.notes.trim() || null,
+        status: first?.key ?? "new",
+        created_by: user?.id ?? null,
+      })
+      .select()
+      .maybeSingle();
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Lead criado.");
+    const ownerPhone = profiles.find((p) => p.id === ownerId)?.phone ?? null;
+    const link = created ? whatsappLeadLink(created as Lead, ownerPhone) : null;
+    if (link) {
+      toast.success("Lead criado.", {
+        action: { label: "Avisar no WhatsApp", onClick: () => window.open(link, "_blank", "noopener") },
+        duration: 10000,
+      });
+    } else {
+      toast.success("Lead criado.");
+    }
     setOpen(false);
     setForm({ contact_name: "", company: "", phone: "", email: "", source_id: "", owner_id: "", estimated_value: "", notes: "" });
     void qc.invalidateQueries({ queryKey: ["leads"] });
