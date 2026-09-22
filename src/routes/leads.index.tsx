@@ -275,6 +275,32 @@ function LeadsPage() {
           </tbody>
         </table>
       </div>
+
+      <Dialog open={!!notify} onOpenChange={(v) => !v && setNotify(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Avisar o responsável?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Enviar uma mensagem no WhatsApp de {notify?.ownerName} sobre o lead {notify?.leadName}.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row-reverse">
+            <Button
+              className="sm:flex-1"
+              onClick={() => {
+                if (notify) window.open(notify.link, "_blank", "noopener");
+                setNotify(null);
+              }}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Avisar no WhatsApp
+            </Button>
+            <Button variant="outline" className="sm:flex-1" onClick={() => setNotify(null)}>
+              Agora não
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
