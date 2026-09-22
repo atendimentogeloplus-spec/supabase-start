@@ -7,7 +7,6 @@ import {
   ShoppingCart,
   ClipboardList,
   FileText,
-  LogOut,
   Shield,
   Tag,
   Truck,
@@ -21,9 +20,6 @@ import {
   Car,
   CalendarDays,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
-import { useUserTabs } from "@/hooks/useUserTabs";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
