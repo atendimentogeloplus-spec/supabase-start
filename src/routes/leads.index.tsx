@@ -91,16 +91,10 @@ function LeadsPage() {
       toast.error(error.message);
       return;
     }
-    const ownerPhone = profiles.find((p) => p.id === ownerId)?.phone ?? null;
-    const link = created ? whatsappLeadLink(created as Lead, ownerPhone) : null;
-    if (link) {
-      toast.success("Lead criado.", {
-        action: { label: "Avisar no WhatsApp", onClick: () => window.open(link, "_blank", "noopener") },
-        duration: 10000,
-      });
-    } else {
-      toast.success("Lead criado.");
-    }
+    const owner = profiles.find((p) => p.id === ownerId);
+    const link = created ? whatsappLeadLink(created as Lead, owner?.phone) : null;
+    toast.success("Lead criado.");
+    if (link) setNotify({ link, ownerName: owner?.name ?? "o responsável", leadName: form.contact_name.trim() });
     setOpen(false);
     setForm({ contact_name: "", company: "", phone: "", email: "", source_id: "", owner_id: "", estimated_value: "", notes: "" });
     void qc.invalidateQueries({ queryKey: ["leads"] });
