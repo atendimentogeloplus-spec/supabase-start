@@ -1,1 +1,0 @@
-ALTER TABLE public.week_plan_items ADD COLUMN IF NOT EXISTS contacted boolean NOT NULL DEFAULT false;

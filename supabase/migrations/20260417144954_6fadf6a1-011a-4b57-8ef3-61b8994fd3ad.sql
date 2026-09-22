@@ -1,1 +1,0 @@
-ALTER TABLE public.routes ADD COLUMN IF NOT EXISTS storage_note text;

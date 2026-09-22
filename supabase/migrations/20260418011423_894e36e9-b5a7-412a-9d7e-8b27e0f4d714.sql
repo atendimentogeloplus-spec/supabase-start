@@ -1,2 +1,0 @@
-ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS route_client_id uuid REFERENCES public.route_clients(id) ON DELETE SET NULL;
-CREATE INDEX IF NOT EXISTS idx_sales_route_client_id ON public.sales(route_client_id);
