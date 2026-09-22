@@ -51,16 +51,11 @@ const navItems = [
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
-  const { signOut } = useAuth();
-  const { isAdmin } = useUserRole();
-  const { allowed } = useUserTabs();
 
-  const filtered = isAdmin
-    ? navItems
-    : navItems.filter((i) => allowed.has(i.key));
-  const allItems = isAdmin
-    ? [...filtered, { to: "/admin", key: "admin", icon: Shield, label: "Admin" }]
-    : filtered;
+  const allItems = [
+    ...navItems,
+    { to: "/admin", key: "admin", icon: Shield, label: "Admin" },
+  ];
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
