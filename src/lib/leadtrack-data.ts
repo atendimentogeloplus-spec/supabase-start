@@ -57,9 +57,7 @@ export async function moveLead(lead: Lead, column: KanbanColumn, lossReason: str
     lead_id: lead.id,
     user_id: userData.user?.id ?? null,
     action: "status_change",
-    from_status: lead.status,
-    to_status: column.key,
-    detail: lossReason ?? null,
+    detail: `${lead.status} → ${column.key}${lossReason ? ` (${lossReason})` : ""}`,
   });
   return null;
 }
