@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLeadTrackBase } from "@/lib/leadtrack-data";
 import { useAuth } from "@/hooks/useAuth";
 import { daysSince, formatCurrency, heatClass, whatsappLeadLink, type Lead } from "@/lib/leadtrack";
-import { MessageCircle } from "lucide-react";
+import { AlertTriangle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,8 +68,21 @@ function LeadsPage() {
     return matchesTerm && (!statusFilter || l.status === statusFilter);
   });
 
+  const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, " ");
+  const companyTerm = normalize(form.company);
+  const companyMatches = companyTerm
+    ? Array.from(new Set(leads.map((l) => l.company).filter((c): c is string => !!c))).filter((c) =>
+        normalize(c).includes(companyTerm),
+      )
+    : [];
+  const duplicateCompany = !!companyTerm && companyMatches.some((c) => normalize(c) === companyTerm);
+
   async function createLead(e: React.FormEvent) {
     e.preventDefault();
+    if (duplicateCompany) {
+      toast.error("Empresa já cadastrada.");
+      return;
+    }
     const first = columns[0];
     const ownerId = form.owner_id || user?.id || null;
     const { data: created, error } = await supabase
@@ -144,7 +157,25 @@ function LeadsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="company">Empresa</Label>
-                  <Input id="company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+                  <Input
+                    id="company"
+                    list="company-options"
+                    autoComplete="off"
+                    aria-invalid={duplicateCompany}
+                    value={form.company}
+                    onChange={(e) => setForm({ ...form, company: e.target.value })}
+                  />
+                  <datalist id="company-options">
+                    {companyMatches.slice(0, 8).map((c) => (
+                      <option key={c} value={c} />
+                    ))}
+                  </datalist>
+                  {duplicateCompany && (
+                    <p className="flex items-center gap-1 text-xs text-destructive">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      Empresa já cadastrada.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="value">Valor estimado</Label>
