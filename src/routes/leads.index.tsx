@@ -157,7 +157,25 @@ function LeadsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="company">Empresa</Label>
-                  <Input id="company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+                  <Input
+                    id="company"
+                    list="company-options"
+                    autoComplete="off"
+                    aria-invalid={duplicateCompany}
+                    value={form.company}
+                    onChange={(e) => setForm({ ...form, company: e.target.value })}
+                  />
+                  <datalist id="company-options">
+                    {companyMatches.slice(0, 8).map((c) => (
+                      <option key={c} value={c} />
+                    ))}
+                  </datalist>
+                  {duplicateCompany && (
+                    <p className="flex items-center gap-1 text-xs text-destructive">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      Empresa já cadastrada.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="value">Valor estimado</Label>
