@@ -70,7 +70,10 @@ function LeadsPage() {
   async function createLead(e: React.FormEvent) {
     e.preventDefault();
     const first = columns[0];
-    const { error } = await supabase.from("leads").insert({
+    const ownerId = form.owner_id || user?.id || null;
+    const { data: created, error } = await supabase
+      .from("leads")
+      .insert({
       contact_name: form.contact_name.trim(),
       company: form.company.trim() || null,
       phone: form.phone.trim() || null,
