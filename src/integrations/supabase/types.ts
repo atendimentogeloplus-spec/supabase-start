@@ -14,16 +14,361 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      interactions: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          summary: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          summary: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          summary?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_columns: {
+        Row: {
+          color: string
+          id: string
+          is_lost: boolean
+          is_won: boolean
+          key: string
+          label: string
+          min_interactions: number
+          position: number
+          requires_loss: boolean
+        }
+        Insert: {
+          color?: string
+          id?: string
+          is_lost?: boolean
+          is_won?: boolean
+          key: string
+          label: string
+          min_interactions?: number
+          position: number
+          requires_loss?: boolean
+        }
+        Update: {
+          color?: string
+          id?: string
+          is_lost?: boolean
+          is_won?: boolean
+          key?: string
+          label?: string
+          min_interactions?: number
+          position?: number
+          requires_loss?: boolean
+        }
+        Relationships: []
+      }
+      lead_audit: {
+        Row: {
+          action: string
+          created_at: string
+          detail: string | null
+          id: string
+          lead_id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          detail?: string | null
+          id?: string
+          lead_id: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          detail?: string | null
+          id?: string
+          lead_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_audit_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          assigned_at: string | null
+          company: string | null
+          contact_name: string
+          created_at: string
+          created_by: string | null
+          email: string | null
+          estimated_value: number | null
+          first_response_at: string | null
+          id: string
+          last_interaction_at: string | null
+          loss_reason: string | null
+          notes: string | null
+          owner_id: string | null
+          phone: string | null
+          source_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          company?: string | null
+          contact_name: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          estimated_value?: number | null
+          first_response_at?: string | null
+          id?: string
+          last_interaction_at?: string | null
+          loss_reason?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          source_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          company?: string | null
+          contact_name?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          estimated_value?: number | null
+          first_response_at?: string | null
+          id?: string
+          last_interaction_at?: string | null
+          loss_reason?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          source_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          lead_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          lead_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          lead_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          status: Database["public"]["Enums"]["user_status"]
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          email?: string
+          id: string
+          name?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["user_status"]
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["user_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      sources: {
+        Row: {
+          active: boolean
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_active_user: { Args: never; Returns: boolean }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "rep_internal" | "rep_external"
+      user_status: "pending" | "active" | "rejected" | "disabled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +495,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "rep_internal", "rep_external"],
+      user_status: ["pending", "active", "rejected", "disabled"],
+    },
   },
 } as const
