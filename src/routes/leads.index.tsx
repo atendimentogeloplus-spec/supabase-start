@@ -39,6 +39,7 @@ function LeadsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [open, setOpen] = useState(false);
+  const [notify, setNotify] = useState<{ link: string; ownerName: string; leadName: string } | null>(null);
   const [form, setForm] = useState({
     contact_name: "",
     company: "",
