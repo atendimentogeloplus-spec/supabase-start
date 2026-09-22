@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PainelRouteImport } from './routes/painel'
 import { Route as LeadsIndexRouteImport } from './routes/leads.index'
 import { Route as LeadsLeadIdRouteImport } from './routes/leads.$leadId'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelRoute = PainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeadsIndexRoute = LeadsIndexRouteImport.update({
@@ -38,12 +44,14 @@ const LeadsLeadIdRoute = LeadsLeadIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/painel': typeof PainelRoute
   '/leads/$leadId': typeof LeadsLeadIdRoute
   '/leads/': typeof LeadsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/painel': typeof PainelRoute
   '/leads/$leadId': typeof LeadsLeadIdRoute
   '/leads': typeof LeadsIndexRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/painel': typeof PainelRoute
   '/leads/$leadId': typeof LeadsLeadIdRoute
   '/leads/': typeof LeadsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/leads/$leadId' | '/leads/'
+  fullPaths: '/' | '/auth' | '/painel' | '/leads/$leadId' | '/leads/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/leads/$leadId' | '/leads'
-  id: '__root__' | '/' | '/auth' | '/leads/$leadId' | '/leads/'
+  to: '/' | '/auth' | '/painel' | '/leads/$leadId' | '/leads'
+  id: '__root__' | '/' | '/auth' | '/painel' | '/leads/$leadId' | '/leads/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  PainelRoute: typeof PainelRoute
   LeadsLeadIdRoute: typeof LeadsLeadIdRoute
   LeadsIndexRoute: typeof LeadsIndexRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel': {
+      id: '/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leads/': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  PainelRoute: PainelRoute,
   LeadsLeadIdRoute: LeadsLeadIdRoute,
   LeadsIndexRoute: LeadsIndexRoute,
 }
