@@ -68,8 +68,21 @@ function LeadsPage() {
     return matchesTerm && (!statusFilter || l.status === statusFilter);
   });
 
+  const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, " ");
+  const companyTerm = normalize(form.company);
+  const companyMatches = companyTerm
+    ? Array.from(new Set(leads.map((l) => l.company).filter((c): c is string => !!c))).filter((c) =>
+        normalize(c).includes(companyTerm),
+      )
+    : [];
+  const duplicateCompany = !!companyTerm && companyMatches.some((c) => normalize(c) === companyTerm);
+
   async function createLead(e: React.FormEvent) {
     e.preventDefault();
+    if (duplicateCompany) {
+      toast.error("Empresa já cadastrada.");
+      return;
+    }
     const first = columns[0];
     const ownerId = form.owner_id || user?.id || null;
     const { data: created, error } = await supabase
