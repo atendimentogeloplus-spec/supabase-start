@@ -7,7 +7,6 @@ import {
   ShoppingCart,
   ClipboardList,
   FileText,
-  LogOut,
   Shield,
   Tag,
   Truck,
@@ -21,9 +20,6 @@ import {
   Car,
   CalendarDays,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
-import { useUserTabs } from "@/hooks/useUserTabs";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -51,16 +47,11 @@ const navItems = [
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
-  const { signOut } = useAuth();
-  const { isAdmin } = useUserRole();
-  const { allowed } = useUserTabs();
 
-  const filtered = isAdmin
-    ? navItems
-    : navItems.filter((i) => allowed.has(i.key));
-  const allItems = isAdmin
-    ? [...filtered, { to: "/admin", key: "admin", icon: Shield, label: "Admin" }]
-    : filtered;
+  const allItems = [
+    ...navItems,
+    { to: "/admin", key: "admin", icon: Shield, label: "Admin" },
+  ];
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
@@ -95,15 +86,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
       </nav>
-      <div className="shrink-0 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-sidebar-border">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground"
-          onClick={signOut}
-        >
-          <LogOut className="h-4 w-4 mr-3" /> Sair
-        </Button>
-      </div>
     </div>
   );
 }
