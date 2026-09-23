@@ -132,6 +132,7 @@ function Products({ products }: { products: Product[] }) {
 function Orders({ products, clients, orders, movements }: Data) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const ordersPg = usePaged(orders);
   const [confirming, setConfirming] = useState<Order | null>(null);
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string | null) => clients.find((c) => c.id === id)?.name ?? "—";

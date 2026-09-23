@@ -70,6 +70,7 @@ function LeadsPage() {
       [l.contact_name, l.company, l.phone, l.email].some((v) => v?.toLowerCase().includes(term));
     return matchesTerm && (!statusFilter || l.status === statusFilter);
   });
+  const pg = usePaged(filtered);
 
   const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, " ");
   const companyTerm = normalize(form.company);
