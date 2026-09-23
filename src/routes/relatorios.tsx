@@ -183,7 +183,7 @@ function ReportsPage() {
             <tr>{["Contato", "Empresa", "Etapa", "Responsável", "Origem", "Valor", "Criado"].map((h) => <th key={h} className="px-3 py-2">{h}</th>)}</tr>
           </thead>
           <tbody>
-            {pg.items.map((l) => (
+            {pg.rows.map((l) => (
               <tr key={l.id} className="border-t">
                 <td className="px-3 py-2">{l.contact_name}</td>
                 <td className="px-3 py-2">{l.company ?? "—"}</td>
