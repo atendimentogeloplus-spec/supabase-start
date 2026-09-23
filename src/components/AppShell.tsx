@@ -63,49 +63,51 @@ export function AppShell({ children }: { children: ReactNode }) {
   const items = inStock ? [] : NAV.filter((i) => !i.adminOnly || isAdmin);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b bg-card">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
-          <span className="text-lg font-bold tracking-tight">LeadTrack</span>
-          {isAdmin && (
-            <div className="flex rounded-md border p-0.5 text-sm">
-              <Link to="/" className={`rounded px-3 py-1 ${!inStock ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-                Leads
-              </Link>
-              <Link to="/estoque" className={`rounded px-3 py-1 ${inStock ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-                Estoque
-              </Link>
-            </div>
-          )}
-          <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
-            {items.map((item) => {
-              const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-colors ${
-                    active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{item.label}</span>
-                  {item.to === "/avisos" && unread > 0 && (
-                    <span className="rounded-full bg-destructive px-1.5 text-xs text-destructive-foreground">{unread}</span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="flex items-center gap-2">
-            <span className="hidden text-sm text-muted-foreground md:inline">{profile?.name}</span>
-            <Button variant="ghost" size="icon" onClick={() => void signOut()} aria-label="Sair">
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
+    <div className="flex min-h-screen bg-background">
+      <aside className="sticky top-0 flex h-screen w-14 shrink-0 flex-col border-r bg-card md:w-56">
+        <div className="px-3 py-4">
+          <span className="hidden text-lg font-bold tracking-tight md:inline">LeadTrack</span>
+          <span className="text-lg font-bold md:hidden">LT</span>
         </div>
-      </header>
-      <main className="mx-auto max-w-7xl p-4">{children}</main>
+        {isAdmin && (
+          <div className="mx-2 mb-3 flex flex-col rounded-md border p-0.5 text-xs md:flex-row md:text-sm">
+            <Link to="/" className={`flex-1 rounded px-2 py-1 text-center ${!inStock ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+              Leads
+            </Link>
+            <Link to="/estoque" className={`flex-1 rounded px-2 py-1 text-center ${inStock ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+              Estoque
+            </Link>
+          </div>
+        )}
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2">
+          {items.map((item) => {
+            const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                title={item.label}
+                className={`relative flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm transition-colors md:justify-start ${
+                  active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span className="hidden md:inline">{item.label}</span>
+                {item.to === "/avisos" && unread > 0 && (
+                  <span className="absolute right-1 top-1 rounded-full bg-destructive px-1.5 text-xs text-destructive-foreground md:static md:ml-auto">{unread}</span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="flex items-center justify-center gap-2 border-t p-2 md:justify-between">
+          <span className="hidden truncate text-sm text-muted-foreground md:inline">{profile?.name}</span>
+          <Button variant="ghost" size="icon" onClick={() => void signOut()} aria-label="Sair">
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </aside>
+      <main className="min-w-0 flex-1 p-4">{children}</main>
     </div>
   );
 }
