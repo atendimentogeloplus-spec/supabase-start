@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AvisosRouteImport } from './routes/avisos'
 import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as EstoqueRouteImport } from './routes/estoque'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as LeadsIndexRouteImport } from './routes/leads.index'
@@ -44,6 +45,11 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EstoqueRoute = EstoqueRouteImport.update({
+  id: '/estoque',
+  path: '/estoque',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PainelRoute = PainelRouteImport.update({
   id: '/painel',
   path: '/painel',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/avisos': typeof AvisosRoute
   '/clientes': typeof ClientesRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/estoque': typeof EstoqueRoute
   '/painel': typeof PainelRoute
   '/usuarios': typeof UsuariosRoute
   '/leads/$leadId': typeof LeadsLeadIdRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/avisos': typeof AvisosRoute
   '/clientes': typeof ClientesRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/estoque': typeof EstoqueRoute
   '/painel': typeof PainelRoute
   '/usuarios': typeof UsuariosRoute
   '/leads/$leadId': typeof LeadsLeadIdRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/avisos': typeof AvisosRoute
   '/clientes': typeof ClientesRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/estoque': typeof EstoqueRoute
   '/painel': typeof PainelRoute
   '/usuarios': typeof UsuariosRoute
   '/leads/$leadId': typeof LeadsLeadIdRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/clientes'
     | '/configuracoes'
+    | '/estoque'
     | '/painel'
     | '/usuarios'
     | '/leads/$leadId'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/clientes'
     | '/configuracoes'
+    | '/estoque'
     | '/painel'
     | '/usuarios'
     | '/leads/$leadId'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/clientes'
     | '/configuracoes'
+    | '/estoque'
     | '/painel'
     | '/usuarios'
     | '/leads/$leadId'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   AvisosRoute: typeof AvisosRoute
   ClientesRoute: typeof ClientesRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
+  EstoqueRoute: typeof EstoqueRoute
   PainelRoute: typeof PainelRoute
   UsuariosRoute: typeof UsuariosRoute
   LeadsLeadIdRoute: typeof LeadsLeadIdRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/estoque': {
+      id: '/estoque'
+      path: '/estoque'
+      fullPath: '/estoque'
+      preLoaderRoute: typeof EstoqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/painel': {
       id: '/painel'
       path: '/painel'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   AvisosRoute: AvisosRoute,
   ClientesRoute: ClientesRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
+  EstoqueRoute: EstoqueRoute,
   PainelRoute: PainelRoute,
   UsuariosRoute: UsuariosRoute,
   LeadsLeadIdRoute: LeadsLeadIdRoute,

@@ -59,13 +59,24 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  const items = NAV.filter((i) => !i.adminOnly || isAdmin);
+  const inStock = pathname.startsWith("/estoque");
+  const items = inStock ? [] : NAV.filter((i) => !i.adminOnly || isAdmin);
 
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b bg-card">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
           <span className="text-lg font-bold tracking-tight">LeadTrack</span>
+          {isAdmin && (
+            <div className="flex rounded-md border p-0.5 text-sm">
+              <Link to="/" className={`rounded px-3 py-1 ${!inStock ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+                Leads
+              </Link>
+              <Link to="/estoque" className={`rounded px-3 py-1 ${inStock ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+                Estoque
+              </Link>
+            </div>
+          )}
           <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
             {items.map((item) => {
               const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
