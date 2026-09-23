@@ -70,12 +70,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen bg-background">
       <div className="w-14 shrink-0 md:hidden" />
       {open && <div className="fixed inset-0 z-30 bg-foreground/30 md:hidden" onClick={() => setOpen(false)} />}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col border-r bg-card md:sticky md:top-0 md:w-56 ${open ? "w-56" : "w-14"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:w-56 ${open ? "w-56" : "w-14"}`}>
         <div className="flex items-center gap-2 px-2 py-3 md:px-3 md:py-4">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen((o) => !o)} aria-label="Menu">
             <Menu className="h-5 w-5" />
           </Button>
-          <span className={`${lbl} text-lg font-bold tracking-tight`}>LeadTrack</span>
+          <img src="/icon-192.png" alt="Kraft Clean" className={`${lbl} h-10 w-10 rounded-md object-cover`} />
+          <span className={`${lbl} font-serif text-xl font-semibold tracking-widest`}>KRAFT</span>
         </div>
         {isAdmin && (
           <div className={`mx-2 mb-3 flex ${open ? "flex-row text-sm" : "flex-col"} rounded-md border p-0.5 text-xs md:flex-row md:text-sm`}>
