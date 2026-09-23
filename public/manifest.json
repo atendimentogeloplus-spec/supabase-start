@@ -3,7 +3,7 @@
   "short_name": "LeadTrack",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#E8DDCB",
   "theme_color": "#003399",
   "icons": [
     {
