@@ -305,6 +305,7 @@ export type Database = {
           id: string
           is_read: boolean
           lead_id: string | null
+          pushed_at: string | null
           title: string
           type: string
           user_id: string
@@ -315,6 +316,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           lead_id?: string | null
+          pushed_at?: string | null
           title: string
           type: string
           user_id: string
@@ -325,6 +327,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           lead_id?: string | null
+          pushed_at?: string | null
           title?: string
           type?: string
           user_id?: string
@@ -497,6 +500,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       settings: {
         Row: {

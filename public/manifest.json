@@ -1,6 +1,6 @@
 {
-  "name": "Vendas Gelo Plus",
-  "short_name": "GeloPlus",
+  "name": "LeadTrack",
+  "short_name": "LeadTrack",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

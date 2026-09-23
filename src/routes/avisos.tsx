@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDateTime } from "@/lib/leadtrack";
 import { Button } from "@/components/ui/button";
+import { Bell } from "lucide-react";
+import { toast } from "sonner";
+import { enablePush } from "@/lib/push";
 
 export const Route = createFileRoute("/avisos")({
   head: () => ({
@@ -52,9 +55,21 @@ function AvisosPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Avisos</h1>
-        <Button variant="outline" size="sm" onClick={() => void markAllRead()}>
-          Marcar tudo como lido
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() =>
+              enablePush(user!.id)
+                .then(() => toast.success("Notificações ativadas neste aparelho."))
+                .catch((e: Error) => toast.error(e.message))
+            }
+          >
+            <Bell className="mr-1 h-4 w-4" /> Ativar notificações
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => void markAllRead()}>
+            Marcar tudo como lido
+          </Button>
+        </div>
       </div>
       <div className="space-y-2">
         {items.map((n) => (
