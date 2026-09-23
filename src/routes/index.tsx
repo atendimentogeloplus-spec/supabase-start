@@ -128,7 +128,7 @@ function KanbanPage() {
             </div>
           );
         })}
-      </div>
+      </TopScroll>
     </div>
   );
 }
