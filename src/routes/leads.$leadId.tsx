@@ -1,3 +1,4 @@
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -58,11 +59,11 @@ function LeadDetail() {
   const { data: interactions = [] } = useQuery({
     queryKey: ["interactions", leadId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await fetchAll((f, t) => supabase
         .from("interactions")
         .select("*")
         .eq("lead_id", leadId)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }).range(f, t));
       if (error) throw error;
       return data as Interaction[];
     },
@@ -71,11 +72,11 @@ function LeadDetail() {
   const { data: audit = [] } = useQuery({
     queryKey: ["audit", leadId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await fetchAll((f, t) => supabase
         .from("lead_audit")
         .select("*")
         .eq("lead_id", leadId)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }).range(f, t));
       if (error) throw error;
       return data as { id: string; action: string; detail: string | null; created_at: string }[];
     },

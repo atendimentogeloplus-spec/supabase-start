@@ -1,3 +1,4 @@
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -50,23 +51,23 @@ const DAY = 86400000;
 
 function useStockData() {
   const products = useQuery({ queryKey: ["products"], queryFn: async () => {
-    const { data, error } = await supabase.from("products").select("*").order("name");
+    const { data, error } = await fetchAll((f, t) => supabase.from("products").select("*").order("name").range(f, t));
     if (error) throw error; return data as Product[];
   } });
   const clients = useQuery({ queryKey: ["clients-min"], queryFn: async () => {
-    const { data, error } = await supabase.from("clients").select("id,name").order("name");
+    const { data, error } = await fetchAll((f, t) => supabase.from("clients").select("id,name").order("name").range(f, t));
     if (error) throw error; return data as Client[];
   } });
   const orders = useQuery({ queryKey: ["purchase_orders"], queryFn: async () => {
-    const { data, error } = await supabase.from("purchase_orders").select("*, purchase_order_items(id,product_id,quantity)").order("created_at", { ascending: false });
+    const { data, error } = await fetchAll((f, t) => supabase.from("purchase_orders").select("*, purchase_order_items(id,product_id,quantity)").order("created_at", { ascending: false }).range(f, t));
     if (error) throw error; return data as unknown as Order[];
   } });
   const movements = useQuery({ queryKey: ["stock_movements"], queryFn: async () => {
-    const { data, error } = await supabase.from("stock_movements").select("*").order("created_at", { ascending: false });
+    const { data, error } = await fetchAll((f, t) => supabase.from("stock_movements").select("*").order("created_at", { ascending: false }).range(f, t));
     if (error) throw error; return data as Movement[];
   } });
   const forecasts = useQuery({ queryKey: ["client_forecasts"], queryFn: async () => {
-    const { data, error } = await supabase.from("client_forecasts").select("*");
+    const { data, error } = await fetchAll((f, t) => supabase.from("client_forecasts").select("*").range(f, t));
     if (error) throw error; return data as Forecast[];
   } });
   return {

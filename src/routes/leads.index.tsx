@@ -1,3 +1,4 @@
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -54,7 +55,7 @@ function LeadsPage() {
   const { data: leads = [] } = useQuery({
     queryKey: ["leads"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("leads").select("*").order("updated_at", { ascending: false });
+      const { data, error } = await fetchAll((f, t) => supabase.from("leads").select("*").order("updated_at", { ascending: false }).range(f, t));
       if (error) throw error;
       return data as Lead[];
     },

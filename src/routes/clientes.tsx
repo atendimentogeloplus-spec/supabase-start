@@ -1,3 +1,4 @@
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -67,7 +68,7 @@ function ClientesPage() {
   const { data: clients = [] } = useQuery({
     queryKey: ["clients"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("clients" as never).select("*").order("name");
+      const { data, error } = await fetchAll((f, t) => supabase.from("clients" as never).select("*").order("name").range(f, t));
       if (error) throw error;
       return data as unknown as Client[];
     },

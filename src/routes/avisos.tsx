@@ -1,3 +1,4 @@
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
@@ -35,11 +36,11 @@ function AvisosPage() {
     queryKey: ["notifications", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await fetchAll((f, t) => supabase
         .from("notifications")
         .select("*")
         .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }).range(f, t));
       if (error) throw error;
       return data as { id: string; title: string; body: string | null; is_read: boolean; created_at: string }[];
     },

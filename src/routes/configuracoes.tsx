@@ -1,3 +1,4 @@
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,7 +40,7 @@ function ConfigPage() {
   const { data: sources = [] } = useQuery({
     queryKey: ["all_sources"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("sources").select("*").order("name");
+      const { data, error } = await fetchAll((f, t) => supabase.from("sources").select("*").order("name").range(f, t));
       if (error) throw error;
       return data as { id: string; name: string; active: boolean }[];
     },

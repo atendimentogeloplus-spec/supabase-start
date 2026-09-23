@@ -1,3 +1,4 @@
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
@@ -30,7 +31,7 @@ function PainelPage() {
   const { data: leads = [] } = useQuery({
     queryKey: ["leads"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("leads").select("*");
+      const { data, error } = await fetchAll((f, t) => supabase.from("leads").select("*").range(f, t));
       if (error) throw error;
       return data as Lead[];
     },
