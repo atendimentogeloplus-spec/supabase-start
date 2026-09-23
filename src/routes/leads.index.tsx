@@ -80,6 +80,12 @@ function LeadsPage() {
       )
     : [];
   const duplicateCompany = !!companyTerm && companyMatches.some((c) => normalize(c) === companyTerm);
+  const contactTerm = normalize(form.contact_name);
+  const contactMatches = contactTerm
+    ? Array.from(new Set(leads.map((l) => l.contact_name).filter(Boolean))).filter((c) =>
+        normalize(c).includes(contactTerm),
+      )
+    : [];
 
   async function createLead(e: React.FormEvent) {
     e.preventDefault();
@@ -154,9 +160,16 @@ function LeadsPage() {
                 <Input
                   id="contact"
                   required
+                  list="contact-options"
+                  autoComplete="off"
                   value={form.contact_name}
                   onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
                 />
+                <datalist id="contact-options">
+                  {contactMatches.slice(0, 8).map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
