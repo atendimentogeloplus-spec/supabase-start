@@ -52,6 +52,7 @@ export type Database = {
           document: string | null
           email: string | null
           id: string
+          lead_id: string | null
           name: string
           notes: string | null
           owner_id: string | null
@@ -66,6 +67,7 @@ export type Database = {
           document?: string | null
           email?: string | null
           id?: string
+          lead_id?: string | null
           name: string
           notes?: string | null
           owner_id?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           document?: string | null
           email?: string | null
           id?: string
+          lead_id?: string | null
           name?: string
           notes?: string | null
           owner_id?: string | null
@@ -87,6 +90,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "clients_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "clients_owner_id_fkey"
             columns: ["owner_id"]
@@ -219,8 +229,10 @@ export type Database = {
       leads: {
         Row: {
           assigned_at: string | null
+          client_id: string | null
           company: string | null
           contact_name: string
+          converted_at: string | null
           created_at: string
           created_by: string | null
           email: string | null
@@ -238,8 +250,10 @@ export type Database = {
         }
         Insert: {
           assigned_at?: string | null
+          client_id?: string | null
           company?: string | null
           contact_name: string
+          converted_at?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
@@ -257,8 +271,10 @@ export type Database = {
         }
         Update: {
           assigned_at?: string | null
+          client_id?: string | null
           company?: string | null
           contact_name?: string
+          converted_at?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
@@ -275,6 +291,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_created_by_fkey"
             columns: ["created_by"]

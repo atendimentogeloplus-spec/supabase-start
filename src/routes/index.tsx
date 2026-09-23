@@ -32,7 +32,7 @@ function KanbanPage() {
   const { data: leads = [] } = useQuery({
     queryKey: ["leads"],
     queryFn: async () => {
-      const { data, error } = await fetchAll((f, t) => supabase.from("leads").select("*").order("updated_at", { ascending: false }).range(f, t));
+      const { data, error } = await fetchAll((f, t) => supabase.from("leads").select("*").is("converted_at", null).order("updated_at", { ascending: false }).range(f, t));
       if (error) throw error;
       return data as Lead[];
     },
