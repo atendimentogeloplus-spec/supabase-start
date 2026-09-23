@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AvisosRouteImport } from './routes/avisos'
+import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
@@ -31,6 +32,11 @@ const AuthRoute = AuthRouteImport.update({
 const AvisosRoute = AvisosRouteImport.update({
   id: '/avisos',
   path: '/avisos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientesRoute = ClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/avisos': typeof AvisosRoute
+  '/clientes': typeof ClientesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/painel': typeof PainelRoute
   '/usuarios': typeof UsuariosRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/avisos': typeof AvisosRoute
+  '/clientes': typeof ClientesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/painel': typeof PainelRoute
   '/usuarios': typeof UsuariosRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/avisos': typeof AvisosRoute
+  '/clientes': typeof ClientesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/painel': typeof PainelRoute
   '/usuarios': typeof UsuariosRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/avisos'
+    | '/clientes'
     | '/configuracoes'
     | '/painel'
     | '/usuarios'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/avisos'
+    | '/clientes'
     | '/configuracoes'
     | '/painel'
     | '/usuarios'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/avisos'
+    | '/clientes'
     | '/configuracoes'
     | '/painel'
     | '/usuarios'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   AvisosRoute: typeof AvisosRoute
+  ClientesRoute: typeof ClientesRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   PainelRoute: typeof PainelRoute
   UsuariosRoute: typeof UsuariosRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/avisos'
       fullPath: '/avisos'
       preLoaderRoute: typeof AvisosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clientes': {
+      id: '/clientes'
+      path: '/clientes'
+      fullPath: '/clientes'
+      preLoaderRoute: typeof ClientesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/configuracoes': {
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   AvisosRoute: AvisosRoute,
+  ClientesRoute: ClientesRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   PainelRoute: PainelRoute,
   UsuariosRoute: UsuariosRoute,

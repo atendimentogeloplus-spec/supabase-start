@@ -80,7 +80,8 @@ function ClientesPage() {
 
   function open(c?: Client) {
     if (c) {
-      setForm(Object.fromEntries(Object.keys(EMPTY).map((k) => [k, (c as never)[k] ?? ""])) as Form);
+      const rec = c as unknown as Record<string, string | null>;
+      setForm(Object.fromEntries(Object.keys(EMPTY).map((k) => [k, rec[k] ?? ""])) as unknown as Form);
       setEditing(c.id);
     } else {
       setForm({ ...EMPTY, owner_id: session?.user.id ?? "" });
