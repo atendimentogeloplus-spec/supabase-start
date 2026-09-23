@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { BackupButton } from "@/components/BackupButton";
 
 export const Route = createFileRoute("/configuracoes")({
   head: () => ({
@@ -90,6 +91,19 @@ function ConfigPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Configurações</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Backup</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Baixa todos os dados do sistema: um arquivo compactado com uma planilha CSV por tabela e um arquivo Excel com uma aba por tabela.
+          </p>
+          <BackupButton />
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader>
