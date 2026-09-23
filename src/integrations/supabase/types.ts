@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_forecasts: {
+        Row: {
+          client_id: string
+          manual_date: string | null
+          mode: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          manual_date?: string | null
+          mode?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          manual_date?: string | null
+          mode?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_forecasts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -317,6 +346,36 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          sku: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          sku?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          sku?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           approved_at: string | null
@@ -353,6 +412,92 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_order_items: {
+        Row: {
+          id: string
+          order_id: string
+          product_id: string
+          quantity: number
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          product_id: string
+          quantity: number
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          product_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          number: string
+          status: string
+          stock_confirmed_at: string | null
+          stock_modality: string | null
+          supplier: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          number: string
+          status?: string
+          stock_confirmed_at?: string | null
+          stock_modality?: string | null
+          supplier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          number?: string
+          status?: string
+          stock_confirmed_at?: string | null
+          stock_modality?: string | null
+          supplier?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings: {
         Row: {
           key: string
@@ -386,6 +531,67 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_movements: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          modality: string
+          note: string | null
+          order_id: string | null
+          product_id: string
+          quantity: number
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: string
+          modality: string
+          note?: string | null
+          order_id?: string | null
+          product_id: string
+          quantity: number
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          modality?: string
+          note?: string | null
+          order_id?: string | null
+          product_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -409,6 +615,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      confirm_order_stock: {
+        Args: { _client_id: string; _modality: string; _order_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -418,6 +628,16 @@ export type Database = {
       }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      register_stock_exit: {
+        Args: {
+          _client_id: string
+          _modality: string
+          _note: string
+          _product_id: string
+          _quantity: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "rep_internal" | "rep_external"
