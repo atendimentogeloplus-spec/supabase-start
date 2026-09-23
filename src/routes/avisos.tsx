@@ -46,8 +46,8 @@ function AvisosPage() {
       if (error) throw error;
       return data as { id: string; title: string; body: string | null; is_read: boolean; created_at: string }[];
     },
-  const pg = usePaged(items);
   });
+  const pg = usePaged(items);
 
   async function markAllRead() {
     await supabase.from("notifications").update({ is_read: true }).eq("user_id", user!.id).eq("is_read", false);
