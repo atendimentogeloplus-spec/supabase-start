@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { daysSince, formatCurrency, heatClass, validateMove, type KanbanColumn, type Lead } from "@/lib/leadtrack";
 import { toast } from "sonner";
 import { moveLead, useLeadTrackBase } from "@/lib/leadtrack-data";
+import { TopScroll } from "@/components/TopScroll";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -71,7 +72,7 @@ function KanbanPage() {
         </Link>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-4">
+      <TopScroll className="flex gap-3 overflow-x-auto pb-4">
         {columns.map((column) => {
           const items = leads.filter((l) => l.status === column.key);
           return (
