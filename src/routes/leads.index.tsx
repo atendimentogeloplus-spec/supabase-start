@@ -1,3 +1,5 @@
+import { usePaged } from "@/lib/paginate";
+import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -259,7 +261,7 @@ function LeadsPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((lead) => {
+            {pg.rows.map((lead) => {
               const days = daysSince(lead.last_interaction_at ?? lead.updated_at);
               const owner = profiles.find((p) => p.id === lead.owner_id);
               const waLink = whatsappLeadLink(lead, owner?.phone);
@@ -307,6 +309,7 @@ function LeadsPage() {
           </tbody>
         </table>
       </div>
+      <Pager {...pg} />
 
       <Dialog open={!!notify} onOpenChange={(v) => !v && setNotify(null)}>
         <DialogContent className="sm:max-w-sm">

@@ -1,3 +1,5 @@
+import { usePaged } from "@/lib/paginate";
+import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
@@ -78,6 +80,7 @@ function ClientesPage() {
   const list = clients.filter((c) =>
     !q || [c.name, c.document, c.contact_name, c.city, c.phone].some((v) => v?.toLowerCase().includes(q)),
   );
+  const pg = usePaged(list);
 
   function open(c?: Client) {
     if (c) {
@@ -131,7 +134,7 @@ function ClientesPage() {
             </tr>
           </thead>
           <tbody>
-            {list.map((c) => (
+            {pg.rows.map((c) => (
               <tr key={c.id} className="cursor-pointer border-t hover:bg-accent/50" onClick={() => open(c)}>
                 <td className="p-2 font-medium">{c.name}</td>
                 <td className="p-2">{c.document ?? "—"}</td>
@@ -149,6 +152,7 @@ function ClientesPage() {
           </tbody>
         </table>
       </div>
+      <Pager {...pg} />
 
       <Dialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="max-w-lg">

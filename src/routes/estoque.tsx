@@ -1,3 +1,5 @@
+import { usePaged } from "@/lib/paginate";
+import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -151,7 +153,7 @@ function Orders({ products, clients, orders, movements }: Data) {
             <th className="p-2">Itens</th><th className="p-2">Status</th><th className="p-2">Estoque</th>
           </tr></thead>
           <tbody>
-            {orders.map((o) => (
+            {ordersPg.rows.map((o) => (
               <tr key={o.id} className="border-t align-top">
                 <td className="p-2 font-medium">{o.number}<div className="text-xs text-muted-foreground">{fmtDate(o.created_at)}</div></td>
                 <td className="p-2">{o.supplier ?? "—"}</td>
@@ -175,6 +177,7 @@ function Orders({ products, clients, orders, movements }: Data) {
           </tbody>
         </table>
       </div>
+      <Pager {...ordersPg} />
       <NewOrderDialog open={open} onClose={() => setOpen(false)} products={products} clients={clients} />
       {confirming && (
         <ConfirmDialog order={confirming} clients={clients} movements={movements} onClose={() => setConfirming(null)} />
@@ -409,8 +412,11 @@ function MovementList({ products, clients, movements }: Data) {
   );
 }
 
-function Table({ head, rows }: { head: string[]; rows: string[][] }) {
+function Table({ head, rows: all }: { head: string[]; rows: string[][] }) {
+  const pg = usePaged(all);
+  const rows = pg.rows;
   return (
+    <div>
     <div className="overflow-x-auto rounded-md border">
       <table className="w-full text-sm">
         <thead className="bg-muted/50 text-left"><tr>{head.map((h) => <th key={h} className="p-2">{h}</th>)}</tr></thead>
@@ -419,6 +425,8 @@ function Table({ head, rows }: { head: string[]; rows: string[][] }) {
           {rows.length === 0 && <tr><td colSpan={head.length} className="p-4 text-center text-muted-foreground">Nada por aqui.</td></tr>}
         </tbody>
       </table>
+    </div>
+    <Pager {...pg} />
     </div>
   );
 }

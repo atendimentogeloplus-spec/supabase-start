@@ -1,3 +1,5 @@
+import { usePaged } from "@/lib/paginate";
+import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -73,7 +75,7 @@ function AvisosPage() {
         </div>
       </div>
       <div className="space-y-2">
-        {items.map((n) => (
+        {pg.rows.map((n) => (
           <div key={n.id} className={`rounded-lg border p-3 ${n.is_read ? "opacity-60" : "bg-card"}`}>
             <div className="flex justify-between gap-3">
               <span className="font-medium">{n.title}</span>
@@ -83,6 +85,7 @@ function AvisosPage() {
           </div>
         ))}
         {items.length === 0 && <p className="text-muted-foreground">Nenhum aviso por enquanto.</p>}
+        <Pager {...pg} />
       </div>
     </div>
   );
