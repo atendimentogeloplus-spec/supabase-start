@@ -1,3 +1,6 @@
+import { usePaged } from "@/lib/paginate";
+import { Pager } from "@/components/Pager";
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -50,23 +53,23 @@ const DAY = 86400000;
 
 function useStockData() {
   const products = useQuery({ queryKey: ["products"], queryFn: async () => {
-    const { data, error } = await supabase.from("products").select("*").order("name");
+    const { data, error } = await fetchAll((f, t) => supabase.from("products").select("*").order("name").range(f, t));
     if (error) throw error; return data as Product[];
   } });
   const clients = useQuery({ queryKey: ["clients-min"], queryFn: async () => {
-    const { data, error } = await supabase.from("clients").select("id,name").order("name");
+    const { data, error } = await fetchAll((f, t) => supabase.from("clients").select("id,name").order("name").range(f, t));
     if (error) throw error; return data as Client[];
   } });
   const orders = useQuery({ queryKey: ["purchase_orders"], queryFn: async () => {
-    const { data, error } = await supabase.from("purchase_orders").select("*, purchase_order_items(id,product_id,quantity)").order("created_at", { ascending: false });
+    const { data, error } = await fetchAll((f, t) => supabase.from("purchase_orders").select("*, purchase_order_items(id,product_id,quantity)").order("created_at", { ascending: false }).range(f, t));
     if (error) throw error; return data as unknown as Order[];
   } });
   const movements = useQuery({ queryKey: ["stock_movements"], queryFn: async () => {
-    const { data, error } = await supabase.from("stock_movements").select("*").order("created_at", { ascending: false });
+    const { data, error } = await fetchAll((f, t) => supabase.from("stock_movements").select("*").order("created_at", { ascending: false }).range(f, t));
     if (error) throw error; return data as Movement[];
   } });
   const forecasts = useQuery({ queryKey: ["client_forecasts"], queryFn: async () => {
-    const { data, error } = await supabase.from("client_forecasts").select("*");
+    const { data, error } = await fetchAll((f, t) => supabase.from("client_forecasts").select("*").range(f, t));
     if (error) throw error; return data as Forecast[];
   } });
   return {
@@ -129,6 +132,7 @@ function Products({ products }: { products: Product[] }) {
 function Orders({ products, clients, orders, movements }: Data) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const ordersPg = usePaged(orders);
   const [confirming, setConfirming] = useState<Order | null>(null);
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string | null) => clients.find((c) => c.id === id)?.name ?? "—";
@@ -150,7 +154,7 @@ function Orders({ products, clients, orders, movements }: Data) {
             <th className="p-2">Itens</th><th className="p-2">Status</th><th className="p-2">Estoque</th>
           </tr></thead>
           <tbody>
-            {orders.map((o) => (
+            {ordersPg.rows.map((o) => (
               <tr key={o.id} className="border-t align-top">
                 <td className="p-2 font-medium">{o.number}<div className="text-xs text-muted-foreground">{fmtDate(o.created_at)}</div></td>
                 <td className="p-2">{o.supplier ?? "—"}</td>
@@ -174,6 +178,7 @@ function Orders({ products, clients, orders, movements }: Data) {
           </tbody>
         </table>
       </div>
+      <Pager {...ordersPg} />
       <NewOrderDialog open={open} onClose={() => setOpen(false)} products={products} clients={clients} />
       {confirming && (
         <ConfirmDialog order={confirming} clients={clients} movements={movements} onClose={() => setConfirming(null)} />
@@ -408,8 +413,11 @@ function MovementList({ products, clients, movements }: Data) {
   );
 }
 
-function Table({ head, rows }: { head: string[]; rows: string[][] }) {
+function Table({ head, rows: all }: { head: string[]; rows: string[][] }) {
+  const pg = usePaged(all);
+  const rows = pg.rows;
   return (
+    <div>
     <div className="overflow-x-auto rounded-md border">
       <table className="w-full text-sm">
         <thead className="bg-muted/50 text-left"><tr>{head.map((h) => <th key={h} className="p-2">{h}</th>)}</tr></thead>
@@ -418,6 +426,8 @@ function Table({ head, rows }: { head: string[]; rows: string[][] }) {
           {rows.length === 0 && <tr><td colSpan={head.length} className="p-4 text-center text-muted-foreground">Nada por aqui.</td></tr>}
         </tbody>
       </table>
+    </div>
+    <Pager {...pg} />
     </div>
   );
 }

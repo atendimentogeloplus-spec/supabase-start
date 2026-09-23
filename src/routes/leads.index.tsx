@@ -1,3 +1,6 @@
+import { usePaged } from "@/lib/paginate";
+import { Pager } from "@/components/Pager";
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -54,7 +57,7 @@ function LeadsPage() {
   const { data: leads = [] } = useQuery({
     queryKey: ["leads"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("leads").select("*").order("updated_at", { ascending: false });
+      const { data, error } = await fetchAll((f, t) => supabase.from("leads").select("*").order("updated_at", { ascending: false }).range(f, t));
       if (error) throw error;
       return data as Lead[];
     },
@@ -67,6 +70,7 @@ function LeadsPage() {
       [l.contact_name, l.company, l.phone, l.email].some((v) => v?.toLowerCase().includes(term));
     return matchesTerm && (!statusFilter || l.status === statusFilter);
   });
+  const pg = usePaged(filtered);
 
   const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, " ");
   const companyTerm = normalize(form.company);
@@ -258,7 +262,7 @@ function LeadsPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((lead) => {
+            {pg.rows.map((lead) => {
               const days = daysSince(lead.last_interaction_at ?? lead.updated_at);
               const owner = profiles.find((p) => p.id === lead.owner_id);
               const waLink = whatsappLeadLink(lead, owner?.phone);
@@ -306,6 +310,7 @@ function LeadsPage() {
           </tbody>
         </table>
       </div>
+      <Pager {...pg} />
 
       <Dialog open={!!notify} onOpenChange={(v) => !v && setNotify(null)}>
         <DialogContent className="sm:max-w-sm">

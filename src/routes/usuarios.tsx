@@ -1,3 +1,4 @@
+import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
@@ -32,7 +33,7 @@ function UsuariosPage() {
   const { data: profiles = [] } = useQuery({
     queryKey: ["profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+      const { data, error } = await fetchAll((f, t) => supabase.from("profiles").select("*").order("created_at", { ascending: false }).range(f, t));
       if (error) throw error;
       return data as Profile[];
     },
@@ -41,7 +42,7 @@ function UsuariosPage() {
   const { data: roles = [] } = useQuery({
     queryKey: ["user_roles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("user_roles").select("user_id,role");
+      const { data, error } = await fetchAll((f, t) => supabase.from("user_roles").select("user_id,role").range(f, t));
       if (error) throw error;
       return data as { user_id: string; role: AppRole }[];
     },
