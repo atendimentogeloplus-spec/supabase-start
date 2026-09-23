@@ -4,12 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Bell, Building2, KanbanSquare, LayoutDashboard, List, LogOut, Menu, Settings, Users } from "lucide-react";
+import { Bell, Building2, FileText, KanbanSquare, LayoutDashboard, List, LogOut, Menu, Settings, Users } from "lucide-react";
 
 const NAV = [
   { to: "/", label: "Kanban", icon: KanbanSquare, adminOnly: false },
   { to: "/leads", label: "Leads", icon: List, adminOnly: false },
   { to: "/clientes", label: "Clientes", icon: Building2, adminOnly: false },
+  { to: "/relatorios", label: "Relatórios", icon: FileText, adminOnly: false },
   { to: "/painel", label: "Painel", icon: LayoutDashboard, adminOnly: true },
   { to: "/usuarios", label: "Usuários", icon: Users, adminOnly: true },
   { to: "/configuracoes", label: "Configurações", icon: Settings, adminOnly: true },
