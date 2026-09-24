@@ -138,3 +138,7 @@
     font-size: 10px !important;
   }
 }
+
+#lovable-badge {
+  display: none !important;
+}
