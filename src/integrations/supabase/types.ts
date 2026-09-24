@@ -681,6 +681,7 @@ export type Database = {
       }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      is_protected_user: { Args: { _uid: string }; Returns: boolean }
       register_stock_exit: {
         Args: {
           _client_id: string
