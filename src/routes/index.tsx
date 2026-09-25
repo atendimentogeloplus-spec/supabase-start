@@ -76,7 +76,16 @@ function KanbanPage() {
         {columns.map((column) => {
           const items = leads.filter((l) => l.status === column.key);
           return (
-            <div key={column.id} className="w-72 shrink-0 rounded-lg bg-muted/40 p-2">
+            <div
+              key={column.id}
+              className="w-72 shrink-0 rounded-lg bg-muted/40 p-2"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const lead = leads.find((l) => l.id === e.dataTransfer.getData("text/plain"));
+                if (lead && lead.status !== column.key) void handleMove(lead, column);
+              }}
+            >
               <div className="mb-2 flex items-center gap-2 px-1">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: column.color }} />
                 <span className="text-sm font-medium">{column.label}</span>
@@ -86,7 +95,15 @@ function KanbanPage() {
                 {items.map((lead) => {
                   const days = daysSince(lead.last_interaction_at ?? lead.updated_at);
                   return (
-                    <div key={lead.id} className="rounded-md border bg-card p-3 shadow-sm">
+                    <div
+                      key={lead.id}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", lead.id);
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      className="cursor-grab rounded-md border bg-card p-3 shadow-sm active:cursor-grabbing"
+                    >
                       <div className="flex items-start gap-2">
                         <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${heatClass(days, stalledDays)}`} />
                         <div className="min-w-0 flex-1">
