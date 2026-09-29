@@ -584,6 +584,48 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_minimums: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          id: string
+          min_qty: number
+          modality: string
+          product_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          min_qty?: number
+          modality: string
+          product_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          min_qty?: number
+          modality?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_minimums_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_minimums_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_movements: {
         Row: {
           client_id: string | null
