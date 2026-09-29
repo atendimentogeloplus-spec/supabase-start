@@ -46,7 +46,7 @@ type Movement = {
 };
 type Forecast = { client_id: string; mode: "auto" | "manual"; manual_date: string | null };
 
-const STATUS: Record<string, string> = { a_enviar: "A enviar", enviado: "Enviado", em_producao: "Em Produção", entregue: "Entregue" };
+const STATUS: Record<string, string> = { a_enviar: "A Enviar", enviado: "Enviado/Em produção", entregue: "Entregue" };
 const MOD: Record<string, string> = { lisos: "Lisos", guarda: "Guarda" };
 const sel = "w-full rounded-md border bg-background px-2 py-2 text-sm";
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("pt-BR");

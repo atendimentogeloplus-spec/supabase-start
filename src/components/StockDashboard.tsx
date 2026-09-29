@@ -18,7 +18,7 @@ export type StockMinimum = { id: string; product_id: string; modality: string; c
 
 const sel = "w-full rounded-md border bg-background px-2 py-2 text-sm";
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("pt-BR");
-const STATUS: Record<string, string> = { a_enviar: "A enviar", enviado: "Enviado", em_producao: "Em Produção", entregue: "Entregue" };
+const STATUS: Record<string, string> = { a_enviar: "A Enviar", enviado: "Enviado/Em produção", entregue: "Entregue" };
 
 async function loadLogo(): Promise<string | null> {
   try {
