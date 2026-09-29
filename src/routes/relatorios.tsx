@@ -81,6 +81,20 @@ function ReportsPage() {
   });
   const pg = usePaged(filtered);
   const total = filtered.reduce((s, l) => s + (Number(l.estimated_value) || 0), 0);
+  const wonKeys = columns.filter((c) => c.is_won).map((c) => c.key);
+  const lostKeys = columns.filter((c) => c.is_lost).map((c) => c.key);
+  const repStats = [...new Set(filtered.map((l) => l.owner_id ?? ""))].map((id) => {
+    const mine = filtered.filter((l) => (l.owner_id ?? "") === id);
+    const w = mine.filter((l) => wonKeys.includes(l.status));
+    const lo = mine.filter((l) => lostKeys.includes(l.status)).length;
+    const cl = w.length + lo;
+    return {
+      id, name: id ? ownerName(id) : "Sem responsável", total: mine.length,
+      open: mine.length - w.length - lo, won: w.length, lost: lo,
+      rate: cl ? Math.round((w.length / cl) * 100) : 0,
+      value: w.reduce((s, l) => s + (Number(l.estimated_value) || 0), 0),
+    };
+  }).sort((a, b) => b.won - a.won);
 
   async function generatePdf() {
     setBusy(true);
@@ -131,6 +145,17 @@ function ReportsPage() {
           doc.text(`Página ${doc.getNumberOfPages()}`, w - 10, doc.internal.pageSize.getHeight() - 6, { align: "right" });
         },
       });
+      const y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
+      doc.setFontSize(12); doc.setTextColor(40, 30, 20);
+      doc.text("Conversões por vendedor", 14, y);
+      autoTable(doc, {
+        startY: y + 3,
+        head: [["Vendedor", "Leads", "Abertos", "Ganhos", "Perdidos", "Conversão", "Valor ganho"]],
+        body: repStats.map((r) => [r.name, String(r.total), String(r.open), String(r.won), String(r.lost), `${r.rate}%`, formatCurrency(r.value)]),
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [120, 90, 55] },
+        alternateRowStyles: { fillColor: [247, 242, 234] },
+      });
       doc.save(`relatorio-leads-${new Date().toISOString().slice(0, 10)}.pdf`);
     } finally {
       setBusy(false);
@@ -175,6 +200,25 @@ function ReportsPage() {
           <div className="space-y-1"><Label>De</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
           <div className="space-y-1"><Label>Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
         </div>
+      </div>
+      <div className="overflow-x-auto rounded-lg border bg-card">
+        <p className="px-3 pt-3 font-semibold">Conversões por vendedor</p>
+        <table className="w-full text-sm">
+          <thead className="text-left text-muted-foreground"><tr>
+            <th className="px-3 py-2">Vendedor</th><th className="px-3 py-2">Leads</th><th className="px-3 py-2">Abertos</th>
+            <th className="px-3 py-2">Ganhos</th><th className="px-3 py-2">Perdidos</th><th className="px-3 py-2">Conversão</th><th className="px-3 py-2">Valor ganho</th>
+          </tr></thead>
+          <tbody>
+            {repStats.map((r) => (
+              <tr key={r.id} className="border-t">
+                <td className="px-3 py-2">{r.name}</td><td className="px-3 py-2">{r.total}</td><td className="px-3 py-2">{r.open}</td>
+                <td className="px-3 py-2">{r.won}</td><td className="px-3 py-2">{r.lost}</td>
+                <td className="px-3 py-2 font-medium">{r.rate}%</td><td className="px-3 py-2">{formatCurrency(r.value)}</td>
+              </tr>
+            ))}
+            {repStats.length === 0 && <tr><td colSpan={7} className="px-3 py-4 text-center text-muted-foreground">Nenhum lead encontrado.</td></tr>}
+          </tbody>
+        </table>
       </div>
       <p className="text-sm text-muted-foreground">{filtered.length} leads • Total estimado {formatCurrency(total)}</p>
       <div className="overflow-x-auto rounded-lg border bg-card">
