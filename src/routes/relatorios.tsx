@@ -51,6 +51,7 @@ function ReportsPage() {
   const [status, setStatus] = useState("");
   const [owner, setOwner] = useState("");
   const [source, setSource] = useState("");
+  const [sector, setSector] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -74,12 +75,14 @@ function ReportsPage() {
     if (status && l.status !== status) return false;
     if (owner && l.owner_id !== owner) return false;
     if (source && l.source_id !== source) return false;
+    if (sector && (l.sector ?? "") !== sector) return false;
     const d = l.created_at.slice(0, 10);
     if (from && d < from) return false;
     if (to && d > to) return false;
     return true;
   });
   const pg = usePaged(filtered);
+  const sectors = [...new Set(leads.map((l) => l.sector).filter((v): v is string => !!v))].sort();
   const total = filtered.reduce((s, l) => s + (Number(l.estimated_value) || 0), 0);
   const wonKeys = columns.filter((c) => c.is_won).map((c) => c.key);
   const lostKeys = columns.filter((c) => c.is_lost).map((c) => c.key);
@@ -115,6 +118,7 @@ function ReportsPage() {
         status && `Etapa: ${colName(status)}`,
         owner && `Responsável: ${ownerName(owner)}`,
         source && `Origem: ${sourceName(source)}`,
+        sector && `Setor: ${sector}`,
         from && `De: ${from.split("-").reverse().join("/")}`,
         to && `Até: ${to.split("-").reverse().join("/")}`,
         search && `Busca: "${search}"`,
@@ -124,10 +128,11 @@ function ReportsPage() {
       doc.text(`${filtered.length} leads  •  Total estimado ${formatCurrency(total)}`, w - 10, 22, { align: "right" });
       autoTable(doc, {
         startY: 38,
-        head: [["Contato", "Empresa", "Telefone", "Etapa", "Responsável", "Origem", "Valor", "Criado", "Dias s/ contato"]],
+        head: [["Contato", "Empresa", "Setor", "Telefone", "Etapa", "Responsável", "Origem", "Valor", "Criado", "Dias s/ contato"]],
         body: filtered.map((l) => [
           l.contact_name,
           l.company ?? "—",
+          l.sector ?? "—",
           l.phone ?? "—",
           colName(l.status),
           ownerName(l.owner_id),
@@ -170,7 +175,7 @@ function ReportsPage() {
           <FileDown className="mr-2 h-4 w-4" /> {busy ? "Gerando..." : "Gerar PDF"}
         </Button>
       </div>
-      <div className="grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-7">
         <div className="space-y-1 lg:col-span-2">
           <Label>Busca</Label>
           <Input placeholder="Nome, empresa, telefone ou e-mail" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -194,6 +199,13 @@ function ReportsPage() {
           <select className={sel} value={source} onChange={(e) => setSource(e.target.value)}>
             <option value="">Todas</option>
             {sources.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <Label>Setor</Label>
+          <select className={sel} value={sector} onChange={(e) => setSector(e.target.value)}>
+            <option value="">Todos</option>
+            {sectors.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -224,13 +236,14 @@ function ReportsPage() {
       <div className="overflow-x-auto rounded-lg border bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted text-left">
-            <tr>{["Contato", "Empresa", "Etapa", "Responsável", "Origem", "Valor", "Criado"].map((h) => <th key={h} className="px-3 py-2">{h}</th>)}</tr>
+            <tr>{["Contato", "Empresa", "Setor", "Etapa", "Responsável", "Origem", "Valor", "Criado"].map((h) => <th key={h} className="px-3 py-2">{h}</th>)}</tr>
           </thead>
           <tbody>
             {pg.rows.map((l) => (
               <tr key={l.id} className="border-t">
                 <td className="px-3 py-2">{l.contact_name}</td>
                 <td className="px-3 py-2">{l.company ?? "—"}</td>
+                <td className="px-3 py-2">{l.sector ?? "—"}</td>
                 <td className="px-3 py-2">{colName(l.status)}</td>
                 <td className="px-3 py-2">{ownerName(l.owner_id)}</td>
                 <td className="px-3 py-2">{sourceName(l.source_id)}</td>
@@ -238,7 +251,7 @@ function ReportsPage() {
                 <td className="px-3 py-2">{new Date(l.created_at).toLocaleDateString("pt-BR")}</td>
               </tr>
             ))}
-            {filtered.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">Nenhum lead encontrado.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">Nenhum lead encontrado.</td></tr>}
           </tbody>
         </table>
       </div>

@@ -206,6 +206,15 @@ function LeadsPage() {
                     onChange={(e) => setForm({ ...form, estimated_value: e.target.value })}
                   />
                 </div>
+                <div className="col-span-2 space-y-1.5">
+                  <Label htmlFor="sector">Setor (opcional)</Label>
+                  <Input id="sector" list="sector-options" autoComplete="off" value={form.sector} onChange={(e) => setForm({ ...form, sector: e.target.value })} />
+                  <datalist id="sector-options">
+                    {Array.from(new Set(leads.map((l) => l.sector).filter((c): c is string => !!c))).map((c) => (
+                      <option key={c} value={c} />
+                    ))}
+                  </datalist>
+                </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="phone">Telefone</Label>
                   <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
@@ -269,6 +278,7 @@ function LeadsPage() {
             <tr>
               <th className="p-3">Contato</th>
               <th className="p-3">Empresa</th>
+              <th className="p-3">Setor</th>
               <th className="p-3">Etapa</th>
               <th className="p-3">Responsável</th>
               <th className="p-3">Valor</th>
