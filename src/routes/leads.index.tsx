@@ -46,6 +46,7 @@ function LeadsPage() {
   const [form, setForm] = useState({
     contact_name: "",
     company: "",
+    sector: "",
     phone: "",
     email: "",
     source_id: "",
@@ -67,7 +68,7 @@ function LeadsPage() {
     const term = search.trim().toLowerCase();
     const matchesTerm =
       !term ||
-      [l.contact_name, l.company, l.phone, l.email].some((v) => v?.toLowerCase().includes(term));
+      [l.contact_name, l.company, l.sector, l.phone, l.email].some((v) => v?.toLowerCase().includes(term));
     return matchesTerm && (!statusFilter || l.status === statusFilter);
   });
   const pg = usePaged(filtered);
@@ -100,6 +101,7 @@ function LeadsPage() {
       .insert({
         contact_name: form.contact_name.trim(),
         company: form.company.trim() || null,
+        sector: form.sector.trim() || null,
         phone: form.phone.trim() || null,
         email: form.email.trim() || null,
         source_id: form.source_id || null,
@@ -120,7 +122,7 @@ function LeadsPage() {
     toast.success("Lead criado.");
     if (link) setNotify({ link, ownerName: owner?.name ?? "o responsável", leadName: form.contact_name.trim() });
     setOpen(false);
-    setForm({ contact_name: "", company: "", phone: "", email: "", source_id: "", owner_id: "", estimated_value: "", notes: "" });
+    setForm({ contact_name: "", company: "", sector: "", phone: "", email: "", source_id: "", owner_id: "", estimated_value: "", notes: "" });
     void qc.invalidateQueries({ queryKey: ["leads"] });
   }
 
@@ -287,6 +289,7 @@ function LeadsPage() {
                     </Link>
                   </td>
                   <td className="p-3 text-muted-foreground">{lead.company ?? "—"}</td>
+                  <td className="p-3 text-muted-foreground">{lead.sector ?? "—"}</td>
                   <td className="p-3">{columns.find((c) => c.key === lead.status)?.label ?? lead.status}</td>
                   <td className="p-3 text-muted-foreground">
                     {profiles.find((p) => p.id === lead.owner_id)?.name ?? "—"}
