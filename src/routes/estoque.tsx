@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { StockDashboard, type StockMinimum } from "@/components/StockDashboard";
 
 export const Route = createFileRoute("/estoque")({
   head: () => ({
@@ -45,7 +46,7 @@ type Movement = {
 };
 type Forecast = { client_id: string; mode: "auto" | "manual"; manual_date: string | null };
 
-const STATUS: Record<string, string> = { enviado: "Enviado", em_producao: "Em Produção", entregue: "Entregue" };
+const STATUS: Record<string, string> = { a_enviar: "A enviar", enviado: "Enviado", em_producao: "Em Produção", entregue: "Entregue" };
 const MOD: Record<string, string> = { lisos: "Lisos", guarda: "Guarda" };
 const sel = "w-full rounded-md border bg-background px-2 py-2 text-sm";
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("pt-BR");
@@ -72,9 +73,13 @@ function useStockData() {
     const { data, error } = await fetchAll((f, t) => supabase.from("client_forecasts").select("*").range(f, t));
     if (error) throw error; return data as Forecast[];
   } });
+  const minimums = useQuery({ queryKey: ["stock_minimums"], queryFn: async () => {
+    const { data, error } = await fetchAll((f, t) => supabase.from("stock_minimums" as never).select("*").range(f, t));
+    if (error) throw error; return data as unknown as StockMinimum[];
+  } });
   return {
     products: products.data ?? [], clients: clients.data ?? [], orders: orders.data ?? [],
-    movements: movements.data ?? [], forecasts: forecasts.data ?? [],
+    movements: movements.data ?? [], forecasts: forecasts.data ?? [], minimums: minimums.data ?? [],
   };
 }
 
@@ -85,14 +90,16 @@ function EstoquePage() {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Estoque</h1>
-      <Tabs defaultValue="pedidos">
+      <Tabs defaultValue="painel">
         <TabsList className="flex-wrap">
+          <TabsTrigger value="painel">Painel</TabsTrigger>
           <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
           <TabsTrigger value="saldos">Saldos</TabsTrigger>
           <TabsTrigger value="clientes">Previsão por cliente</TabsTrigger>
           <TabsTrigger value="movs">Movimentações</TabsTrigger>
           <TabsTrigger value="produtos">Produtos</TabsTrigger>
         </TabsList>
+        <TabsContent value="painel"><StockDashboard {...d} /></TabsContent>
         <TabsContent value="pedidos"><Orders {...d} /></TabsContent>
         <TabsContent value="saldos"><Balances {...d} /></TabsContent>
         <TabsContent value="clientes"><ClientForecasts {...d} /></TabsContent>
