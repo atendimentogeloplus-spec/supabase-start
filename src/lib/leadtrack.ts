@@ -29,6 +29,7 @@ export type Lead = {
   id: string;
   contact_name: string;
   company: string | null;
+  sector?: string | null;
   phone: string | null;
   email: string | null;
   source_id: string | null;

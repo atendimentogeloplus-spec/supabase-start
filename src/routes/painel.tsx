@@ -135,6 +135,27 @@ function PainelPage() {
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Leads por setor</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {[...new Set(leads.map((l) => l.sector || "Sem setor"))]
+              .map((s) => ({ s, n: leads.filter((l) => (l.sector || "Sem setor") === s).length, w: won.filter((l) => (l.sector || "Sem setor") === s).length }))
+              .sort((a, b) => b.n - a.n)
+              .map(({ s, n, w }) => (
+                <div key={s}>
+                  <div className="flex justify-between text-sm">
+                    <span>{s}</span>
+                    <span className="text-muted-foreground">{n} leads • {w} ganhos</span>
+                  </div>
+                  <div className="mt-1 h-2 rounded bg-muted">
+                    <div className="h-2 rounded bg-primary" style={{ width: `${leads.length ? (n / leads.length) * 100 : 0}%` }} />
+                  </div>
+                </div>
+              ))}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -244,6 +244,7 @@ export type Database = {
           notes: string | null
           owner_id: string | null
           phone: string | null
+          sector: string | null
           source_id: string | null
           status: string
           updated_at: string
@@ -265,6 +266,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string | null
           phone?: string | null
+          sector?: string | null
           source_id?: string | null
           status?: string
           updated_at?: string
@@ -286,6 +288,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string | null
           phone?: string | null
+          sector?: string | null
           source_id?: string | null
           status?: string
           updated_at?: string
