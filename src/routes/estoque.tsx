@@ -37,7 +37,7 @@ type Client = { id: string; name: string };
 type OrderItem = { id: string; product_id: string; quantity: number };
 type Order = {
   id: string; number: string; supplier: string | null; client_id: string | null; status: string;
-  stock_confirmed_at: string | null; stock_modality: string | null; created_at: string;
+  stock_confirmed_at: string | null; stock_modality: string | null; created_at: string; expected_date: string | null;
   purchase_order_items: OrderItem[];
 };
 type Movement = {
@@ -140,7 +140,15 @@ function Orders({ products, clients, orders, movements }: Data) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("todos");
-  const shown = tab === "todos" ? orders : orders.filter((o) => o.status === tab);
+  const today = new Date().toLocaleDateString("en-CA");
+  const isLate = (o: Order) => !!o.expected_date && o.status !== "entregue" && o.expected_date < today;
+  const count = (k: string) => k === "todos" ? orders.length : k === "atrasados" ? orders.filter(isLate).length : orders.filter((o) => o.status === k).length;
+  const shown = tab === "todos" ? orders : tab === "atrasados" ? orders.filter(isLate) : orders.filter((o) => o.status === tab);
+  async function setExpected(o: Order, v: string) {
+    const { error } = await supabase.from("purchase_orders").update({ expected_date: v || null }).eq("id", o.id);
+    if (error) return toast.error(error.message);
+    void qc.invalidateQueries({ queryKey: ["purchase_orders"] });
+  }
   const ordersPg = usePaged(shown);
   const [confirming, setConfirming] = useState<Order | null>(null);
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
@@ -158,10 +166,10 @@ function Orders({ products, clients, orders, movements }: Data) {
       <div className="flex flex-wrap items-center gap-2">
         <Button onClick={() => setOpen(true)}>Novo pedido</Button>
         <div className="ml-auto flex flex-wrap gap-1 rounded-md bg-muted p-1">
-          {[["todos", "Todos"], ...Object.entries(STATUS)].map(([k, label]) => (
+          {[["todos", "Todos"], ...Object.entries(STATUS), ["atrasados", "Em atraso"]].map(([k, label]) => (
             <button key={k} type="button" onClick={() => setTab(k)}
-              className={`rounded px-3 py-1 text-sm ${tab === k ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}>
-              {label} ({k === "todos" ? orders.length : orders.filter((o) => o.status === k).length})
+              className={`rounded px-3 py-1 text-sm ${tab === k ? "bg-background font-medium shadow-sm" : k === "atrasados" ? "text-destructive" : "text-muted-foreground"}`}>
+              {label} ({count(k)})
             </button>
           ))}
         </div>
@@ -170,15 +178,19 @@ function Orders({ products, clients, orders, movements }: Data) {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left"><tr>
             <th className="p-2">Pedido</th><th className="p-2">Fornecedor</th><th className="p-2">Cliente</th>
-            <th className="p-2">Itens</th><th className="p-2">Status</th><th className="p-2">Estoque</th>
+            <th className="p-2">Itens</th><th className="p-2">Previsão</th><th className="p-2">Status</th><th className="p-2">Estoque</th>
           </tr></thead>
           <tbody>
             {ordersPg.rows.map((o) => (
-              <tr key={o.id} className="border-t align-top">
+              <tr key={o.id} className={`border-t align-top ${isLate(o) ? "bg-destructive/5" : ""}`}>
                 <td className="p-2 font-medium">{o.number}<div className="text-xs text-muted-foreground">{fmtDate(o.created_at)}</div></td>
                 <td className="p-2">{o.supplier ?? "—"}</td>
                 <td className="p-2">{cname(o.client_id)}</td>
                 <td className="p-2">{o.purchase_order_items.map((i) => <div key={i.id}>{i.quantity} × {pname(i.product_id)}</div>)}</td>
+                <td className="p-2">
+                  <Input type="date" className="h-8 w-36" value={o.expected_date ?? ""} onChange={(e) => void setExpected(o, e.target.value)} />
+                  {isLate(o) && <span className="mt-1 inline-block rounded bg-destructive px-2 py-0.5 text-xs font-semibold text-destructive-foreground">Em atraso</span>}
+                </td>
                 <td className="p-2">
                   <select className={sel} value={o.status} disabled={!!o.stock_confirmed_at} onChange={(e) => void setStatus(o, e.target.value)}>
                     {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -193,7 +205,7 @@ function Orders({ products, clients, orders, movements }: Data) {
                 </td>
               </tr>
             ))}
-            {shown.length === 0 && <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
+            {shown.length === 0 && <tr><td colSpan={7} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -208,19 +220,19 @@ function Orders({ products, clients, orders, movements }: Data) {
 
 function NewOrderDialog({ open, onClose, products, clients }: { open: boolean; onClose: () => void; products: Product[]; clients: Client[] }) {
   const qc = useQueryClient();
-  const [number, setNumber] = useState(""); const [supplier, setSupplier] = useState(""); const [clientId, setClientId] = useState("");
+  const [number, setNumber] = useState(""); const [supplier, setSupplier] = useState(""); const [clientId, setClientId] = useState(""); const [expected, setExpected] = useState("");
   const [items, setItems] = useState<{ product_id: string; quantity: string }[]>([{ product_id: "", quantity: "" }]);
   async function save() {
     const valid = items.filter((i) => i.product_id && Number(i.quantity) > 0);
     if (!number.trim()) return toast.error("Informe o número do pedido.");
     if (valid.length === 0) return toast.error("Adicione ao menos um item.");
     const { data, error } = await supabase.from("purchase_orders")
-      .insert({ number: number.trim().slice(0, 50), supplier: supplier.trim() || null, client_id: clientId || null }).select("id").single();
+      .insert({ number: number.trim().slice(0, 50), supplier: supplier.trim() || null, client_id: clientId || null, expected_date: expected || null }).select("id").single();
     if (error || !data) return toast.error(error?.message ?? "Erro");
     const { error: e2 } = await supabase.from("purchase_order_items").insert(valid.map((i) => ({ order_id: data.id, product_id: i.product_id, quantity: Number(i.quantity) })));
     if (e2) return toast.error(e2.message);
     toast.success("Pedido criado.");
-    setNumber(""); setSupplier(""); setClientId(""); setItems([{ product_id: "", quantity: "" }]);
+    setNumber(""); setSupplier(""); setClientId(""); setExpected(""); setItems([{ product_id: "", quantity: "" }]);
     void qc.invalidateQueries({ queryKey: ["purchase_orders"] }); onClose();
   }
   return (
@@ -234,6 +246,9 @@ function NewOrderDialog({ open, onClose, products, clients }: { open: boolean; o
             <option value="">Sem cliente vinculado</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
+          <label className="block text-sm">Data prevista de entrega
+            <Input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} />
+          </label>
           {items.map((it, idx) => (
             <div key={idx} className="flex gap-2">
               <select className={sel} value={it.product_id} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, product_id: e.target.value } : x))}>

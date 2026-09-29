@@ -482,6 +482,7 @@ export type Database = {
           client_id: string | null
           created_at: string
           created_by: string | null
+          expected_date: string | null
           id: string
           notes: string | null
           number: string
@@ -495,6 +496,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           created_by?: string | null
+          expected_date?: string | null
           id?: string
           notes?: string | null
           number: string
@@ -508,6 +510,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           created_by?: string | null
+          expected_date?: string | null
           id?: string
           notes?: string | null
           number?: string
