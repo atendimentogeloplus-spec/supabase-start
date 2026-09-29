@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Bell, Building2, FileText, KanbanSquare, LayoutDashboard, List, LogOut, Menu, Settings, Users } from "lucide-react";
+import kraftLogo from "@/assets/kraft-logo.png.asset.json";
 
 const NAV = [
   { to: "/", label: "Kanban", icon: KanbanSquare, adminOnly: false },
@@ -75,8 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen((o) => !o)} aria-label="Menu">
             <Menu className="h-5 w-5" />
           </Button>
-          <img src="/icon-192.png" alt="Kraft Clean" className={`${lbl} h-10 w-10 rounded-md object-cover`} />
-          <span className={`${lbl} font-serif text-xl font-semibold tracking-widest`}>KRAFT</span>
+          <img src={kraftLogo.url} alt="Kraft Clean" className={`${lbl} h-16 w-full min-w-0 object-contain`} />
         </div>
         {isAdmin && (
           <div className={`mx-2 mb-3 flex ${open ? "flex-row text-sm" : "flex-col"} rounded-md border p-0.5 text-xs md:flex-row md:text-sm`}>
