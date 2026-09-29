@@ -98,26 +98,41 @@ function PainelPage() {
             <CardTitle className="text-base">Desempenho por representante</CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-left text-muted-foreground">
                 <tr>
                   <th className="pb-2">Representante</th>
+                  <th className="pb-2">Total</th>
                   <th className="pb-2">Abertos</th>
                   <th className="pb-2">Ganhos</th>
+                  <th className="pb-2">Perdidos</th>
+                  <th className="pb-2">Conversão</th>
+                  <th className="pb-2">Valor ganho</th>
                   <th className="pb-2">Parados</th>
                 </tr>
               </thead>
               <tbody>
-                {profiles.map((p) => (
-                  <tr key={p.id} className="border-t">
-                    <td className="py-2">{p.name}</td>
-                    <td className="py-2">{openLeads.filter((l) => l.owner_id === p.id).length}</td>
-                    <td className="py-2">{won.filter((l) => l.owner_id === p.id).length}</td>
-                    <td className="py-2">{stalled.filter((l) => l.owner_id === p.id).length}</td>
-                  </tr>
-                ))}
+                {profiles.map((p) => {
+                  const w = won.filter((l) => l.owner_id === p.id);
+                  const lo = lost.filter((l) => l.owner_id === p.id).length;
+                  const cl = w.length + lo;
+                  return (
+                    <tr key={p.id} className="border-t">
+                      <td className="py-2">{p.name}</td>
+                      <td className="py-2">{leads.filter((l) => l.owner_id === p.id).length}</td>
+                      <td className="py-2">{openLeads.filter((l) => l.owner_id === p.id).length}</td>
+                      <td className="py-2">{w.length}</td>
+                      <td className="py-2">{lo}</td>
+                      <td className="py-2 font-medium">{cl ? Math.round((w.length / cl) * 100) : 0}%</td>
+                      <td className="py-2">{formatCurrency(w.reduce((s, l) => s + (Number(l.estimated_value) || 0), 0))}</td>
+                      <td className="py-2">{stalled.filter((l) => l.owner_id === p.id).length}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+            </div>
           </CardContent>
         </Card>
       </div>
