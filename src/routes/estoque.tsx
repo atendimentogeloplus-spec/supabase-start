@@ -139,7 +139,9 @@ function Products({ products }: { products: Product[] }) {
 function Orders({ products, clients, orders, movements }: Data) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const ordersPg = usePaged(orders);
+  const [tab, setTab] = useState("todos");
+  const shown = tab === "todos" ? orders : orders.filter((o) => o.status === tab);
+  const ordersPg = usePaged(shown);
   const [confirming, setConfirming] = useState<Order | null>(null);
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string | null) => clients.find((c) => c.id === id)?.name ?? "—";
@@ -153,7 +155,17 @@ function Orders({ products, clients, orders, movements }: Data) {
 
   return (
     <div className="space-y-3">
-      <Button onClick={() => setOpen(true)}>Novo pedido</Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button onClick={() => setOpen(true)}>Novo pedido</Button>
+        <div className="ml-auto flex flex-wrap gap-1 rounded-md bg-muted p-1">
+          {[["todos", "Todos"], ...Object.entries(STATUS)].map(([k, label]) => (
+            <button key={k} type="button" onClick={() => setTab(k)}
+              className={`rounded px-3 py-1 text-sm ${tab === k ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}>
+              {label} ({k === "todos" ? orders.length : orders.filter((o) => o.status === k).length})
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left"><tr>
@@ -181,7 +193,7 @@ function Orders({ products, clients, orders, movements }: Data) {
                 </td>
               </tr>
             ))}
-            {orders.length === 0 && <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
+            {shown.length === 0 && <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
           </tbody>
         </table>
       </div>
