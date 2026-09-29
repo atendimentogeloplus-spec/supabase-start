@@ -73,6 +73,10 @@ function useStockData() {
     const { data, error } = await fetchAll((f, t) => supabase.from("client_forecasts").select("*").range(f, t));
     if (error) throw error; return data as Forecast[];
   } });
+  const minimums = useQuery({ queryKey: ["stock_minimums"], queryFn: async () => {
+    const { data, error } = await fetchAll((f, t) => supabase.from("stock_minimums" as never).select("*").range(f, t));
+    if (error) throw error; return data as unknown as StockMinimum[];
+  } });
   return {
     products: products.data ?? [], clients: clients.data ?? [], orders: orders.data ?? [],
     movements: movements.data ?? [], forecasts: forecasts.data ?? [], minimums: minimums.data ?? [],
