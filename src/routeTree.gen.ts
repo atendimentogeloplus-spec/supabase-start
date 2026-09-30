@@ -17,6 +17,7 @@ import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as EstoqueRouteImport } from './routes/estoque'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as LeadsIndexRouteImport } from './routes/leads.index'
 import { Route as LeadsLeadIdRouteImport } from './routes/leads.$leadId'
@@ -62,6 +63,11 @@ const RelatoriosRoute = RelatoriosRouteImport.update({
   path: '/relatorios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UsuariosRoute = UsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/estoque': typeof EstoqueRoute
   '/painel': typeof PainelRoute
   '/relatorios': typeof RelatoriosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/usuarios': typeof UsuariosRoute
   '/leads/$leadId': typeof LeadsLeadIdRoute
   '/leads/': typeof LeadsIndexRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/estoque': typeof EstoqueRoute
   '/painel': typeof PainelRoute
   '/relatorios': typeof RelatoriosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/usuarios': typeof UsuariosRoute
   '/leads/$leadId': typeof LeadsLeadIdRoute
   '/leads': typeof LeadsIndexRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/estoque': typeof EstoqueRoute
   '/painel': typeof PainelRoute
   '/relatorios': typeof RelatoriosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/usuarios': typeof UsuariosRoute
   '/leads/$leadId': typeof LeadsLeadIdRoute
   '/leads/': typeof LeadsIndexRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/painel'
     | '/relatorios'
+    | '/reset-password'
     | '/usuarios'
     | '/leads/$leadId'
     | '/leads/'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/painel'
     | '/relatorios'
+    | '/reset-password'
     | '/usuarios'
     | '/leads/$leadId'
     | '/leads'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/painel'
     | '/relatorios'
+    | '/reset-password'
     | '/usuarios'
     | '/leads/$leadId'
     | '/leads/'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   EstoqueRoute: typeof EstoqueRoute
   PainelRoute: typeof PainelRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   UsuariosRoute: typeof UsuariosRoute
   LeadsLeadIdRoute: typeof LeadsLeadIdRoute
   LeadsIndexRoute: typeof LeadsIndexRoute
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RelatoriosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/usuarios': {
       id: '/usuarios'
       path: '/usuarios'
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   EstoqueRoute: EstoqueRoute,
   PainelRoute: PainelRoute,
   RelatoriosRoute: RelatoriosRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   UsuariosRoute: UsuariosRoute,
   LeadsLeadIdRoute: LeadsLeadIdRoute,
   LeadsIndexRoute: LeadsIndexRoute,
