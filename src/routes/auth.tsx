@@ -23,7 +23,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -40,7 +40,14 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "login") {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Enviamos um link de recuperação para o seu e-mail.");
+        setMode("login");
+      } else if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         void navigate({ to: "/" });
@@ -69,7 +76,11 @@ function AuthPage() {
         <CardHeader>
           <CardTitle className="text-2xl">LeadTrack</CardTitle>
           <CardDescription>
-            {mode === "login" ? "Entre com sua conta." : "Crie sua conta e aguarde a aprovação."}
+            {mode === "login"
+              ? "Entre com sua conta."
+              : mode === "signup"
+                ? "Crie sua conta e aguarde a aprovação."
+                : "Informe seu e-mail para receber o link de recuperação."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -90,20 +101,31 @@ function AuthPage() {
               <Label htmlFor="email">E-mail</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+            {mode !== "forgot" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={busy}>
-              {mode === "login" ? "Entrar" : "Criar conta"}
+              {mode === "login" ? "Entrar" : mode === "signup" ? "Criar conta" : "Enviar link de recuperação"}
             </Button>
+            {mode === "login" && (
+              <button
+                type="button"
+                className="w-full text-sm text-muted-foreground underline"
+                onClick={() => setMode("forgot")}
+              >
+                Esqueci minha senha
+              </button>
+            )}
             <button
               type="button"
               className="w-full text-sm text-muted-foreground underline"
