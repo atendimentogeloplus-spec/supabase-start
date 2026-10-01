@@ -92,23 +92,23 @@ function EstoquePage() {
     <div className="space-y-4">
       <h1 className="hidden text-xl font-semibold md:block">Estoque</h1>
       {isStockist && <p className="rounded-md bg-muted p-2 text-sm text-muted-foreground">Acesso de estoquista: somente visualização.</p>}
-      <Tabs defaultValue="painel">
+      <Tabs defaultValue={isStockist ? "saldos" : "painel"}>
         <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto [&>*]:shrink-0 rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
-          <TabsTrigger value="painel">Painel</TabsTrigger>
-          <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
+          {!isStockist && <TabsTrigger value="painel">Painel</TabsTrigger>}
+          {!isStockist && <TabsTrigger value="pedidos">Pedidos</TabsTrigger>}
           <TabsTrigger value="saldos">Saldos</TabsTrigger>
           <TabsTrigger value="gestao">Gestão do estoque</TabsTrigger>
-          <TabsTrigger value="clientes">Previsão por cliente</TabsTrigger>
+          {!isStockist && <TabsTrigger value="clientes">Previsão por cliente</TabsTrigger>}
           <TabsTrigger value="movs">Movimentações</TabsTrigger>
-          <TabsTrigger value="produtos">Produtos</TabsTrigger>
+          {!isStockist && <TabsTrigger value="produtos">Produtos</TabsTrigger>}
         </TabsList>
-        <TabsContent value="painel"><StockDashboard {...d} /></TabsContent>
-        <TabsContent value="pedidos"><Orders {...d} /></TabsContent>
+        {!isStockist && <TabsContent value="painel"><StockDashboard {...d} /></TabsContent>}
+        {!isStockist && <TabsContent value="pedidos"><Orders {...d} /></TabsContent>}
         <TabsContent value="saldos"><Balances {...d} /></TabsContent>
         <TabsContent value="gestao"><StockManagement {...d} /></TabsContent>
-        <TabsContent value="clientes"><ClientForecasts {...d} /></TabsContent>
+        {!isStockist && <TabsContent value="clientes"><ClientForecasts {...d} /></TabsContent>}
         <TabsContent value="movs"><MovementList {...d} /></TabsContent>
-        <TabsContent value="produtos"><Products products={d.products} /></TabsContent>
+        {!isStockist && <TabsContent value="produtos"><Products products={d.products} /></TabsContent>}
       </Tabs>
     </div>
   );
