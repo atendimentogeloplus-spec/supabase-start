@@ -218,12 +218,18 @@ function Orders({ products, clients, orders, movements }: Data) {
   );
 }
 
-function NewOrderDialog({ open, onClose, products, clients }: { open: boolean; onClose: () => void; products: Product[]; clients: Client[] }) {
+function NewOrderDialog({ open, onClose, products, clients, order }: { open: boolean; onClose: () => void; products: Product[]; clients: Client[]; order?: Order | null }) {
   const qc = useQueryClient();
   const [number, setNumber] = useState(""); const [supplier, setSupplier] = useState(""); const [clientId, setClientId] = useState(""); const [expected, setExpected] = useState("");
   const [items, setItems] = useState<{ product_id: string; quantity: string }[]>([{ product_id: "", quantity: "" }]);
+  const locked = !!order?.stock_confirmed_at;
   useEffect(() => {
     if (!open) return;
+    if (order) {
+      setNumber(order.number); setSupplier(order.supplier ?? ""); setClientId(order.client_id ?? ""); setExpected(order.expected_date ?? "");
+      setItems(order.purchase_order_items.length ? order.purchase_order_items.map((i) => ({ product_id: i.product_id, quantity: String(i.quantity) })) : [{ product_id: "", quantity: "" }]);
+      return;
+    }
     let alive = true;
     (async () => {
       const year = new Date().getFullYear();
@@ -236,24 +242,39 @@ function NewOrderDialog({ open, onClose, products, clients }: { open: boolean; o
       if (alive) setNumber((cur) => cur || String(next));
     })();
     return () => { alive = false; };
-  }, [open]);
+  }, [open, order]);
+  function reset() { setNumber(""); setSupplier(""); setClientId(""); setExpected(""); setItems([{ product_id: "", quantity: "" }]); }
   async function save() {
     const valid = items.filter((i) => i.product_id && Number(i.quantity) > 0);
     if (!number.trim()) return toast.error("Informe o número do pedido.");
-    if (valid.length === 0) return toast.error("Adicione ao menos um item.");
-    const { data, error } = await supabase.from("purchase_orders")
-      .insert({ number: number.trim().slice(0, 50), supplier: supplier.trim() || null, client_id: clientId || null, expected_date: expected || null }).select("id").single();
-    if (error || !data) return toast.error(error?.message ?? "Erro");
-    const { error: e2 } = await supabase.from("purchase_order_items").insert(valid.map((i) => ({ order_id: data.id, product_id: i.product_id, quantity: Number(i.quantity) })));
-    if (e2) return toast.error(e2.message);
-    toast.success("Pedido criado.");
-    setNumber(""); setSupplier(""); setClientId(""); setExpected(""); setItems([{ product_id: "", quantity: "" }]);
+    if (!locked && valid.length === 0) return toast.error("Adicione ao menos um item.");
+    const fields = { number: number.trim().slice(0, 50), supplier: supplier.trim() || null, client_id: clientId || null, expected_date: expected || null };
+    let orderId = order?.id;
+    if (order) {
+      const { error } = await supabase.from("purchase_orders").update(fields).eq("id", order.id);
+      if (error) return toast.error(error.message);
+      if (!locked) {
+        const { error: ed } = await supabase.from("purchase_order_items").delete().eq("order_id", order.id);
+        if (ed) return toast.error(ed.message);
+      }
+    } else {
+      const { data, error } = await supabase.from("purchase_orders").insert(fields).select("id").single();
+      if (error || !data) return toast.error(error?.message ?? "Erro");
+      orderId = data.id;
+    }
+    if (!locked) {
+      const { error: e2 } = await supabase.from("purchase_order_items").insert(valid.map((i) => ({ order_id: orderId!, product_id: i.product_id, quantity: Number(i.quantity) })));
+      if (e2) return toast.error(e2.message);
+    }
+    toast.success(order ? "Pedido atualizado." : "Pedido criado.");
+    reset();
     void qc.invalidateQueries({ queryKey: ["purchase_orders"] }); onClose();
   }
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { reset(); onClose(); } }}>
       <DialogContent>
-        <DialogHeader><DialogTitle>Novo pedido de compra</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{order ? `Editar pedido ${order.number}` : "Novo pedido de compra"}</DialogTitle></DialogHeader>
+        {locked && <p className="text-xs text-muted-foreground">A entrada no estoque já foi confirmada, por isso os itens não podem ser alterados.</p>}
         <div className="space-y-2">
           <Input placeholder="Número do pedido" value={number} onChange={(e) => setNumber(e.target.value)} />
           <Input placeholder="Fornecedor" value={supplier} onChange={(e) => setSupplier(e.target.value)} />
