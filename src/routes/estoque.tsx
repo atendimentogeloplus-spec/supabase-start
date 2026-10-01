@@ -2,7 +2,7 @@ import { usePaged } from "@/lib/paginate";
 import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -222,6 +222,21 @@ function NewOrderDialog({ open, onClose, products, clients }: { open: boolean; o
   const qc = useQueryClient();
   const [number, setNumber] = useState(""); const [supplier, setSupplier] = useState(""); const [clientId, setClientId] = useState(""); const [expected, setExpected] = useState("");
   const [items, setItems] = useState<{ product_id: string; quantity: string }[]>([{ product_id: "", quantity: "" }]);
+  useEffect(() => {
+    if (!open) return;
+    let alive = true;
+    (async () => {
+      const year = new Date().getFullYear();
+      // Numeração sequencial anual: em 2026 começa em 600 (a partir de 01/10); nos demais anos começa em 1.
+      const since = year === 2026 ? "2026-10-01T00:00:00-03:00" : `${year}-01-01T00:00:00-03:00`;
+      const start = year === 2026 ? 600 : 1;
+      const { data } = await supabase.from("purchase_orders").select("number").gte("created_at", since);
+      const nums = (data ?? []).map((o) => Number(String(o.number).trim())).filter((n) => Number.isInteger(n) && n >= start);
+      const next = nums.length ? Math.max(...nums) + 1 : start;
+      if (alive) setNumber((cur) => cur || String(next));
+    })();
+    return () => { alive = false; };
+  }, [open]);
   async function save() {
     const valid = items.filter((i) => i.product_id && Number(i.quantity) > 0);
     if (!number.trim()) return toast.error("Informe o número do pedido.");
