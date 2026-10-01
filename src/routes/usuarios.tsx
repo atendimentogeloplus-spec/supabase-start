@@ -63,6 +63,11 @@ function UsuariosPage() {
     void qc.invalidateQueries({ queryKey: ["profiles"] });
   }
 
+  async function approve(id: string, role: AppRole) {
+    await setRole(id, role);
+    await setStatus(id, "active");
+  }
+
   async function setRole(id: string, role: AppRole) {
     await supabase.from("user_roles").delete().eq("user_id", id);
     const { error } = await supabase.from("user_roles").insert({ user_id: id, role });
@@ -114,9 +119,14 @@ function UsuariosPage() {
                   <td className="p-3">
                     <div className="flex gap-2">
                       {p.status !== "active" && (
-                        <Button size="sm" onClick={() => void setStatus(p.id, "active")}>
-                          Aprovar
-                        </Button>
+                        <>
+                          <Button size="sm" onClick={() => void approve(p.id, "rep_external")}>
+                            Aprovar como representante
+                          </Button>
+                          <Button size="sm" variant="secondary" onClick={() => void approve(p.id, "stockist")}>
+                            Aprovar como estoquista
+                          </Button>
+                        </>
                       )}
                       {p.status === "pending" && (
                         <Button size="sm" variant="outline" onClick={() => void setStatus(p.id, "rejected")}>

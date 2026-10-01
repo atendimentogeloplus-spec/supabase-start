@@ -19,7 +19,7 @@ const NAV = [
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { loading, session, profile, isAdmin, signOut } = useAuth();
+  const { loading, session, profile, isAdmin, isStockist, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
@@ -28,6 +28,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
   }, [loading, session, navigate]);
+
+  useEffect(() => {
+    if (isStockist && !pathname.startsWith("/estoque")) void navigate({ to: "/estoque" });
+  }, [isStockist, pathname, navigate]);
 
   const { data: unread = 0 } = useQuery({
     queryKey: ["unread", session?.user?.id],
@@ -87,7 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-sidebar-border bg-sidebar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {inStock ? (
           <>
-            <MobileTab to="/" label="Leads" icon={KanbanSquare} active={false} />
+            {!isStockist && <MobileTab to="/" label="Leads" icon={KanbanSquare} active={false} />}
             <MobileTab to="/estoque" label="Estoque" icon={Boxes} active />
           </>
         ) : (
