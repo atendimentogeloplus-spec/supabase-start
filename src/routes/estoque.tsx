@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pencil, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StockDashboard, type StockMinimum } from "@/components/StockDashboard";
@@ -151,6 +152,17 @@ function Orders({ products, clients, orders, movements }: Data) {
   }
   const ordersPg = usePaged(shown);
   const [confirming, setConfirming] = useState<Order | null>(null);
+  const [editing, setEditing] = useState<Order | null>(null);
+  async function removeOrder(o: Order) {
+    if (o.stock_confirmed_at) return toast.error("Este pedido já teve entrada no estoque e não pode ser excluído.");
+    if (!window.confirm(`Excluir o pedido ${o.number}? Essa ação não pode ser desfeita.`)) return;
+    const { error: e1 } = await supabase.from("purchase_order_items").delete().eq("order_id", o.id);
+    if (e1) return toast.error(e1.message);
+    const { error } = await supabase.from("purchase_orders").delete().eq("id", o.id);
+    if (error) return toast.error(error.message);
+    toast.success("Pedido excluído.");
+    void qc.invalidateQueries({ queryKey: ["purchase_orders"] });
+  }
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string | null) => clients.find((c) => c.id === id)?.name ?? "—";
 
@@ -178,7 +190,7 @@ function Orders({ products, clients, orders, movements }: Data) {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left"><tr>
             <th className="p-2">Pedido</th><th className="p-2">Fornecedor</th><th className="p-2">Cliente</th>
-            <th className="p-2">Itens</th><th className="p-2">Previsão</th><th className="p-2">Status</th><th className="p-2">Estoque</th>
+            <th className="p-2">Itens</th><th className="p-2">Previsão</th><th className="p-2">Status</th><th className="p-2">Estoque</th><th className="p-2" />
           </tr></thead>
           <tbody>
             {ordersPg.rows.map((o) => (
@@ -203,14 +215,19 @@ function Orders({ products, clients, orders, movements }: Data) {
                     <Button size="sm" onClick={() => setConfirming(o)}>Confirmar entrada</Button>
                   ) : <span className="text-xs text-muted-foreground">Aguardando entrega</span>}
                 </td>
+                <td className="p-2 whitespace-nowrap text-right">
+                  <Button size="sm" variant="ghost" onClick={() => setEditing(o)}><Pencil className="h-4 w-4" /></Button>
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => void removeOrder(o)}><Trash2 className="h-4 w-4" /></Button>
+                </td>
               </tr>
             ))}
-            {shown.length === 0 && <tr><td colSpan={7} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
+            {shown.length === 0 && <tr><td colSpan={8} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
           </tbody>
         </table>
       </div>
       <Pager {...ordersPg} />
       <NewOrderDialog open={open} onClose={() => setOpen(false)} products={products} clients={clients} />
+      <NewOrderDialog open={!!editing} order={editing} onClose={() => setEditing(null)} products={products} clients={clients} />
       {confirming && (
         <ConfirmDialog order={confirming} clients={clients} movements={movements} onClose={() => setConfirming(null)} />
       )}
@@ -287,17 +304,17 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
           </label>
           {items.map((it, idx) => (
             <div key={idx} className="flex gap-2">
-              <select className={sel} value={it.product_id} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, product_id: e.target.value } : x))}>
+              <select className={sel} disabled={locked} value={it.product_id} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, product_id: e.target.value } : x))}>
                 <option value="">Produto…</option>
                 {products.filter((p) => p.active).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
-              <Input type="number" min="0" placeholder="Qtd" className="w-24" value={it.quantity} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
+              <Input type="number" min="0" placeholder="Qtd" className="w-24" disabled={locked} value={it.quantity} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
             </div>
           ))}
-          <Button variant="outline" size="sm" onClick={() => setItems([...items, { product_id: "", quantity: "" }])}>+ Item</Button>
+          {!locked && <Button variant="outline" size="sm" onClick={() => setItems([...items, { product_id: "", quantity: "" }])}>+ Item</Button>}
           {products.length === 0 && <p className="text-xs text-muted-foreground">Cadastre produtos na aba Produtos.</p>}
         </div>
-        <div className="flex justify-end gap-2"><Button variant="outline" onClick={onClose}>Cancelar</Button><Button onClick={() => void save()}>Salvar</Button></div>
+        <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => { reset(); onClose(); }}>Cancelar</Button><Button onClick={() => void save()}>Salvar</Button></div>
       </DialogContent>
     </Dialog>
   );
