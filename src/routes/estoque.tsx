@@ -90,9 +90,9 @@ function EstoquePage() {
   if (!isAdmin) return <p className="text-muted-foreground">Acesso restrito a administradores.</p>;
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Estoque</h1>
+      <h1 className="hidden text-xl font-semibold md:block">Estoque</h1>
       <Tabs defaultValue="painel">
-        <TabsList className="flex-wrap">
+        <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
           <TabsTrigger value="painel">Painel</TabsTrigger>
           <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
           <TabsTrigger value="saldos">Saldos</TabsTrigger>
