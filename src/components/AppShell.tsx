@@ -108,7 +108,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="absolute inset-0 bg-foreground/40" onClick={() => setOpen(false)} />
           <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl">
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
-            {isAdmin && (
+            {!isStockist && (
               <div className="mb-4 flex rounded-lg bg-muted p-1 text-sm">
                 <Link to="/" className={`flex-1 rounded-md py-2 text-center ${!inStock ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}>Leads</Link>
                 <Link to="/estoque" className={`flex-1 rounded-md py-2 text-center ${inStock ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}>Estoque</Link>
@@ -136,7 +136,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-2 px-3 py-4">
           <img src={kraftLogo.url} alt="Kraft Clean" className="h-16 w-full min-w-0 object-contain" />
         </div>
-        {isAdmin && (
+        {!isStockist && (
           <div className="mx-2 mb-3 flex flex-row rounded-md border p-0.5 text-sm">
             <Link to="/" className={`flex-1 rounded px-2 py-1 text-center ${!inStock ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
               Leads
