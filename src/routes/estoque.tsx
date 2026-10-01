@@ -97,7 +97,7 @@ function EstoquePage() {
         <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto [&>*]:shrink-0 rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
           {!isStockist && <TabsTrigger value="painel">Painel</TabsTrigger>}
           {!isStockist && <TabsTrigger value="pedidos">Pedidos</TabsTrigger>}
-          <TabsTrigger value="saldos">Saldos</TabsTrigger>
+          <TabsTrigger value="saldos">Saídas</TabsTrigger>
           <TabsTrigger value="gestao">Gestão do estoque</TabsTrigger>
           {!isStockist && <TabsTrigger value="clientes">Previsão por cliente</TabsTrigger>}
           <TabsTrigger value="movs">Movimentações</TabsTrigger>
