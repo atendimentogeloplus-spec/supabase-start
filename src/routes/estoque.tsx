@@ -96,6 +96,7 @@ function EstoquePage() {
           <TabsTrigger value="painel">Painel</TabsTrigger>
           <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
           <TabsTrigger value="saldos">Saldos</TabsTrigger>
+          <TabsTrigger value="gestao">Gestão do estoque</TabsTrigger>
           <TabsTrigger value="clientes">Previsão por cliente</TabsTrigger>
           <TabsTrigger value="movs">Movimentações</TabsTrigger>
           <TabsTrigger value="produtos">Produtos</TabsTrigger>
@@ -103,6 +104,7 @@ function EstoquePage() {
         <TabsContent value="painel"><StockDashboard {...d} /></TabsContent>
         <TabsContent value="pedidos"><Orders {...d} /></TabsContent>
         <TabsContent value="saldos"><Balances {...d} /></TabsContent>
+        <TabsContent value="gestao"><StockManagement {...d} /></TabsContent>
         <TabsContent value="clientes"><ClientForecasts {...d} /></TabsContent>
         <TabsContent value="movs"><MovementList {...d} /></TabsContent>
         <TabsContent value="produtos"><Products products={d.products} /></TabsContent>
@@ -533,6 +535,78 @@ function Table({ head, rows: all }: { head: string[]; rows: string[][] }) {
       </table>
     </div>
     <Pager {...pg} />
+    </div>
+  );
+}
+
+/* ---------------- Gestão do estoque ---------------- */
+function StockManagement({ products, clients, movements }: Data) {
+  const [mod, setMod] = useState("");
+  const [cid, setCid] = useState("");
+  const [q, setQ] = useState("");
+  const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
+  const punit = (id: string) => products.find((p) => p.id === id)?.unit ?? "";
+  const cname = (id: string) => (id ? clients.find((c) => c.id === id)?.name ?? "—" : "—");
+
+  const all = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of movements) {
+      const key = `${m.modality}|${m.client_id ?? ""}|${m.product_id}`;
+      map.set(key, (map.get(key) ?? 0) + (m.kind === "entrada" ? Number(m.quantity) : -Number(m.quantity)));
+    }
+    return [...map.entries()].map(([k, v]) => { const [mod, cid, pid] = k.split("|"); return { mod, cid, pid, v }; })
+      .filter((r) => r.v !== 0);
+  }, [movements]);
+
+  const s = q.trim().toLowerCase();
+  const rows = all.filter((r) => (!mod || r.mod === mod) && (!cid || r.cid === cid) && (!s || pname(r.pid).toLowerCase().includes(s)))
+    .sort((a, b) => a.mod.localeCompare(b.mod) || cname(a.cid).localeCompare(cname(b.cid)) || pname(a.pid).localeCompare(pname(b.pid)));
+
+  const byClient = new Map<string, { qty: number; items: number }>();
+  for (const r of rows.filter((r) => r.mod === "guarda")) {
+    const c = byClient.get(r.cid) ?? { qty: 0, items: 0 };
+    c.qty += r.v; c.items += 1; byClient.set(r.cid, c);
+  }
+  const byProduct = new Map<string, { lisos: number; guarda: number }>();
+  for (const r of rows) {
+    const p = byProduct.get(r.pid) ?? { lisos: 0, guarda: 0 };
+    if (r.mod === "lisos") p.lisos += r.v; else p.guarda += r.v;
+    byProduct.set(r.pid, p);
+  }
+  const total = (m: string) => rows.filter((r) => r.mod === m).reduce((t, r) => t + r.v, 0);
+  const guardaClients = clients.filter((c) => all.some((r) => r.mod === "guarda" && r.cid === c.id));
+
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-2 sm:grid-cols-3">
+        <select className={sel} value={mod} onChange={(e) => setMod(e.target.value)}>
+          <option value="">Todos os estoques</option><option value="lisos">Lisos</option><option value="guarda">Guarda</option>
+        </select>
+        <select className={sel} value={cid} onChange={(e) => setCid(e.target.value)}>
+          <option value="">Todos os clientes</option>{guardaClients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <Input placeholder="Buscar produto…" value={q} onChange={(e) => setQ(e.target.value)} />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        {[["Lisos", total("lisos")], ["Guarda", total("guarda")], ["Total", total("lisos") + total("guarda")]].map(([l, v]) => (
+          <div key={l} className="rounded-md border bg-card p-3">
+            <div className="text-sm text-muted-foreground">Estoque {l}</div>
+            <div className="mt-1 text-2xl font-semibold">{v}</div>
+          </div>
+        ))}
+      </div>
+      <section className="space-y-2"><h2 className="font-semibold">Guarda por cliente ({byClient.size} clientes)</h2>
+        <Table head={["Cliente", "Produtos", "Quantidade"]}
+          rows={[...byClient.entries()].sort((a, b) => b[1].qty - a[1].qty).map(([c, v]) => [cname(c), String(v.items), String(v.qty)])} />
+      </section>
+      <section className="space-y-2"><h2 className="font-semibold">Por produto</h2>
+        <Table head={["Produto", "Lisos", "Guarda", "Total"]}
+          rows={[...byProduct.entries()].map(([p, v]) => [`${pname(p)} ${punit(p) ? `(${punit(p)})` : ""}`, String(v.lisos), String(v.guarda), String(v.lisos + v.guarda)])} />
+      </section>
+      <section className="space-y-2"><h2 className="font-semibold">Detalhado</h2>
+        <Table head={["Estoque", "Cliente", "Produto", "Saldo"]}
+          rows={rows.map((r) => [MOD[r.mod], cname(r.cid), pname(r.pid), String(r.v)])} />
+      </section>
     </div>
   );
 }
