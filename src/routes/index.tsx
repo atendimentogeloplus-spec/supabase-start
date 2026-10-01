@@ -1,3 +1,4 @@
+import { askLossReason } from "@/components/LossReasonDialog";
 import { fetchAll } from "@/lib/paginate";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,7 +47,7 @@ function KanbanPage() {
       .eq("lead_id", lead.id);
     let lossReason: string | null = lead.loss_reason;
     if (column.requires_loss) {
-      lossReason = window.prompt("Motivo da perda:", lead.loss_reason ?? "");
+      lossReason = await askLossReason();
       if (lossReason === null) return;
     }
     const problem = validateMove(column, count ?? 0, lossReason);
