@@ -103,7 +103,7 @@ function UsuariosPage() {
                   <td className="p-3 text-muted-foreground">{p.email}</td>
                   <td className="p-3 text-muted-foreground">{formatDateTime(p.created_at)}</td>
                   <td className="p-3">
-                    <select
+                    {p.email?.toLowerCase() === "renato.c2eventos@gmail.com" ? <span className="rounded bg-primary/10 px-2 py-1 text-xs font-medium text-primary">Desenvolvedor (protegido)</span> : <select
                       className="h-8 rounded border bg-background px-2 text-sm"
                       value={role}
                       onChange={(e) => void setRole(p.id, e.target.value as AppRole)}
@@ -113,11 +113,11 @@ function UsuariosPage() {
                           {label}
                         </option>
                       ))}
-                    </select>
+                    </select>}
                   </td>
                   <td className="p-3">{STATUS_LABELS[p.status]}</td>
                   <td className="p-3">
-                    <div className="flex gap-2">
+                    {p.email?.toLowerCase() !== "renato.c2eventos@gmail.com" && <div className="flex gap-2">
                       {p.status !== "active" && (
                         <>
                           <Button size="sm" onClick={() => void approve(p.id, "rep_external")}>
@@ -138,7 +138,7 @@ function UsuariosPage() {
                           Desativar
                         </Button>
                       )}
-                    </div>
+                    </div>}
                   </td>
                 </tr>
               );
