@@ -391,32 +391,28 @@ function Balances({ products, clients, movements }: Data) {
 
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string) => clients.find((c) => c.id === id)?.name ?? "—";
-  const totals = Object.keys(MOD).map((mod) => {
-    const rs = rows.filter((r) => r.mod === mod);
-    return { mod, qty: rs.reduce((s, r) => s + r.v, 0), items: rs.length };
-  }).filter((t) => t.items > 0 || t.mod === "lisos" || t.mod === "guarda");
+  const view = rows.filter((r) => r.mod === modality);
+  const isG = modality === "guarda";
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {totals.map((t) => (
-          <div key={t.mod} className="rounded-md border bg-card p-3">
-            <div className="text-sm text-muted-foreground">Estoque de {MOD[t.mod]}</div>
-            <div className="mt-1 text-2xl font-semibold">{t.qty}</div>
-            <div className="text-xs text-muted-foreground">{t.items} {t.items === 1 ? "item com saldo" : "itens com saldo"}</div>
-          </div>
-        ))}
+      <ModPicker value={modality} onChange={setModality} />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-md border bg-primary/10 p-3">
-          <div className="text-sm text-muted-foreground">Estoque total</div>
-          <div className="mt-1 text-2xl font-semibold">{rows.reduce((s, r) => s + r.v, 0)}</div>
-          <div className="text-xs text-muted-foreground">{rows.length} itens com saldo</div>
+          <div className="text-sm text-muted-foreground">Estoque de {MOD[modality]}</div>
+          <div className="mt-1 text-2xl font-semibold">{view.reduce((s, r) => s + r.v, 0)}</div>
+          <div className="text-xs text-muted-foreground">{view.length} {view.length === 1 ? "item com saldo" : "itens com saldo"}</div>
         </div>
+        {isG && (
+          <div className="rounded-md border bg-card p-3">
+            <div className="text-sm text-muted-foreground">Clientes com saldo</div>
+            <div className="mt-1 text-2xl font-semibold">{new Set(view.map((r) => r.cid)).size}</div>
+          </div>
+        )}
       </div>
       <div className="space-y-2 rounded-md border p-3">
         <p className="text-sm font-medium">Registrar saída</p>
         <div className="grid gap-2 sm:grid-cols-5">
-          <select className={sel} value={modality} onChange={(e) => setModality(e.target.value as "lisos" | "guarda")}>
-            <option value="lisos">Estoque de Lisos</option><option value="guarda">Estoque de Guarda</option>
-          </select>
+          <div className="flex items-center rounded-md border px-3 text-sm text-muted-foreground">{MOD[modality]}</div>
           {modality === "guarda" ? (
             <select className={sel} value={clientId} onChange={(e) => setClientId(e.target.value)}>
               <option value="">Cliente…</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -431,8 +427,8 @@ function Balances({ products, clients, movements }: Data) {
         <Input placeholder="Observação (opcional)" value={note} onChange={(e) => setNote(e.target.value)} />
         {modality === "guarda" && <p className="text-xs text-muted-foreground">A saída da Guarda alimenta o Estoque Separado e a previsão do cliente.</p>}
       </div>
-      <Table head={["Estoque", "Cliente", "Produto", "Saldo"]}
-        rows={rows.map((r) => [MOD[r.mod], r.cid ? cname(r.cid) : "—", pname(r.pid), String(r.v)])} />
+      {isG ? <Table head={["Cliente", "Produto", "Saldo"]} rows={view.map((r) => [cname(r.cid), pname(r.pid), String(r.v)])} />
+        : <Table head={["Produto", "Saldo"]} rows={view.map((r) => [pname(r.pid), String(r.v)])} />}
     </div>
   );
 }
@@ -515,9 +511,29 @@ function ClientForecasts({ products, clients, movements, forecasts }: Data) {
 function MovementList({ products, clients, movements }: Data) {
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string | null) => clients.find((c) => c.id === id)?.name ?? "—";
+  const [mod, setMod] = useState<"lisos" | "guarda">("lisos");
+  const list = movements.filter((m) => m.modality === mod);
+  const base = (m: Movement) => [new Date(m.created_at).toLocaleString("pt-BR"), m.kind === "entrada" ? "Entrada" : "Saída", pname(m.product_id), String(m.quantity)];
   return (
-    <Table head={["Data", "Tipo", "Estoque", "Produto", "Qtd", "Cliente", "Obs."]}
-      rows={movements.map((m) => [new Date(m.created_at).toLocaleString("pt-BR"), m.kind === "entrada" ? "Entrada" : "Saída", MOD[m.modality], pname(m.product_id), String(m.quantity), cname(m.client_id), m.note ?? ""])} />
+    <div className="space-y-3">
+      <ModPicker value={mod} onChange={setMod} />
+      {mod === "guarda"
+        ? <Table head={["Data", "Tipo", "Produto", "Qtd", "Cliente", "Obs."]} rows={list.map((m) => [...base(m), cname(m.client_id), m.note ?? ""])} />
+        : <Table head={["Data", "Tipo", "Produto", "Qtd", "Obs."]} rows={list.map((m) => [...base(m), m.note ?? ""])} />}
+    </div>
+  );
+}
+
+function ModPicker({ value, onChange }: { value: "lisos" | "guarda"; onChange: (v: "lisos" | "guarda") => void }) {
+  return (
+    <div className="flex w-full rounded-md bg-muted p-1 text-sm sm:w-auto sm:inline-flex">
+      {(["lisos", "guarda"] as const).map((m) => (
+        <button key={m} type="button" onClick={() => onChange(m)}
+          className={`flex-1 rounded px-4 py-1.5 sm:flex-none ${value === m ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}>
+          Estoque de {m === "lisos" ? "Lisos" : "Guarda"}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -542,7 +558,7 @@ function Table({ head, rows: all }: { head: string[]; rows: string[][] }) {
 
 /* ---------------- Gestão do estoque ---------------- */
 function StockManagement({ products, clients, movements }: Data) {
-  const [mod, setMod] = useState("");
+  const [mod, setMod] = useState<"lisos" | "guarda">("lisos");
   const [cid, setCid] = useState("");
   const [q, setQ] = useState("");
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
@@ -560,7 +576,7 @@ function StockManagement({ products, clients, movements }: Data) {
   }, [movements]);
 
   const s = q.trim().toLowerCase();
-  const rows = all.filter((r) => (!mod || r.mod === mod) && (!cid || r.cid === cid) && (!s || pname(r.pid).toLowerCase().includes(s)))
+  const rows = all.filter((r) => r.mod === mod && (mod === "lisos" || !cid || r.cid === cid) && (!s || pname(r.pid).toLowerCase().includes(s)))
     .sort((a, b) => a.mod.localeCompare(b.mod) || cname(a.cid).localeCompare(cname(b.cid)) || pname(a.pid).localeCompare(pname(b.pid)));
 
   const byClient = new Map<string, { qty: number; items: number }>();
@@ -579,35 +595,47 @@ function StockManagement({ products, clients, movements }: Data) {
 
   return (
     <div className="space-y-5">
+      <ModPicker value={mod} onChange={(v) => { setMod(v); setCid(""); }} />
       <div className="grid gap-2 sm:grid-cols-3">
-        <select className={sel} value={mod} onChange={(e) => setMod(e.target.value)}>
-          <option value="">Todos os estoques</option><option value="lisos">Lisos</option><option value="guarda">Guarda</option>
-        </select>
-        <select className={sel} value={cid} onChange={(e) => setCid(e.target.value)}>
-          <option value="">Todos os clientes</option>{guardaClients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+        {mod === "guarda" && (
+          <select className={sel} value={cid} onChange={(e) => setCid(e.target.value)}>
+            <option value="">Todos os clientes</option>{guardaClients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        )}
         <Input placeholder="Buscar produto…" value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        {[["Lisos", total("lisos")], ["Guarda", total("guarda")], ["Total", total("lisos") + total("guarda")]].map(([l, v]) => (
-          <div key={l} className="rounded-md border bg-card p-3">
-            <div className="text-sm text-muted-foreground">Estoque {l}</div>
-            <div className="mt-1 text-2xl font-semibold">{v}</div>
+        <div className="rounded-md border bg-primary/10 p-3">
+          <div className="text-sm text-muted-foreground">Estoque de {MOD[mod]}</div>
+          <div className="mt-1 text-2xl font-semibold">{total(mod)}</div>
+        </div>
+        <div className="rounded-md border bg-card p-3">
+          <div className="text-sm text-muted-foreground">Produtos com saldo</div>
+          <div className="mt-1 text-2xl font-semibold">{byProduct.size}</div>
+        </div>
+        {mod === "guarda" && (
+          <div className="rounded-md border bg-card p-3">
+            <div className="text-sm text-muted-foreground">Clientes com saldo</div>
+            <div className="mt-1 text-2xl font-semibold">{byClient.size}</div>
           </div>
-        ))}
+        )}
       </div>
-      <section className="space-y-2"><h2 className="font-semibold">Guarda por cliente ({byClient.size} clientes)</h2>
-        <Table head={["Cliente", "Produtos", "Quantidade"]}
-          rows={[...byClient.entries()].sort((a, b) => b[1].qty - a[1].qty).map(([c, v]) => [cname(c), String(v.items), String(v.qty)])} />
-      </section>
+      {mod === "guarda" && (
+        <section className="space-y-2"><h2 className="font-semibold">Guarda por cliente ({byClient.size} clientes)</h2>
+          <Table head={["Cliente", "Produtos", "Quantidade"]}
+            rows={[...byClient.entries()].sort((a, b) => b[1].qty - a[1].qty).map(([c, v]) => [cname(c), String(v.items), String(v.qty)])} />
+        </section>
+      )}
       <section className="space-y-2"><h2 className="font-semibold">Por produto</h2>
-        <Table head={["Produto", "Lisos", "Guarda", "Total"]}
-          rows={[...byProduct.entries()].map(([p, v]) => [`${pname(p)} ${punit(p) ? `(${punit(p)})` : ""}`, String(v.lisos), String(v.guarda), String(v.lisos + v.guarda)])} />
+        <Table head={["Produto", "Quantidade"]}
+          rows={[...byProduct.entries()].map(([p, v]) => [`${pname(p)} ${punit(p) ? `(${punit(p)})` : ""}`, String(mod === "lisos" ? v.lisos : v.guarda)])} />
       </section>
-      <section className="space-y-2"><h2 className="font-semibold">Detalhado</h2>
-        <Table head={["Estoque", "Cliente", "Produto", "Saldo"]}
-          rows={rows.map((r) => [MOD[r.mod], cname(r.cid), pname(r.pid), String(r.v)])} />
-      </section>
+      {mod === "guarda" && (
+        <section className="space-y-2"><h2 className="font-semibold">Detalhado por cliente</h2>
+          <Table head={["Cliente", "Produto", "Saldo"]}
+            rows={rows.map((r) => [cname(r.cid), pname(r.pid), String(r.v)])} />
+        </section>
+      )}
     </div>
   );
 }
