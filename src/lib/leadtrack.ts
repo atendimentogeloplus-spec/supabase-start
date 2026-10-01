@@ -68,6 +68,7 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   admin: "Administrador",
   rep_internal: "Representante interno",
   rep_external: "Representante externo",
+  stockist: "Estoquista",
 };
 
 export const STATUS_LABELS: Record<UserStatus, string> = {

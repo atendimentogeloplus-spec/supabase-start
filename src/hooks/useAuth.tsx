@@ -9,6 +9,7 @@ type AuthContextValue = {
   profile: Profile | null;
   role: AppRole | null;
   isAdmin: boolean;
+  isStockist: boolean;
   loading: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -70,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       role,
       isAdmin: role === "admin",
+      isStockist: role === "stockist",
       loading,
       refreshProfile: () => loadProfile(session?.user?.id),
       signOut: async () => {

@@ -85,12 +85,13 @@ function useStockData() {
 }
 
 function EstoquePage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isStockist } = useAuth();
   const d = useStockData();
-  if (!isAdmin) return <p className="text-muted-foreground">Acesso restrito a administradores.</p>;
+  if (!isAdmin && !isStockist) return <p className="text-muted-foreground">Acesso restrito a administradores.</p>;
   return (
     <div className="space-y-4">
       <h1 className="hidden text-xl font-semibold md:block">Estoque</h1>
+      {isStockist && <p className="rounded-md bg-muted p-2 text-sm text-muted-foreground">Acesso de estoquista: somente visualização.</p>}
       <Tabs defaultValue="painel">
         <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto [&>*]:shrink-0 rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
           <TabsTrigger value="painel">Painel</TabsTrigger>
