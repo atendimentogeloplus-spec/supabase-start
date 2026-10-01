@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pencil, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StockDashboard, type StockMinimum } from "@/components/StockDashboard";
@@ -151,6 +152,17 @@ function Orders({ products, clients, orders, movements }: Data) {
   }
   const ordersPg = usePaged(shown);
   const [confirming, setConfirming] = useState<Order | null>(null);
+  const [editing, setEditing] = useState<Order | null>(null);
+  async function removeOrder(o: Order) {
+    if (o.stock_confirmed_at) return toast.error("Este pedido já teve entrada no estoque e não pode ser excluído.");
+    if (!window.confirm(`Excluir o pedido ${o.number}? Essa ação não pode ser desfeita.`)) return;
+    const { error: e1 } = await supabase.from("purchase_order_items").delete().eq("order_id", o.id);
+    if (e1) return toast.error(e1.message);
+    const { error } = await supabase.from("purchase_orders").delete().eq("id", o.id);
+    if (error) return toast.error(error.message);
+    toast.success("Pedido excluído.");
+    void qc.invalidateQueries({ queryKey: ["purchase_orders"] });
+  }
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string | null) => clients.find((c) => c.id === id)?.name ?? "—";
 
@@ -178,7 +190,7 @@ function Orders({ products, clients, orders, movements }: Data) {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left"><tr>
             <th className="p-2">Pedido</th><th className="p-2">Fornecedor</th><th className="p-2">Cliente</th>
-            <th className="p-2">Itens</th><th className="p-2">Previsão</th><th className="p-2">Status</th><th className="p-2">Estoque</th>
+            <th className="p-2">Itens</th><th className="p-2">Previsão</th><th className="p-2">Status</th><th className="p-2">Estoque</th><th className="p-2" />
           </tr></thead>
           <tbody>
             {ordersPg.rows.map((o) => (
@@ -203,14 +215,19 @@ function Orders({ products, clients, orders, movements }: Data) {
                     <Button size="sm" onClick={() => setConfirming(o)}>Confirmar entrada</Button>
                   ) : <span className="text-xs text-muted-foreground">Aguardando entrega</span>}
                 </td>
+                <td className="p-2 whitespace-nowrap text-right">
+                  <Button size="sm" variant="ghost" onClick={() => setEditing(o)}><Pencil className="h-4 w-4" /></Button>
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => void removeOrder(o)}><Trash2 className="h-4 w-4" /></Button>
+                </td>
               </tr>
             ))}
-            {shown.length === 0 && <tr><td colSpan={7} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
+            {shown.length === 0 && <tr><td colSpan={8} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
           </tbody>
         </table>
       </div>
       <Pager {...ordersPg} />
       <NewOrderDialog open={open} onClose={() => setOpen(false)} products={products} clients={clients} />
+      <NewOrderDialog open={!!editing} order={editing} onClose={() => setEditing(null)} products={products} clients={clients} />
       {confirming && (
         <ConfirmDialog order={confirming} clients={clients} movements={movements} onClose={() => setConfirming(null)} />
       )}
@@ -218,12 +235,18 @@ function Orders({ products, clients, orders, movements }: Data) {
   );
 }
 
-function NewOrderDialog({ open, onClose, products, clients }: { open: boolean; onClose: () => void; products: Product[]; clients: Client[] }) {
+function NewOrderDialog({ open, onClose, products, clients, order }: { open: boolean; onClose: () => void; products: Product[]; clients: Client[]; order?: Order | null }) {
   const qc = useQueryClient();
   const [number, setNumber] = useState(""); const [supplier, setSupplier] = useState(""); const [clientId, setClientId] = useState(""); const [expected, setExpected] = useState("");
   const [items, setItems] = useState<{ product_id: string; quantity: string }[]>([{ product_id: "", quantity: "" }]);
+  const locked = !!order?.stock_confirmed_at;
   useEffect(() => {
     if (!open) return;
+    if (order) {
+      setNumber(order.number); setSupplier(order.supplier ?? ""); setClientId(order.client_id ?? ""); setExpected(order.expected_date ?? "");
+      setItems(order.purchase_order_items.length ? order.purchase_order_items.map((i) => ({ product_id: i.product_id, quantity: String(i.quantity) })) : [{ product_id: "", quantity: "" }]);
+      return;
+    }
     let alive = true;
     (async () => {
       const year = new Date().getFullYear();
@@ -236,24 +259,39 @@ function NewOrderDialog({ open, onClose, products, clients }: { open: boolean; o
       if (alive) setNumber((cur) => cur || String(next));
     })();
     return () => { alive = false; };
-  }, [open]);
+  }, [open, order]);
+  function reset() { setNumber(""); setSupplier(""); setClientId(""); setExpected(""); setItems([{ product_id: "", quantity: "" }]); }
   async function save() {
     const valid = items.filter((i) => i.product_id && Number(i.quantity) > 0);
     if (!number.trim()) return toast.error("Informe o número do pedido.");
-    if (valid.length === 0) return toast.error("Adicione ao menos um item.");
-    const { data, error } = await supabase.from("purchase_orders")
-      .insert({ number: number.trim().slice(0, 50), supplier: supplier.trim() || null, client_id: clientId || null, expected_date: expected || null }).select("id").single();
-    if (error || !data) return toast.error(error?.message ?? "Erro");
-    const { error: e2 } = await supabase.from("purchase_order_items").insert(valid.map((i) => ({ order_id: data.id, product_id: i.product_id, quantity: Number(i.quantity) })));
-    if (e2) return toast.error(e2.message);
-    toast.success("Pedido criado.");
-    setNumber(""); setSupplier(""); setClientId(""); setExpected(""); setItems([{ product_id: "", quantity: "" }]);
+    if (!locked && valid.length === 0) return toast.error("Adicione ao menos um item.");
+    const fields = { number: number.trim().slice(0, 50), supplier: supplier.trim() || null, client_id: clientId || null, expected_date: expected || null };
+    let orderId = order?.id;
+    if (order) {
+      const { error } = await supabase.from("purchase_orders").update(fields).eq("id", order.id);
+      if (error) return toast.error(error.message);
+      if (!locked) {
+        const { error: ed } = await supabase.from("purchase_order_items").delete().eq("order_id", order.id);
+        if (ed) return toast.error(ed.message);
+      }
+    } else {
+      const { data, error } = await supabase.from("purchase_orders").insert(fields).select("id").single();
+      if (error || !data) return toast.error(error?.message ?? "Erro");
+      orderId = data.id;
+    }
+    if (!locked) {
+      const { error: e2 } = await supabase.from("purchase_order_items").insert(valid.map((i) => ({ order_id: orderId!, product_id: i.product_id, quantity: Number(i.quantity) })));
+      if (e2) return toast.error(e2.message);
+    }
+    toast.success(order ? "Pedido atualizado." : "Pedido criado.");
+    reset();
     void qc.invalidateQueries({ queryKey: ["purchase_orders"] }); onClose();
   }
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { reset(); onClose(); } }}>
       <DialogContent>
-        <DialogHeader><DialogTitle>Novo pedido de compra</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{order ? `Editar pedido ${order.number}` : "Novo pedido de compra"}</DialogTitle></DialogHeader>
+        {locked && <p className="text-xs text-muted-foreground">A entrada no estoque já foi confirmada, por isso os itens não podem ser alterados.</p>}
         <div className="space-y-2">
           <Input placeholder="Número do pedido" value={number} onChange={(e) => setNumber(e.target.value)} />
           <Input placeholder="Fornecedor" value={supplier} onChange={(e) => setSupplier(e.target.value)} />
@@ -266,17 +304,17 @@ function NewOrderDialog({ open, onClose, products, clients }: { open: boolean; o
           </label>
           {items.map((it, idx) => (
             <div key={idx} className="flex gap-2">
-              <select className={sel} value={it.product_id} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, product_id: e.target.value } : x))}>
+              <select className={sel} disabled={locked} value={it.product_id} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, product_id: e.target.value } : x))}>
                 <option value="">Produto…</option>
                 {products.filter((p) => p.active).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
-              <Input type="number" min="0" placeholder="Qtd" className="w-24" value={it.quantity} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
+              <Input type="number" min="0" placeholder="Qtd" className="w-24" disabled={locked} value={it.quantity} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
             </div>
           ))}
-          <Button variant="outline" size="sm" onClick={() => setItems([...items, { product_id: "", quantity: "" }])}>+ Item</Button>
+          {!locked && <Button variant="outline" size="sm" onClick={() => setItems([...items, { product_id: "", quantity: "" }])}>+ Item</Button>}
           {products.length === 0 && <p className="text-xs text-muted-foreground">Cadastre produtos na aba Produtos.</p>}
         </div>
-        <div className="flex justify-end gap-2"><Button variant="outline" onClick={onClose}>Cancelar</Button><Button onClick={() => void save()}>Salvar</Button></div>
+        <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => { reset(); onClose(); }}>Cancelar</Button><Button onClick={() => void save()}>Salvar</Button></div>
       </DialogContent>
     </Dialog>
   );
