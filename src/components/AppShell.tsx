@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Bell, Building2, FileText, KanbanSquare, LayoutDashboard, List, LogOut, Menu, Settings, Users } from "lucide-react";
+import { Bell, Building2, FileText, KanbanSquare, LayoutDashboard, List, LogOut, MoreHorizontal, Boxes, Settings, Users } from "lucide-react";
 import kraftLogo from "@/assets/kraft-logo.png.asset.json";
 
 const NAV = [
@@ -24,7 +24,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [pathname]);
-  const lbl = open ? "inline" : "hidden md:inline";
 
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
@@ -67,19 +66,74 @@ export function AppShell({ children }: { children: ReactNode }) {
   const inStock = pathname.startsWith("/estoque");
   const items = inStock ? [] : NAV.filter((i) => !i.adminOnly || isAdmin);
 
+  const isActive = (to: string) => pathname === to || (to !== "/" && pathname.startsWith(to));
+  const primary = inStock ? [] : items.filter((i) => ["/", "/leads", "/clientes"].includes(i.to));
+  const more = inStock ? [] : items.filter((i) => !["/", "/leads", "/clientes", "/avisos"].includes(i.to));
+  const current = inStock ? "Estoque" : NAV.find((i) => isActive(i.to))?.label ?? "";
+
   return (
     <div className="flex min-h-screen bg-background">
-      <div className="w-14 shrink-0 md:hidden" />
-      {open && <div className="fixed inset-0 z-30 bg-foreground/30 md:hidden" onClick={() => setOpen(false)} />}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:w-56 ${open ? "w-56" : "w-14"}`}>
-        <div className="flex items-center gap-2 px-2 py-3 md:px-3 md:py-4">
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen((o) => !o)} aria-label="Menu">
-            <Menu className="h-5 w-5" />
-          </Button>
-          <img src={kraftLogo.url} alt="Kraft Clean" className={`${lbl} h-16 w-full min-w-0 object-contain`} />
+      {/* ===== Celular: barra superior ===== */}
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar/95 px-3 backdrop-blur md:hidden">
+        <img src={kraftLogo.url} alt="Kraft Clean" className="h-9 w-auto shrink-0 object-contain" />
+        <span className="min-w-0 flex-1 truncate text-base font-semibold">{current}</span>
+        <Link to="/avisos" aria-label="Avisos" className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted-foreground active:bg-accent">
+          <Bell className="h-5 w-5" />
+          {unread > 0 && <span className="absolute right-1 top-1 min-w-4 rounded-full bg-destructive px-1 text-center text-[10px] font-semibold leading-4 text-destructive-foreground">{unread}</span>}
+        </Link>
+      </header>
+
+      {/* ===== Celular: barra inferior de navegação ===== */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-sidebar-border bg-sidebar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+        {inStock ? (
+          <>
+            <MobileTab to="/" label="Leads" icon={KanbanSquare} active={false} />
+            <MobileTab to="/estoque" label="Estoque" icon={Boxes} active />
+          </>
+        ) : (
+          primary.map((i) => <MobileTab key={i.to} to={i.to} label={i.label} icon={i.icon} active={isActive(i.to)} />)
+        )}
+        <button type="button" onClick={() => setOpen(true)} className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] ${more.some((i) => isActive(i.to)) ? "text-primary" : "text-muted-foreground"}`}>
+          <MoreHorizontal className="h-5 w-5" />Mais
+        </button>
+      </nav>
+
+      {/* ===== Celular: painel "Mais" ===== */}
+      {open && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="absolute inset-0 bg-foreground/40" onClick={() => setOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl">
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
+            {isAdmin && (
+              <div className="mb-4 flex rounded-lg bg-muted p-1 text-sm">
+                <Link to="/" className={`flex-1 rounded-md py-2 text-center ${!inStock ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}>Leads</Link>
+                <Link to="/estoque" className={`flex-1 rounded-md py-2 text-center ${inStock ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}>Estoque</Link>
+              </div>
+            )}
+            {more.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {more.map((i) => (
+                  <Link key={i.to} to={i.to} className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 text-xs ${isActive(i.to) ? "border-primary bg-primary/10 text-primary" : "text-foreground"}`}>
+                    <i.icon className="h-5 w-5" />{i.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 flex items-center justify-between border-t pt-3">
+              <span className="min-w-0 truncate text-sm text-muted-foreground">{profile?.name}</span>
+              <Button variant="ghost" size="sm" onClick={() => void signOut()}><LogOut className="mr-2 h-4 w-4" />Sair</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Computador: menu lateral (inalterado) ===== */}
+      <aside className="sticky top-0 z-40 hidden h-screen w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+        <div className="flex items-center gap-2 px-3 py-4">
+          <img src={kraftLogo.url} alt="Kraft Clean" className="h-16 w-full min-w-0 object-contain" />
         </div>
         {isAdmin && (
-          <div className={`mx-2 mb-3 flex ${open ? "flex-row text-sm" : "flex-col"} rounded-md border p-0.5 text-xs md:flex-row md:text-sm`}>
+          <div className="mx-2 mb-3 flex flex-row rounded-md border p-0.5 text-sm">
             <Link to="/" className={`flex-1 rounded px-2 py-1 text-center ${!inStock ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
               Leads
             </Link>
@@ -89,34 +143,33 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         )}
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2">
-          {items.map((item) => {
-            const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                title={item.label}
-                className={`relative flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm transition-colors md:justify-start ${open ? "justify-start" : ""} ${
-                  active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"
-                }`}
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                <span className={lbl}>{item.label}</span>
-                {item.to === "/avisos" && unread > 0 && (
-                  <span className="absolute right-1 top-1 rounded-full bg-destructive px-1.5 text-xs text-destructive-foreground md:static md:ml-auto">{unread}</span>
-                )}
-              </Link>
-            );
-          })}
+          {items.map((item) => (
+            <Link key={item.to} to={item.to} title={item.label}
+              className={`relative flex items-center justify-start gap-2 rounded-md px-3 py-2 text-sm transition-colors ${isActive(item.to) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"}`}>
+              <item.icon className="h-4 w-4 shrink-0" />
+              <span>{item.label}</span>
+              {item.to === "/avisos" && unread > 0 && (
+                <span className="ml-auto rounded-full bg-destructive px-1.5 text-xs text-destructive-foreground">{unread}</span>
+              )}
+            </Link>
+          ))}
         </nav>
-        <div className={`flex items-center justify-center gap-2 border-t p-2 md:justify-between ${open ? "justify-between" : ""}`}>
-          <span className={`${lbl} truncate text-sm text-muted-foreground`}>{profile?.name}</span>
+        <div className="flex items-center justify-between gap-2 border-t p-2">
+          <span className="truncate text-sm text-muted-foreground">{profile?.name}</span>
           <Button variant="ghost" size="icon" onClick={() => void signOut()} aria-label="Sair">
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
       </aside>
-      <main className="min-w-0 flex-1 p-4">{children}</main>
+      <main className="min-w-0 flex-1 px-3 pb-24 pt-[4.5rem] md:p-4">{children}</main>
     </div>
+  );
+}
+
+function MobileTab({ to, label, icon: Icon, active }: { to: string; label: string; icon: typeof Bell; active: boolean }) {
+  return (
+    <Link to={to} className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] ${active ? "text-primary font-medium" : "text-muted-foreground"}`}>
+      <Icon className="h-5 w-5" />{label}
+    </Link>
   );
 }
