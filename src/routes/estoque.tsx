@@ -388,8 +388,26 @@ function Balances({ products, clients, movements }: Data) {
 
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string) => clients.find((c) => c.id === id)?.name ?? "—";
+  const totals = Object.keys(MOD).map((mod) => {
+    const rs = rows.filter((r) => r.mod === mod);
+    return { mod, qty: rs.reduce((s, r) => s + r.v, 0), items: rs.length };
+  }).filter((t) => t.items > 0 || t.mod === "lisos" || t.mod === "guarda");
   return (
     <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {totals.map((t) => (
+          <div key={t.mod} className="rounded-md border bg-card p-3">
+            <div className="text-sm text-muted-foreground">Estoque de {MOD[t.mod]}</div>
+            <div className="mt-1 text-2xl font-semibold">{t.qty}</div>
+            <div className="text-xs text-muted-foreground">{t.items} {t.items === 1 ? "item com saldo" : "itens com saldo"}</div>
+          </div>
+        ))}
+        <div className="rounded-md border bg-primary/10 p-3">
+          <div className="text-sm text-muted-foreground">Estoque total</div>
+          <div className="mt-1 text-2xl font-semibold">{rows.reduce((s, r) => s + r.v, 0)}</div>
+          <div className="text-xs text-muted-foreground">{rows.length} itens com saldo</div>
+        </div>
+      </div>
       <div className="space-y-2 rounded-md border p-3">
         <p className="text-sm font-medium">Registrar saída</p>
         <div className="grid gap-2 sm:grid-cols-5">
