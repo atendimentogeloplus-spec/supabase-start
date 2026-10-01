@@ -135,7 +135,7 @@ function ClientesPage() {
           </thead>
           <tbody>
             {pg.rows.map((c) => (
-              <tr key={c.id} className="cursor-pointer border-t hover:bg-accent/50" onClick={() => open(c)}>
+              <tr key={c.id} className={`border-t ${isAdmin ? "cursor-pointer hover:bg-accent/50" : ""}`} onClick={() => isAdmin && open(c)}>
                 <td className="p-2 font-medium">{c.name}</td>
                 <td className="p-2">{c.document ?? "—"}</td>
                 <td className="p-2">{c.contact_name ?? "—"}</td>

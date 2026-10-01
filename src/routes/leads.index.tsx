@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLeadTrackBase } from "@/lib/leadtrack-data";
 import { useAuth } from "@/hooks/useAuth";
 import { daysSince, formatCurrency, heatClass, whatsappLeadLink, type Lead } from "@/lib/leadtrack";
-import { AlertTriangle, MessageCircle } from "lucide-react";
+import { AlertTriangle, MessageCircle, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +42,7 @@ function LeadsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [notify, setNotify] = useState<{ link: string; ownerName: string; leadName: string } | null>(null);
   const [form, setForm] = useState({
     contact_name: "",
@@ -76,7 +77,7 @@ function LeadsPage() {
   const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, " ");
   const companyTerm = normalize(form.company);
   const companyMatches = companyTerm
-    ? Array.from(new Set(leads.map((l) => l.company).filter((c): c is string => !!c))).filter((c) =>
+    ? Array.from(new Set(leads.filter((l) => l.id !== editingId).map((l) => l.company).filter((c): c is string => !!c))).filter((c) =>
         normalize(c).includes(companyTerm),
       )
     : [];
@@ -94,8 +95,26 @@ function LeadsPage() {
       toast.error("Empresa já cadastrada.");
       return;
     }
-    const first = columns[0];
     const ownerId = form.owner_id || user?.id || null;
+    if (editingId) {
+      const { error } = await supabase.from("leads").update({
+        contact_name: form.contact_name.trim(),
+        company: form.company.trim() || null,
+        sector: form.sector.trim() || null,
+        phone: form.phone.trim() || null,
+        email: form.email.trim() || null,
+        source_id: form.source_id || null,
+        owner_id: ownerId,
+        estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
+        notes: form.notes.trim() || null,
+      }).eq("id", editingId);
+      if (error) return void toast.error(error.message);
+      toast.success("Lead atualizado.");
+      closeForm();
+      void qc.invalidateQueries({ queryKey: ["leads"] });
+      return;
+    }
+    const first = columns[0];
     const { data: created, error } = await supabase
       .from("leads")
       .insert({
@@ -126,6 +145,30 @@ function LeadsPage() {
     void qc.invalidateQueries({ queryKey: ["leads"] });
   }
 
+  function closeForm() {
+    setOpen(false);
+    setEditingId(null);
+    setForm({ contact_name: "", company: "", sector: "", phone: "", email: "", source_id: "", owner_id: "", estimated_value: "", notes: "" });
+  }
+
+  function editLead(l: Lead) {
+    setEditingId(l.id);
+    setForm({
+      contact_name: l.contact_name ?? "", company: l.company ?? "", sector: l.sector ?? "", phone: l.phone ?? "",
+      email: l.email ?? "", source_id: l.source_id ?? "", owner_id: l.owner_id ?? "",
+      estimated_value: l.estimated_value != null ? String(l.estimated_value) : "", notes: l.notes ?? "",
+    });
+    setOpen(true);
+  }
+
+  async function deleteLead(l: Lead) {
+    if (!window.confirm(`Excluir o lead "${l.contact_name}"? Essa ação não pode ser desfeita.`)) return;
+    const { error } = await supabase.from("leads").delete().eq("id", l.id);
+    if (error) return void toast.error(error.message);
+    toast.success("Lead excluído.");
+    void qc.invalidateQueries({ queryKey: ["leads"] });
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -148,13 +191,13 @@ function LeadsPage() {
             </option>
           ))}
         </select>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : closeForm())}>
           <DialogTrigger asChild>
             <Button>Novo lead</Button>
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Novo lead</DialogTitle>
+              <DialogTitle>{editingId ? "Editar lead" : "Novo lead"}</DialogTitle>
             </DialogHeader>
             <form className="space-y-3" onSubmit={createLead}>
               <div className="space-y-1.5">
@@ -284,6 +327,7 @@ function LeadsPage() {
               <th className="p-3">Valor</th>
               <th className="p-3">Sem contato</th>
               <th className="p-3">Avisar</th>
+              {isAdmin && <th className="p-3" />}
             </tr>
           </thead>
           <tbody>
@@ -323,12 +367,20 @@ function LeadsPage() {
                       <span className="text-xs text-muted-foreground">Sem telefone</span>
                     )}
                   </td>
+                  {isAdmin && (
+                    <td className="p-3">
+                      <div className="flex gap-1">
+                        <Button size="icon" variant="ghost" aria-label="Editar" onClick={() => editLead(lead)}><Pencil className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" aria-label="Excluir" onClick={() => void deleteLead(lead)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-6 text-center text-muted-foreground">
+                <td colSpan={isAdmin ? 9 : 8} className="p-6 text-center text-muted-foreground">
                   Nenhum lead encontrado.
                 </td>
               </tr>
