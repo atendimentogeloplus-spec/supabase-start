@@ -1,5 +1,5 @@
 export type UserStatus = "pending" | "active" | "rejected" | "disabled";
-export type AppRole = "admin" | "rep_internal" | "rep_external";
+export type AppRole = "admin" | "rep_internal" | "rep_external" | "stockist";
 
 export type Profile = {
   id: string;
