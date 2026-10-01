@@ -166,7 +166,7 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-end">
+      <div className="flex md:justify-end [&>button]:w-full md:[&>button]:w-auto">
         <Button onClick={() => void pdf()} disabled={busy}><FileDown className="mr-2 h-4 w-4" />{busy ? "Gerando…" : "Gerar relatório PDF"}</Button>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

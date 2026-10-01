@@ -92,7 +92,7 @@ function EstoquePage() {
     <div className="space-y-4">
       <h1 className="hidden text-xl font-semibold md:block">Estoque</h1>
       <Tabs defaultValue="painel">
-        <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
+        <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto [&>*]:shrink-0 rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
           <TabsTrigger value="painel">Painel</TabsTrigger>
           <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
           <TabsTrigger value="saldos">Saldos</TabsTrigger>
@@ -176,8 +176,8 @@ function Orders({ products, clients, orders, movements }: Data) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={() => setOpen(true)}>Novo pedido</Button>
-        <div className="ml-auto flex flex-wrap gap-1 rounded-md bg-muted p-1">
+        <Button className="w-full md:w-auto" onClick={() => setOpen(true)}>Novo pedido</Button>
+        <div className="flex w-full gap-1 overflow-x-auto rounded-md bg-muted p-1 [scrollbar-width:none] [&>*]:shrink-0 [&>*]:whitespace-nowrap md:ml-auto md:w-auto md:flex-wrap">
           {[["todos", "Todos"], ...Object.entries(STATUS), ["atrasados", "Em atraso"]].map(([k, label]) => (
             <button key={k} type="button" onClick={() => setTab(k)}
               className={`rounded px-3 py-1 text-sm ${tab === k ? "bg-background font-medium shadow-sm" : k === "atrasados" ? "text-destructive" : "text-muted-foreground"}`}>
