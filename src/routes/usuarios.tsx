@@ -114,6 +114,7 @@ function UsuariosPage() {
             <tr>
               <th className="p-3">Nome</th>
               <th className="p-3">E-mail</th>
+              <th className="p-3">Telefone</th>
               <th className="p-3">Cadastro</th>
               <th className="p-3">Papel</th>
               <th className="p-3">Situação</th>
@@ -127,6 +128,7 @@ function UsuariosPage() {
                 <tr key={p.id} className="border-t">
                   <td className="p-3 font-medium">{p.name}</td>
                   <td className="p-3 text-muted-foreground">{p.email}</td>
+                  <td className="p-3 whitespace-nowrap text-muted-foreground">{p.phone || "—"}</td>
                   <td className="p-3 text-muted-foreground">{formatDateTime(p.created_at)}</td>
                   <td className="p-3">
                     {p.email?.toLowerCase() === "renato.c2eventos@gmail.com" ? <span className="rounded bg-primary/10 px-2 py-1 text-xs font-medium text-primary">Desenvolvedor (protegido)</span> : <select
