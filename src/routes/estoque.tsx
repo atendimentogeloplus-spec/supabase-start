@@ -120,22 +120,61 @@ type Data = ReturnType<typeof useStockData>;
 /* ---------------- Produtos ---------------- */
 function Products({ products }: { products: Product[] }) {
   const qc = useQueryClient();
+  const { isAdmin } = useAuth();
   const [name, setName] = useState(""); const [sku, setSku] = useState(""); const [unit, setUnit] = useState("un");
+  const [editId, setEditId] = useState<string | null>(null);
+  function reset() { setName(""); setSku(""); setUnit("un"); setEditId(null); }
   async function add() {
     if (!name.trim()) return toast.error("Informe o nome.");
-    const { error } = await supabase.from("products").insert({ name: name.trim().slice(0, 150), sku: sku.trim() || null, unit: unit.trim() || "un" });
+    const fields = { name: name.trim().slice(0, 150), sku: sku.trim() || null, unit: unit.trim() || "un" };
+    const { error } = editId
+      ? await supabase.from("products").update(fields).eq("id", editId)
+      : await supabase.from("products").insert(fields);
     if (error) return toast.error(error.message);
-    setName(""); setSku(""); void qc.invalidateQueries({ queryKey: ["products"] });
+    toast.success(editId ? "Produto atualizado." : "Produto adicionado.");
+    reset(); void qc.invalidateQueries({ queryKey: ["products"] });
+  }
+  async function remove(p: Product) {
+    if (!window.confirm(`Excluir o produto "${p.name}"?`)) return;
+    const { error } = await supabase.from("products").delete().eq("id", p.id);
+    if (error) return toast.error(error.code === "23503" ? "Este produto já tem pedidos ou movimentações e não pode ser excluído." : error.message);
+    toast.success("Produto excluído.");
+    void qc.invalidateQueries({ queryKey: ["products"] });
   }
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        <Input placeholder="Nome do produto" value={name} onChange={(e) => setName(e.target.value)} className="max-w-xs" />
-        <Input placeholder="Código" value={sku} onChange={(e) => setSku(e.target.value)} className="w-32" />
-        <Input placeholder="Unidade" value={unit} onChange={(e) => setUnit(e.target.value)} className="w-24" />
-        <Button onClick={() => void add()}>Adicionar</Button>
+      {isAdmin && (
+        <div className="flex flex-wrap gap-2">
+          <Input placeholder="Nome do produto" value={name} onChange={(e) => setName(e.target.value)} className="max-w-xs" />
+          <Input placeholder="Código" value={sku} onChange={(e) => setSku(e.target.value)} className="w-32" />
+          <Input placeholder="Unidade" value={unit} onChange={(e) => setUnit(e.target.value)} className="w-24" />
+          <Button onClick={() => void add()}>{editId ? "Salvar alterações" : "Adicionar"}</Button>
+          {editId && <Button variant="outline" onClick={reset}>Cancelar</Button>}
+        </div>
+      )}
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-left">
+            <tr><th className="p-2">Produto</th><th className="p-2">Código</th><th className="p-2">Unidade</th>{isAdmin && <th className="p-2" />}</tr>
+          </thead>
+          <tbody>
+            {products.map((p) => (
+              <tr key={p.id} className="border-t">
+                <td className="p-2">{p.name}</td><td className="p-2">{p.sku ?? "—"}</td><td className="p-2">{p.unit}</td>
+                {isAdmin && (
+                  <td className="p-2">
+                    <div className="flex justify-end gap-1">
+                      <Button size="icon" variant="ghost" aria-label="Editar" onClick={() => { setEditId(p.id); setName(p.name); setSku(p.sku ?? ""); setUnit(p.unit); }}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" aria-label="Excluir" onClick={() => void remove(p)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))}
+            {products.length === 0 && <tr><td colSpan={4} className="p-4 text-center text-muted-foreground">Nenhum produto.</td></tr>}
+          </tbody>
+        </table>
       </div>
-      <Table head={["Produto", "Código", "Unidade"]} rows={products.map((p) => [p.name, p.sku ?? "—", p.unit])} />
     </div>
   );
 }
