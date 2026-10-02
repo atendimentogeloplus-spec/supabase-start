@@ -65,7 +65,9 @@ function LeadsPage() {
     },
   });
 
+  const lostKeys = columns.filter((c) => c.is_lost).map((c) => c.key);
   const filtered = leads.filter((l) => {
+    if (lostKeys.includes(l.status)) return false;
     const term = search.trim().toLowerCase();
     const matchesTerm =
       !term ||

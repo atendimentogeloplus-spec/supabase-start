@@ -237,6 +237,7 @@ export type Database = {
           created_by: string | null
           email: string | null
           estimated_value: number | null
+          first_owner_id: string | null
           first_response_at: string | null
           id: string
           last_interaction_at: string | null
@@ -259,6 +260,7 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           estimated_value?: number | null
+          first_owner_id?: string | null
           first_response_at?: string | null
           id?: string
           last_interaction_at?: string | null
@@ -281,6 +283,7 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           estimated_value?: number | null
+          first_owner_id?: string | null
           first_response_at?: string | null
           id?: string
           last_interaction_at?: string | null
@@ -304,6 +307,13 @@ export type Database = {
           {
             foreignKeyName: "leads_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_first_owner_id_fkey"
+            columns: ["first_owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
