@@ -8,6 +8,13 @@
       "when": 1790948851804,
       "tag": "0000_create_suppliers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790950205339,
+      "tag": "0001_lead_first_owner",
+      "breakpoints": true
     }
   ]
 }
