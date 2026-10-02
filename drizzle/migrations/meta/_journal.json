@@ -29,6 +29,13 @@
       "when": 1790954282293,
       "tag": "0003_trash_bin",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790954971596,
+      "tag": "0004_client_delete_removes_won_lead",
+      "breakpoints": true
     }
   ]
 }
