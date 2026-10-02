@@ -74,7 +74,7 @@ function KanbanPage() {
       </div>
 
       <TopScroll className="flex gap-3 overflow-x-auto pb-4">
-        {columns.map((column) => {
+        {columns.filter((c) => !c.is_lost).map((column) => {
           const items = leads.filter((l) => l.status === column.key);
           return (
             <div
