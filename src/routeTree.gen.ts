@@ -17,6 +17,7 @@ import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as EstoqueRouteImport } from './routes/estoque'
 import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as LixeiraRouteImport } from './routes/lixeira'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -65,6 +66,11 @@ const HistoricoRoute = HistoricoRouteImport.update({
   path: '/historico',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LixeiraRoute = LixeiraRouteImport.update({
+  id: '/lixeira',
+  path: '/lixeira',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PainelRoute = PainelRouteImport.update({
   id: '/painel',
   path: '/painel',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ConfiguracoesRoute
   '/estoque': typeof EstoqueRoute
   '/historico': typeof HistoricoRoute
+  '/lixeira': typeof LixeiraRoute
   '/painel': typeof PainelRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/estoque': typeof EstoqueRoute
   '/historico': typeof HistoricoRoute
+  '/lixeira': typeof LixeiraRoute
   '/painel': typeof PainelRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/estoque': typeof EstoqueRoute
   '/historico': typeof HistoricoRoute
+  '/lixeira': typeof LixeiraRoute
   '/painel': typeof PainelRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/estoque'
     | '/historico'
+    | '/lixeira'
     | '/painel'
     | '/relatorios'
     | '/reset-password'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/estoque'
     | '/historico'
+    | '/lixeira'
     | '/painel'
     | '/relatorios'
     | '/reset-password'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/estoque'
     | '/historico'
+    | '/lixeira'
     | '/painel'
     | '/relatorios'
     | '/reset-password'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   EstoqueRoute: typeof EstoqueRoute
   HistoricoRoute: typeof HistoricoRoute
+  LixeiraRoute: typeof LixeiraRoute
   PainelRoute: typeof PainelRoute
   RelatoriosRoute: typeof RelatoriosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HistoricoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lixeira': {
+      id: '/lixeira'
+      path: '/lixeira'
+      fullPath: '/lixeira'
+      preLoaderRoute: typeof LixeiraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/painel': {
       id: '/painel'
       path: '/painel'
@@ -344,6 +364,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   EstoqueRoute: EstoqueRoute,
   HistoricoRoute: HistoricoRoute,
+  LixeiraRoute: LixeiraRoute,
   PainelRoute: PainelRoute,
   RelatoriosRoute: RelatoriosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
