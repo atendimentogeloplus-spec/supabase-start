@@ -243,6 +243,15 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
   const qc = useQueryClient();
   const [number, setNumber] = useState(""); const [supplier, setSupplier] = useState(""); const [clientId, setClientId] = useState(""); const [expected, setExpected] = useState("");
   const [items, setItems] = useState<{ product_id: string; quantity: string }[]>([{ product_id: "", quantity: "" }]);
+  const [newSupplier, setNewSupplier] = useState(false);
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ["suppliers"],
+    queryFn: async () => {
+      const { data, error } = await fetchAll((f, t) => supabase.from("suppliers").select("name").order("name").range(f, t));
+      if (error) throw error;
+      return (data as { name: string }[]).map((s) => s.name);
+    },
+  });
   const locked = !!order?.stock_confirmed_at;
   useEffect(() => {
     if (!open) return;
@@ -264,12 +273,16 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
     })();
     return () => { alive = false; };
   }, [open, order]);
-  function reset() { setNumber(""); setSupplier(""); setClientId(""); setExpected(""); setItems([{ product_id: "", quantity: "" }]); }
+  function reset() { setNumber(""); setSupplier(""); setNewSupplier(false); setClientId(""); setExpected(""); setItems([{ product_id: "", quantity: "" }]); }
   async function save() {
     const valid = items.filter((i) => i.product_id && Number(i.quantity) > 0);
     if (!number.trim()) return toast.error("Informe o número do pedido.");
     if (!locked && valid.length === 0) return toast.error("Adicione ao menos um item.");
     const fields = { number: number.trim().slice(0, 50), supplier: supplier.trim() || null, client_id: clientId || null, expected_date: expected || null };
+    if (fields.supplier && !suppliers.some((s) => s.toLowerCase() === fields.supplier!.toLowerCase())) {
+      await supabase.from("suppliers").insert({ name: fields.supplier });
+      void qc.invalidateQueries({ queryKey: ["suppliers"] });
+    }
     let orderId = order?.id;
     if (order) {
       const { error } = await supabase.from("purchase_orders").update(fields).eq("id", order.id);
@@ -298,7 +311,20 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
         {locked && <p className="text-xs text-muted-foreground">A entrada no estoque já foi confirmada, por isso os itens não podem ser alterados.</p>}
         <div className="space-y-2">
           <Input placeholder="Número do pedido" value={number} onChange={(e) => setNumber(e.target.value)} />
-          <Input placeholder="Fornecedor" value={supplier} onChange={(e) => setSupplier(e.target.value)} />
+          {newSupplier ? (
+            <div className="flex gap-2">
+              <Input autoFocus placeholder="Nome do novo fornecedor" value={supplier} onChange={(e) => setSupplier(e.target.value)} />
+              <Button type="button" variant="outline" onClick={() => { setNewSupplier(false); setSupplier(""); }}>Cancelar</Button>
+            </div>
+          ) : (
+            <select className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={supplier}
+              onChange={(e) => { if (e.target.value === "__new__") { setNewSupplier(true); setSupplier(""); } else setSupplier(e.target.value); }}>
+              <option value="">Fornecedor...</option>
+              {supplier && !suppliers.includes(supplier) && <option value={supplier}>{supplier}</option>}
+              {suppliers.map((s) => <option key={s} value={s}>{s}</option>)}
+              <option value="__new__">+ Novo fornecedor</option>
+            </select>
+          )}
           <select className={sel} value={clientId} onChange={(e) => setClientId(e.target.value)}>
             <option value="">Sem cliente vinculado</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
