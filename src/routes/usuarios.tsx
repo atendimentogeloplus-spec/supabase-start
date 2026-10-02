@@ -7,6 +7,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROLE_LABELS, STATUS_LABELS, formatDateTime, type AppRole, type Profile, type UserStatus } from "@/lib/leadtrack";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { Pencil } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { adminUpdateUser } from "@/lib/users.functions";
 
 export const Route = createFileRoute("/usuarios")({
   head: () => ({
@@ -29,6 +36,9 @@ export const Route = createFileRoute("/usuarios")({
 function UsuariosPage() {
   const qc = useQueryClient();
   const { isAdmin } = useAuth();
+  const updateUser = useServerFn(adminUpdateUser);
+  const [edit, setEdit] = useState<{ id: string; name: string; email: string; phone: string } | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const { data: profiles = [] } = useQuery({
     queryKey: ["profiles"],
@@ -49,6 +59,22 @@ function UsuariosPage() {
   });
 
   if (!isAdmin) return <p className="text-muted-foreground">Apenas administradores acessam esta página.</p>;
+
+  async function saveEdit() {
+    if (!edit) return;
+    if (!edit.name.trim() || !edit.email.trim()) return toast.error("Informe nome e e-mail.");
+    setSaving(true);
+    try {
+      await updateUser({ data: { ...edit, phone: edit.phone.trim() || null } });
+      toast.success("Usuário atualizado.");
+      setEdit(null);
+      void qc.invalidateQueries({ queryKey: ["profiles"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao salvar.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function setStatus(id: string, status: UserStatus) {
     const { error } = await supabase
@@ -117,7 +143,11 @@ function UsuariosPage() {
                   </td>
                   <td className="p-3">{STATUS_LABELS[p.status]}</td>
                   <td className="p-3">
-                    {p.email?.toLowerCase() !== "renato.c2eventos@gmail.com" && <div className="flex gap-2">
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="ghost" aria-label="Editar" onClick={() => setEdit({ id: p.id, name: p.name, email: p.email, phone: p.phone ?? "" })}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    {p.email?.toLowerCase() !== "renato.c2eventos@gmail.com" && <>
                       {p.status !== "active" && (
                         <>
                           <Button size="sm" onClick={() => void approve(p.id, "rep_external")}>
@@ -138,7 +168,8 @@ function UsuariosPage() {
                           Desativar
                         </Button>
                       )}
-                    </div>}
+                    </>}
+                    </div>
                   </td>
                 </tr>
               );
@@ -146,6 +177,22 @@ function UsuariosPage() {
           </tbody>
         </table>
       </div>
+      <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Editar usuário</DialogTitle></DialogHeader>
+          {edit && (
+            <div className="space-y-3">
+              <div><Label>Nome</Label><Input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></div>
+              <div><Label>E-mail (usado para entrar)</Label><Input type="email" value={edit.email} onChange={(e) => setEdit({ ...edit, email: e.target.value })} /></div>
+              <div><Label>Telefone</Label><Input value={edit.phone} onChange={(e) => setEdit({ ...edit, phone: e.target.value })} /></div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setEdit(null)}>Cancelar</Button>
+                <Button disabled={saving} onClick={() => void saveEdit()}>{saving ? "Salvando…" : "Salvar"}</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
