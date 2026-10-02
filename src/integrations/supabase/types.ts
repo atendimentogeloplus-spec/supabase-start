@@ -754,6 +754,36 @@ export type Database = {
         }
         Relationships: []
       }
+      trash: {
+        Row: {
+          data: Json
+          deleted_at: string
+          deleted_by: string | null
+          id: string
+          label: string | null
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          data: Json
+          deleted_at?: string
+          deleted_by?: string | null
+          id?: string
+          label?: string | null
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          data?: Json
+          deleted_at?: string
+          deleted_by?: string | null
+          id?: string
+          label?: string | null
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -803,6 +833,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      restore_from_trash: { Args: { _id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "rep_internal" | "rep_external" | "stockist"
