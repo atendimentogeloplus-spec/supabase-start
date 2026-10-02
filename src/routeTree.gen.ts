@@ -16,6 +16,7 @@ import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as EstoqueRouteImport } from './routes/estoque'
+import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -57,6 +58,11 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
 const EstoqueRoute = EstoqueRouteImport.update({
   id: '/estoque',
   path: '/estoque',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoricoRoute = HistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PainelRoute = PainelRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/clientes': typeof ClientesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/estoque': typeof EstoqueRoute
+  '/historico': typeof HistoricoRoute
   '/painel': typeof PainelRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/clientes': typeof ClientesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/estoque': typeof EstoqueRoute
+  '/historico': typeof HistoricoRoute
   '/painel': typeof PainelRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/clientes': typeof ClientesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/estoque': typeof EstoqueRoute
+  '/historico': typeof HistoricoRoute
   '/painel': typeof PainelRoute
   '/relatorios': typeof RelatoriosRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/clientes'
     | '/configuracoes'
     | '/estoque'
+    | '/historico'
     | '/painel'
     | '/relatorios'
     | '/reset-password'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/clientes'
     | '/configuracoes'
     | '/estoque'
+    | '/historico'
     | '/painel'
     | '/relatorios'
     | '/reset-password'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/clientes'
     | '/configuracoes'
     | '/estoque'
+    | '/historico'
     | '/painel'
     | '/relatorios'
     | '/reset-password'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   ClientesRoute: typeof ClientesRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   EstoqueRoute: typeof EstoqueRoute
+  HistoricoRoute: typeof HistoricoRoute
   PainelRoute: typeof PainelRoute
   RelatoriosRoute: typeof RelatoriosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/estoque'
       fullPath: '/estoque'
       preLoaderRoute: typeof EstoqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historico': {
+      id: '/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof HistoricoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/painel': {
@@ -323,6 +343,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClientesRoute: ClientesRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   EstoqueRoute: EstoqueRoute,
+  HistoricoRoute: HistoricoRoute,
   PainelRoute: PainelRoute,
   RelatoriosRoute: RelatoriosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
