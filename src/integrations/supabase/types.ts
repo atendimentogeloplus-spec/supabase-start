@@ -834,6 +834,10 @@ export type Database = {
         Returns: undefined
       }
       restore_from_trash: { Args: { _id: string }; Returns: undefined }
+      save_push_subscription: {
+        Args: { _auth: string; _endpoint: string; _p256dh: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "rep_internal" | "rep_external" | "stockist"

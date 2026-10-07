@@ -23,8 +23,7 @@ export async function enablePush(userId: string) {
     (await reg.pushManager.getSubscription()) ??
     (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toUint8(VAPID_PUBLIC_KEY) }));
   const j = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
-  const { error } = await supabase
-    .from("push_subscriptions" as never)
-    .upsert({ user_id: userId, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth } as never, { onConflict: "endpoint" });
+  void userId;
+  const { error } = await supabase.rpc("save_push_subscription" as never, { _endpoint: j.endpoint, _p256dh: j.keys.p256dh, _auth: j.keys.auth } as never);
   if (error) throw error;
 }
