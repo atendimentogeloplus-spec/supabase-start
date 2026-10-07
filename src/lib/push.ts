@@ -13,17 +13,32 @@ export function pushSupported() {
   return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 }
 
+async function subscribeAndSave(fresh: boolean) {
+  const reg = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  // Ao ativar manualmente, recria a inscrição para garantir um endereço novo e válido
+  if (sub && fresh) {
+    await sub.unsubscribe().catch(() => {});
+    sub = null;
+  }
+  sub ??= await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toUint8(VAPID_PUBLIC_KEY) });
+  const j = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
+  const { error } = await supabase.rpc("save_push_subscription" as never, { _endpoint: j.endpoint, _p256dh: j.keys.p256dh, _auth: j.keys.auth } as never);
+  if (error) throw error;
+}
+
 export async function enablePush(userId: string) {
   if (!pushSupported()) throw new Error("Este aparelho não suporta notificações. No iPhone, instale o sistema na tela inicial primeiro.");
   const perm = await Notification.requestPermission();
-  if (perm !== "granted") throw new Error("Permissão negada. Libere as notificações nas configurações do navegador.");
-  const reg = await navigator.serviceWorker.register("/sw.js");
-  await navigator.serviceWorker.ready;
-  const sub =
-    (await reg.pushManager.getSubscription()) ??
-    (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toUint8(VAPID_PUBLIC_KEY) }));
-  const j = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
+  if (perm !== "granted") throw new Error("Permissão negada. Libere as notificações nas configurações do aparelho.");
   void userId;
-  const { error } = await supabase.rpc("save_push_subscription" as never, { _endpoint: j.endpoint, _p256dh: j.keys.p256dh, _auth: j.keys.auth } as never);
-  if (error) throw error;
+  await subscribeAndSave(true);
+}
+
+/** Ao abrir o app, renova silenciosamente a inscrição se a permissão já foi dada. */
+export async function syncPush() {
+  if (!pushSupported() || Notification.permission !== "granted") return;
+  if (window.top !== window.self) return;
+  await subscribeAndSave(false);
 }
