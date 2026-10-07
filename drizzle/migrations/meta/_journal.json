@@ -43,6 +43,13 @@
       "when": 1791380294381,
       "tag": "0005_claim_push_subscription",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791383641525,
+      "tag": "0006_migration",
+      "breakpoints": true
     }
   ]
 }
