@@ -36,6 +36,13 @@
       "when": 1790954971596,
       "tag": "0004_client_delete_removes_won_lead",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791380294381,
+      "tag": "0005_claim_push_subscription",
+      "breakpoints": true
     }
   ]
 }
