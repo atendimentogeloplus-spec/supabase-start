@@ -30,11 +30,16 @@ export const Route = createFileRoute("/api/public/push")({
 
         const vapid = { subject: "mailto:renato.c2eventos@gmail.com", publicKey: VAPID_PUBLIC_KEY, privateKey };
         const note = n as { title: string; body: string | null };
+        const { count } = await supabaseAdmin
+          .from("notifications")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", (n as { user_id: string }).user_id)
+          .eq("is_read", false);
         await Promise.all(
           ((subs ?? []) as { id: string; endpoint: string; p256dh: string; auth: string }[]).map(async (s) => {
             try {
               const payload = await buildPushPayload(
-                { data: JSON.stringify({ title: note.title, body: note.body ?? "", url: "/avisos" }), options: { ttl: 86400 } },
+                { data: JSON.stringify({ title: note.title, body: note.body ?? "", url: "/avisos", count: count ?? 0 }), options: { ttl: 86400 } },
                 { endpoint: s.endpoint, expirationTime: null, keys: { p256dh: s.p256dh, auth: s.auth } },
                 vapid,
               );

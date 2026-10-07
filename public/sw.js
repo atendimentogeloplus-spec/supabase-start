@@ -4,9 +4,13 @@ self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener("push", (event) => {
   let d = { title: "Novo aviso", body: "", url: "/avisos" };
   try { d = { ...d, ...event.data.json() }; } catch (_) {}
-  event.waitUntil(
-    self.registration.showNotification(d.title, { body: d.body, icon: "/icon-192.png", badge: "/icon-192.png", data: { url: d.url } })
-  );
+  const badge = typeof d.count === "number" && self.navigator.setAppBadge
+    ? self.navigator.setAppBadge(d.count).catch(() => {})
+    : Promise.resolve();
+  event.waitUntil(Promise.all([
+    badge,
+    self.registration.showNotification(d.title, { body: d.body, icon: "/icon-192.png", badge: "/icon-192.png", data: { url: d.url } }),
+  ]));
 });
 
 self.addEventListener("notificationclick", (event) => {

@@ -50,6 +50,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     },
   });
 
+  // Número no ícone do app (tela inicial)
+  useEffect(() => {
+    const nav = navigator as Navigator & { setAppBadge?: (n?: number) => Promise<void>; clearAppBadge?: () => Promise<void> };
+    if (!session || !nav.setAppBadge) return;
+    if (unread > 0) void nav.setAppBadge(unread).catch(() => {});
+    else void nav.clearAppBadge?.().catch(() => {});
+  }, [unread, session]);
+
   if (loading || !session) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando…</div>;
   }
