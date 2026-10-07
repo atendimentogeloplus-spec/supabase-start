@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Avoid CommonJS packages that require Node built-ins (e.g. jszip); they inject createRequire into the Worker runtime and crash every published page. Use ESM alternatives like fflate.

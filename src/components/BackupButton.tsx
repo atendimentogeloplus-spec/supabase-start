@@ -50,7 +50,7 @@ export function BackupButton() {
   async function run() {
     setBusy(true);
     try {
-      const [{ default: JSZip }, XLSX] = await Promise.all([import("jszip"), import("xlsx")]);
+      const [{ zipSync, strToU8 }, XLSX] = await Promise.all([import("fflate"), import("xlsx")]);
       const data: Record<string, Record<string, unknown>[]> = {};
       for (const t of TABLES) {
         const { data: rows } = await fetchAll((f, to) =>
@@ -61,9 +61,10 @@ export function BackupButton() {
       }
       const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
 
-      const zip = new JSZip();
-      for (const [name, rows] of Object.entries(data)) zip.file(`${name}.csv`, "\uFEFF" + toCsv(rows));
-      download(await zip.generateAsync({ type: "blob" }), `backup-csv-${stamp}.zip`);
+      const files: Record<string, Uint8Array> = {};
+      for (const [name, rows] of Object.entries(data)) files[`${name}.csv`] = strToU8("\uFEFF" + toCsv(rows));
+      const zipped = zipSync(files);
+      download(new Blob([zipped as BlobPart], { type: "application/zip" }), `backup-csv-${stamp}.zip`);
 
       const wb = XLSX.utils.book_new();
       const summary = Object.entries(data).map(([name, rows]) => ({ tabela: name, registros: rows.length }));
