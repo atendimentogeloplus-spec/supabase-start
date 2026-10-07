@@ -50,6 +50,13 @@
       "when": 1791383641525,
       "tag": "0006_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791384196196,
+      "tag": "0007_stalled_lead_alerts",
+      "breakpoints": true
     }
   ]
 }

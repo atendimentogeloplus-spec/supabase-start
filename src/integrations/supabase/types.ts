@@ -823,6 +823,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_protected_user: { Args: { _uid: string }; Returns: boolean }
       is_stockist: { Args: never; Returns: boolean }
+      notify_stalled_leads: { Args: never; Returns: number }
       register_stock_exit: {
         Args: {
           _client_id: string
