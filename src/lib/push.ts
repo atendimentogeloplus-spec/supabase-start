@@ -37,7 +37,10 @@ export async function enablePush(userId: string) {
 }
 
 /** Ao abrir o app, renova silenciosamente a inscrição se a permissão já foi dada. */
+let synced = false;
 export async function syncPush() {
+  if (synced) return;
+  synced = true;
   if (!pushSupported() || Notification.permission !== "granted") return;
   if (window.top !== window.self) return;
   await subscribeAndSave(false);
