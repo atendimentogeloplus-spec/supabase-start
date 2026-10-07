@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Archive, Bell, Building2, History, FileText, KanbanSquare, LayoutDashboard, List, LogOut, MoreHorizontal, Boxes, Settings, Trash2, Users } from "lucide-react";
 import kraftLogo from "@/assets/kraft-logo.png.asset.json";
+import { syncPush } from "@/lib/push";
 
 const NAV = [
   { to: "/", label: "Kanban", icon: KanbanSquare, adminOnly: false },
@@ -49,6 +50,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       return count ?? 0;
     },
   });
+
+  // Mantém a inscrição de notificações deste aparelho sempre atualizada
+  useEffect(() => {
+    if (session?.user?.id) void syncPush().catch(() => {});
+  }, [session?.user?.id]);
 
   // Número no ícone do app (tela inicial)
   useEffect(() => {
