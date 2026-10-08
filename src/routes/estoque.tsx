@@ -455,6 +455,23 @@ function Balances({ products, clients, movements }: Data) {
     void qc.invalidateQueries({ queryKey: ["stock_movements"] });
   }
 
+  const { isAdmin } = useAuth();
+  const [adjClient, setAdjClient] = useState(""); const [adjProduct, setAdjProduct] = useState(""); const [adjQty, setAdjQty] = useState("");
+  const current = rows.find((r) => r.mod === modality && r.pid === adjProduct && r.cid === (modality === "guarda" ? adjClient : ""))?.v ?? 0;
+  async function adjust() {
+    if (!adjProduct || adjQty === "" || !(Number(adjQty) >= 0)) return toast.error("Informe produto e quantidade correta.");
+    if (modality === "guarda" && !adjClient) return toast.error("Selecione o cliente.");
+    const diff = Number(adjQty) - current;
+    if (diff === 0) return toast.info("O saldo já está nesse valor.");
+    const { error } = await supabase.from("stock_movements").insert({
+      product_id: adjProduct, modality, client_id: modality === "guarda" ? adjClient : null,
+      kind: diff > 0 ? "entrada" : "saida", quantity: Math.abs(diff), note: `Ajuste de estoque (de ${current} para ${Number(adjQty)})`,
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Estoque ajustado."); setAdjQty("");
+    void qc.invalidateQueries({ queryKey: ["stock_movements"] });
+  }
+
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string) => clients.find((c) => c.id === id)?.name ?? "—";
   const view = rows.filter((r) => r.mod === modality);
@@ -493,6 +510,25 @@ function Balances({ products, clients, movements }: Data) {
         <Input placeholder="Observação (opcional)" value={note} onChange={(e) => setNote(e.target.value)} />
         {modality === "guarda" && <p className="text-xs text-muted-foreground">A saída da Guarda alimenta o Estoque Separado e a previsão do cliente.</p>}
       </div>
+      {isAdmin && (
+        <div className="space-y-2 rounded-md border p-3">
+          <p className="text-sm font-medium">Ajustar estoque</p>
+          <div className="grid gap-2 sm:grid-cols-5">
+            <div className="flex items-center rounded-md border px-3 text-sm text-muted-foreground">{MOD[modality]}</div>
+            {isG ? (
+              <select className={sel} value={adjClient} onChange={(e) => setAdjClient(e.target.value)}>
+                <option value="">Cliente…</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            ) : <div />}
+            <select className={sel} value={adjProduct} onChange={(e) => setAdjProduct(e.target.value)}>
+              <option value="">Produto…</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <Input type="number" min="0" placeholder={adjProduct ? `Atual: ${current}` : "Quantidade correta"} value={adjQty} onChange={(e) => setAdjQty(e.target.value)} />
+            <Button variant="outline" onClick={() => void adjust()}>Salvar ajuste</Button>
+          </div>
+          {adjProduct && (!isG || adjClient) && <p className="text-xs text-muted-foreground">Saldo atual: {current}. Informe a quantidade correta; a diferença fica registrada como ajuste em Movimentações.</p>}
+        </div>
+      )}
       {isG ? <Table head={["Cliente", "Produto", "Saldo"]} rows={view.map((r) => [cname(r.cid), pname(r.pid), String(r.v)])} />
         : <Table head={["Produto", "Saldo"]} rows={view.map((r) => [pname(r.pid), String(r.v)])} />}
     </div>
