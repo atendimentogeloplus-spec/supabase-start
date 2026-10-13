@@ -57,6 +57,13 @@
       "when": 1791384196196,
       "tag": "0007_stalled_lead_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791914278870,
+      "tag": "0008_clients_visible_to_all",
+      "breakpoints": true
     }
   ]
 }
