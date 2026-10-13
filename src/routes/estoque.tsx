@@ -93,24 +93,23 @@ function EstoquePage() {
   return (
     <div className="space-y-4">
       <h1 className="hidden text-xl font-semibold md:block">Estoque</h1>
-      {isStockist && <p className="rounded-md bg-muted p-2 text-sm text-muted-foreground">Acesso somente para visualização.</p>}
-      <Tabs defaultValue={isStockist ? "saldos" : showPanel ? "painel" : "pedidos"}>
+      <Tabs defaultValue={isStockist ? "pedidos" : showPanel ? "painel" : "pedidos"}>
         <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto [&>*]:shrink-0 rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
           {showPanel && <TabsTrigger value="painel">Painel</TabsTrigger>}
-          {!isStockist && <TabsTrigger value="pedidos">Pedidos</TabsTrigger>}
+          <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
           {!isRep && <TabsTrigger value="saldos">Saídas</TabsTrigger>}
           <TabsTrigger value="gestao">Gestão do estoque</TabsTrigger>
           {!isStockist && <TabsTrigger value="clientes">Previsão por cliente</TabsTrigger>}
           {!isRep && <TabsTrigger value="movs">Movimentações</TabsTrigger>}
-          {!isStockist && <TabsTrigger value="produtos">Produtos</TabsTrigger>}
+          <TabsTrigger value="produtos">Produtos</TabsTrigger>
         </TabsList>
         {showPanel && <TabsContent value="painel"><StockDashboard {...d} /></TabsContent>}
-        {!isStockist && <TabsContent value="pedidos"><Orders {...d} /></TabsContent>}
+        <TabsContent value="pedidos"><Orders {...d} /></TabsContent>
         {!isRep && <TabsContent value="saldos"><Balances {...d} /></TabsContent>}
         <TabsContent value="gestao"><StockManagement {...d} /></TabsContent>
         {!isStockist && <TabsContent value="clientes"><ClientForecasts {...d} /></TabsContent>}
         {!isRep && <TabsContent value="movs"><MovementList {...d} /></TabsContent>}
-        {!isStockist && <TabsContent value="produtos"><Products products={d.products} /></TabsContent>}
+        <TabsContent value="produtos"><Products products={d.products} /></TabsContent>
       </Tabs>
     </div>
   );
@@ -122,7 +121,7 @@ type Data = ReturnType<typeof useStockData>;
 function Products({ products }: { products: Product[] }) {
   const qc = useQueryClient();
   const { isAdmin, role } = useAuth();
-  const canEdit = isAdmin || role === "rep_internal" || role === "rep_external" || role === "rep_level2";
+  const canEdit = isAdmin || role === "rep_internal" || role === "rep_external" || role === "rep_level2" || role === "stockist";
   const [name, setName] = useState(""); const [sku, setSku] = useState(""); const [unit, setUnit] = useState("un");
   const [editId, setEditId] = useState<string | null>(null);
   function reset() { setName(""); setSku(""); setUnit("un"); setEditId(null); }
@@ -457,7 +456,8 @@ function Balances({ products, clients, movements }: Data) {
     void qc.invalidateQueries({ queryKey: ["stock_movements"] });
   }
 
-  const { isAdmin } = useAuth();
+  const { isAdmin: isAdminU, isStockist: isStk } = useAuth();
+  const isAdmin = isAdminU || isStk;
   const [adjClient, setAdjClient] = useState(""); const [adjProduct, setAdjProduct] = useState(""); const [adjQty, setAdjQty] = useState("");
   const current = rows.find((r) => r.mod === modality && r.pid === adjProduct && r.cid === (modality === "guarda" ? adjClient : ""))?.v ?? 0;
   async function adjust() {

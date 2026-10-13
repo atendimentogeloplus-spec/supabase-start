@@ -78,6 +78,13 @@
       "when": 1791915677219,
       "tag": "0010_reps_edit_stock",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791916075789,
+      "tag": "0011_stockist_edit_stock",
+      "breakpoints": true
     }
   ]
 }
