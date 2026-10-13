@@ -96,7 +96,7 @@ function EstoquePage() {
       <Tabs defaultValue={isStockist ? "pedidos" : showPanel ? "painel" : "pedidos"}>
         <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto [&>*]:shrink-0 rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
           {showPanel && <TabsTrigger value="painel">Painel</TabsTrigger>}
-          <TabsTrigger value="pedidos">Pedidos</TabsTrigger>}
+          <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
           {!isRep && <TabsTrigger value="saldos">Saídas</TabsTrigger>}
           <TabsTrigger value="gestao">Gestão do estoque</TabsTrigger>
           {!isStockist && <TabsTrigger value="clientes">Previsão por cliente</TabsTrigger>}
@@ -109,7 +109,7 @@ function EstoquePage() {
         <TabsContent value="gestao"><StockManagement {...d} /></TabsContent>
         {!isStockist && <TabsContent value="clientes"><ClientForecasts {...d} /></TabsContent>}
         {!isRep && <TabsContent value="movs"><MovementList {...d} /></TabsContent>}
-        <TabsContent value="produtos"><Products products={d.products} /></TabsContent>}
+        <TabsContent value="produtos"><Products products={d.products} /></TabsContent>
       </Tabs>
     </div>
   );
