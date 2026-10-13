@@ -167,7 +167,7 @@ function Products({ products }: { products: Product[] }) {
                   <td className="p-2">
                     <div className="flex justify-end gap-1">
                       <Button size="icon" variant="ghost" aria-label="Editar" onClick={() => { setEditId(p.id); setName(p.name); setSku(p.sku ?? ""); setUnit(p.unit); }}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" aria-label="Excluir" onClick={() => void remove(p)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      {isAdmin && <Button size="icon" variant="ghost" aria-label="Excluir" onClick={() => void remove(p)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                     </div>
                   </td>
                 )}
