@@ -87,7 +87,7 @@ function useStockData() {
 function EstoquePage() {
   const { isAdmin, isStockist, role } = useAuth();
   const isRep = role === "rep_internal" || role === "rep_external" || role === "rep_level2";
-  const showPanel = isAdmin || role === "rep_level2";
+  const showPanel = isAdmin;
   const d = useStockData();
   if (!isAdmin && !isStockist && !isRep) return <p className="text-muted-foreground">Acesso restrito a administradores.</p>;
   return (

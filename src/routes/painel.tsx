@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useLeadTrackBase } from "@/lib/leadtrack-data";
 import { daysSince, formatCurrency, type Lead } from "@/lib/leadtrack";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +27,9 @@ export const Route = createFileRoute("/painel")({
 });
 
 function PainelPage() {
-  const { columns, profiles, stalledDays } = useLeadTrackBase();
+  const { columns, profiles: allProfiles, stalledDays } = useLeadTrackBase();
+  const { isAdmin, user } = useAuth();
+  const profiles = isAdmin ? allProfiles : allProfiles.filter((p) => p.id === user?.id);
 
   const { data: leads = [] } = useQuery({
     queryKey: ["leads"],
