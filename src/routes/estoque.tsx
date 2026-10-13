@@ -86,29 +86,30 @@ function useStockData() {
 
 function EstoquePage() {
   const { isAdmin, isStockist, role } = useAuth();
-  const isRep = role === "rep_internal" || role === "rep_external";
+  const isRep = role === "rep_internal" || role === "rep_external" || role === "rep_level2";
+  const showPanel = isAdmin || role === "rep_level2";
   const d = useStockData();
   if (!isAdmin && !isStockist && !isRep) return <p className="text-muted-foreground">Acesso restrito a administradores.</p>;
   return (
     <div className="space-y-4">
       <h1 className="hidden text-xl font-semibold md:block">Estoque</h1>
-      {(isStockist || isRep) && <p className="rounded-md bg-muted p-2 text-sm text-muted-foreground">Acesso somente para visualização.</p>}
-      <Tabs defaultValue={isStockist ? "saldos" : "painel"}>
+      {isStockist && <p className="rounded-md bg-muted p-2 text-sm text-muted-foreground">Acesso somente para visualização.</p>}
+      <Tabs defaultValue={isStockist ? "saldos" : showPanel ? "painel" : "pedidos"}>
         <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto [&>*]:shrink-0 rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
-          {!isStockist && <TabsTrigger value="painel">Painel</TabsTrigger>}
+          {showPanel && <TabsTrigger value="painel">Painel</TabsTrigger>}
           {!isStockist && <TabsTrigger value="pedidos">Pedidos</TabsTrigger>}
-          <TabsTrigger value="saldos">Saídas</TabsTrigger>
+          {!isRep && <TabsTrigger value="saldos">Saídas</TabsTrigger>}
           <TabsTrigger value="gestao">Gestão do estoque</TabsTrigger>
           {!isStockist && <TabsTrigger value="clientes">Previsão por cliente</TabsTrigger>}
-          <TabsTrigger value="movs">Movimentações</TabsTrigger>
+          {!isRep && <TabsTrigger value="movs">Movimentações</TabsTrigger>}
           {!isStockist && <TabsTrigger value="produtos">Produtos</TabsTrigger>}
         </TabsList>
-        {!isStockist && <TabsContent value="painel"><StockDashboard {...d} /></TabsContent>}
+        {showPanel && <TabsContent value="painel"><StockDashboard {...d} /></TabsContent>}
         {!isStockist && <TabsContent value="pedidos"><Orders {...d} /></TabsContent>}
-        <TabsContent value="saldos"><Balances {...d} /></TabsContent>
+        {!isRep && <TabsContent value="saldos"><Balances {...d} /></TabsContent>}
         <TabsContent value="gestao"><StockManagement {...d} /></TabsContent>
         {!isStockist && <TabsContent value="clientes"><ClientForecasts {...d} /></TabsContent>}
-        <TabsContent value="movs"><MovementList {...d} /></TabsContent>
+        {!isRep && <TabsContent value="movs"><MovementList {...d} /></TabsContent>}
         {!isStockist && <TabsContent value="produtos"><Products products={d.products} /></TabsContent>}
       </Tabs>
     </div>
@@ -120,7 +121,8 @@ type Data = ReturnType<typeof useStockData>;
 /* ---------------- Produtos ---------------- */
 function Products({ products }: { products: Product[] }) {
   const qc = useQueryClient();
-  const { isAdmin } = useAuth();
+  const { isAdmin, role } = useAuth();
+  const canEdit = isAdmin || role === "rep_internal" || role === "rep_external" || role === "rep_level2";
   const [name, setName] = useState(""); const [sku, setSku] = useState(""); const [unit, setUnit] = useState("un");
   const [editId, setEditId] = useState<string | null>(null);
   function reset() { setName(""); setSku(""); setUnit("un"); setEditId(null); }
@@ -143,7 +145,7 @@ function Products({ products }: { products: Product[] }) {
   }
   return (
     <div className="space-y-3">
-      {isAdmin && (
+      {canEdit && (
         <div className="flex flex-wrap gap-2">
           <Input placeholder="Nome do produto" value={name} onChange={(e) => setName(e.target.value)} className="max-w-xs" />
           <Input placeholder="Código" value={sku} onChange={(e) => setSku(e.target.value)} className="w-32" />
@@ -155,13 +157,13 @@ function Products({ products }: { products: Product[] }) {
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left">
-            <tr><th className="p-2">Produto</th><th className="p-2">Código</th><th className="p-2">Unidade</th>{isAdmin && <th className="p-2" />}</tr>
+            <tr><th className="p-2">Produto</th><th className="p-2">Código</th><th className="p-2">Unidade</th>{canEdit && <th className="p-2" />}</tr>
           </thead>
           <tbody>
             {products.map((p) => (
               <tr key={p.id} className="border-t">
                 <td className="p-2">{p.name}</td><td className="p-2">{p.sku ?? "—"}</td><td className="p-2">{p.unit}</td>
-                {isAdmin && (
+                {canEdit && (
                   <td className="p-2">
                     <div className="flex justify-end gap-1">
                       <Button size="icon" variant="ghost" aria-label="Editar" onClick={() => { setEditId(p.id); setName(p.name); setSku(p.sku ?? ""); setUnit(p.unit); }}><Pencil className="h-4 w-4" /></Button>

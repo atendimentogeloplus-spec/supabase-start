@@ -62,6 +62,7 @@ const FIELDS: { key: keyof Form; label: string }[] = [
 function ClientesPage() {
   const qc = useQueryClient();
   const { session, isAdmin } = useAuth();
+  const canEditC = (c: Client) => isAdmin || c.owner_id === session?.user.id;
   const { profiles } = useLeadTrackBase();
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<string | "new" | null>(null);
@@ -135,7 +136,7 @@ function ClientesPage() {
           </thead>
           <tbody>
             {pg.rows.map((c) => (
-              <tr key={c.id} className={`border-t ${isAdmin ? "cursor-pointer hover:bg-accent/50" : ""}`} onClick={() => isAdmin && open(c)}>
+              <tr key={c.id} className={`border-t ${canEditC(c) ? "cursor-pointer hover:bg-accent/50" : ""}`} onClick={() => canEditC(c) && open(c)}>
                 <td className="p-2 font-medium">{c.name}</td>
                 <td className="p-2">{c.document ?? "—"}</td>
                 <td className="p-2">{c.contact_name ?? "—"}</td>
