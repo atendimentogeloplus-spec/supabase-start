@@ -155,6 +155,9 @@ function UsuariosPage() {
                           <Button size="sm" onClick={() => void approve(p.id, "rep_external")}>
                             Aprovar como representante
                           </Button>
+                          <Button size="sm" variant="secondary" onClick={() => void approve(p.id, "rep_level2")}>
+                            Aprovar como vendedor nível 2
+                          </Button>
                           <Button size="sm" variant="secondary" onClick={() => void approve(p.id, "stockist")}>
                             Aprovar como estoquista
                           </Button>

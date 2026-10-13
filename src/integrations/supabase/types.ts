@@ -807,6 +807,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_edit_stock: { Args: never; Returns: boolean }
       can_view_stock: { Args: never; Returns: boolean }
       confirm_order_stock: {
         Args: { _client_id: string; _modality: string; _order_id: string }
@@ -841,7 +842,12 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "rep_internal" | "rep_external" | "stockist"
+      app_role:
+        | "admin"
+        | "rep_internal"
+        | "rep_external"
+        | "stockist"
+        | "rep_level2"
       user_status: "pending" | "active" | "rejected" | "disabled"
     }
     CompositeTypes: {
@@ -970,7 +976,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "rep_internal", "rep_external", "stockist"],
+      app_role: [
+        "admin",
+        "rep_internal",
+        "rep_external",
+        "stockist",
+        "rep_level2",
+      ],
       user_status: ["pending", "active", "rejected", "disabled"],
     },
   },

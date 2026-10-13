@@ -1,5 +1,5 @@
 export type UserStatus = "pending" | "active" | "rejected" | "disabled";
-export type AppRole = "admin" | "rep_internal" | "rep_external" | "stockist";
+export type AppRole = "admin" | "rep_internal" | "rep_external" | "rep_level2" | "stockist";
 
 export type Profile = {
   id: string;
@@ -68,6 +68,7 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   admin: "Administrador",
   rep_internal: "Representante interno",
   rep_external: "Representante externo",
+  rep_level2: "Vendedor nível 2",
   stockist: "Estoquista",
 };
 

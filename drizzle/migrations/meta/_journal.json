@@ -64,6 +64,20 @@
       "when": 1791914278870,
       "tag": "0008_clients_visible_to_all",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791915658323,
+      "tag": "0009_add_rep_level2_role",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791915677219,
+      "tag": "0010_reps_edit_stock",
+      "breakpoints": true
     }
   ]
 }
