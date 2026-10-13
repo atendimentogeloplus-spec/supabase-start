@@ -71,6 +71,13 @@
       "when": 1791915658323,
       "tag": "0009_add_rep_level2_role",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791915677219,
+      "tag": "0010_reps_edit_stock",
+      "breakpoints": true
     }
   ]
 }

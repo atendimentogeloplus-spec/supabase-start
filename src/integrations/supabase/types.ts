@@ -807,6 +807,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_edit_stock: { Args: never; Returns: boolean }
       can_view_stock: { Args: never; Returns: boolean }
       confirm_order_stock: {
         Args: { _client_id: string; _modality: string; _order_id: string }
