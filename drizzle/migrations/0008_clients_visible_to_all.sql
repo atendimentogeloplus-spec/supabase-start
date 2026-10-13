@@ -1,0 +1,1 @@
+CREATE POLICY clients_select_all_active ON public.clients FOR SELECT TO authenticated USING (public.is_active_user());
