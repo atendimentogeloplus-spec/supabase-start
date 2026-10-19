@@ -37,7 +37,7 @@ type Product = { id: string; name: string; sku: string | null; unit: string; act
 type Client = { id: string; name: string };
 type OrderItem = { id: string; product_id: string; quantity: number };
 type Order = {
-  id: string; number: string; supplier: string | null; client_id: string | null; status: string;
+  id: string; number: string; sale_number?: string | null; supplier: string | null; client_id: string | null; status: string;
   stock_confirmed_at: string | null; stock_modality: string | null; created_at: string; expected_date: string | null;
   purchase_order_items: OrderItem[];
 };
@@ -233,7 +233,7 @@ function Orders({ products, clients, orders, movements }: Data) {
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left"><tr>
-            <th className="p-2">Pedido</th><th className="p-2">Fornecedor</th><th className="p-2">Cliente</th>
+            <th className="p-2">Pedido</th><th className="p-2">Fornecedor</th><th className="p-2">Cliente</th><th className="p-2">Venda</th>
             <th className="p-2">Itens</th><th className="p-2">Previsão</th><th className="p-2">Status</th><th className="p-2">Estoque</th><th className="p-2" />
           </tr></thead>
           <tbody>
@@ -242,6 +242,7 @@ function Orders({ products, clients, orders, movements }: Data) {
                 <td className="p-2 font-medium">{o.number}<div className="text-xs text-muted-foreground">{fmtDate(o.created_at)}</div></td>
                 <td className="p-2">{o.supplier ?? "—"}</td>
                 <td className="p-2">{cname(o.client_id)}</td>
+                <td className="p-2">{o.sale_number || "—"}</td>
                 <td className="p-2">{o.purchase_order_items.map((i) => <div key={i.id}>{i.quantity} × {pname(i.product_id)}</div>)}</td>
                 <td className="p-2">
                   <Input type="date" className="h-8 w-36" value={o.expected_date ?? ""} onChange={(e) => void setExpected(o, e.target.value)} />
@@ -265,7 +266,7 @@ function Orders({ products, clients, orders, movements }: Data) {
                 </td>
               </tr>
             ))}
-            {shown.length === 0 && <tr><td colSpan={8} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
+            {shown.length === 0 && <tr><td colSpan={9} className="p-4 text-center text-muted-foreground">Nenhum pedido.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -281,7 +282,7 @@ function Orders({ products, clients, orders, movements }: Data) {
 
 function NewOrderDialog({ open, onClose, products, clients, order }: { open: boolean; onClose: () => void; products: Product[]; clients: Client[]; order?: Order | null }) {
   const qc = useQueryClient();
-  const [number, setNumber] = useState(""); const [supplier, setSupplier] = useState(""); const [clientId, setClientId] = useState(""); const [expected, setExpected] = useState("");
+  const [number, setNumber] = useState(""); const [supplier, setSupplier] = useState(""); const [clientId, setClientId] = useState(""); const [expected, setExpected] = useState(""); const [sale, setSale] = useState("");
   const [items, setItems] = useState<{ product_id: string; quantity: string }[]>([{ product_id: "", quantity: "" }]);
   const [newSupplier, setNewSupplier] = useState(false);
   const { data: suppliers = [] } = useQuery({
@@ -296,7 +297,7 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
   useEffect(() => {
     if (!open) return;
     if (order) {
-      setNumber(order.number); setSupplier(order.supplier ?? ""); setClientId(order.client_id ?? ""); setExpected(order.expected_date ?? "");
+      setNumber(order.number); setSupplier(order.supplier ?? ""); setClientId(order.client_id ?? ""); setExpected(order.expected_date ?? ""); setSale(order.sale_number ?? "");
       setItems(order.purchase_order_items.length ? order.purchase_order_items.map((i) => ({ product_id: i.product_id, quantity: String(i.quantity) })) : [{ product_id: "", quantity: "" }]);
       return;
     }
@@ -313,12 +314,12 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
     })();
     return () => { alive = false; };
   }, [open, order]);
-  function reset() { setNumber(""); setSupplier(""); setNewSupplier(false); setClientId(""); setExpected(""); setItems([{ product_id: "", quantity: "" }]); }
+  function reset() { setNumber(""); setSupplier(""); setNewSupplier(false); setClientId(""); setExpected(""); setSale(""); setItems([{ product_id: "", quantity: "" }]); }
   async function save() {
     const valid = items.filter((i) => i.product_id && Number(i.quantity) > 0);
     if (!number.trim()) return toast.error("Informe o número do pedido.");
     if (!locked && valid.length === 0) return toast.error("Adicione ao menos um item.");
-    const fields = { number: number.trim().slice(0, 50), supplier: supplier.trim() || null, client_id: clientId || null, expected_date: expected || null };
+    const fields = { number: number.trim().slice(0, 50), supplier: supplier.trim() || null, client_id: clientId || null, expected_date: expected || null, sale_number: sale.trim().slice(0, 50) || null };
     if (fields.supplier && !suppliers.some((s) => s.toLowerCase() === fields.supplier!.toLowerCase())) {
       await supabase.from("suppliers").insert({ name: fields.supplier });
       void qc.invalidateQueries({ queryKey: ["suppliers"] });
@@ -369,6 +370,7 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
             <option value="">Sem cliente vinculado</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
+          <Input placeholder="Venda" value={sale} onChange={(e) => setSale(e.target.value)} />
           <label className="block text-sm">Data prevista de entrega
             <Input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} />
           </label>

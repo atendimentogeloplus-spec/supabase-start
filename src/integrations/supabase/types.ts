@@ -529,6 +529,7 @@ export type Database = {
           id: string
           notes: string | null
           number: string
+          sale_number: string | null
           status: string
           stock_confirmed_at: string | null
           stock_modality: string | null
@@ -543,6 +544,7 @@ export type Database = {
           id?: string
           notes?: string | null
           number: string
+          sale_number?: string | null
           status?: string
           stock_confirmed_at?: string | null
           stock_modality?: string | null
@@ -557,6 +559,7 @@ export type Database = {
           id?: string
           notes?: string | null
           number?: string
+          sale_number?: string | null
           status?: string
           stock_confirmed_at?: string | null
           stock_modality?: string | null

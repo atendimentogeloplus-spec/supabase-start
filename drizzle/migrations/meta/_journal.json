@@ -85,6 +85,13 @@
       "when": 1791916075789,
       "tag": "0011_stockist_edit_stock",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792415279066,
+      "tag": "0012_order_sale_number",
+      "breakpoints": true
     }
   ]
 }
