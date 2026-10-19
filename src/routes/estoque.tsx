@@ -314,7 +314,7 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
     })();
     return () => { alive = false; };
   }, [open, order]);
-  function reset() { setNumber(""); setSupplier(""); setNewSupplier(false); setClientId(""); setExpected(""); setItems([{ product_id: "", quantity: "" }]); }
+  function reset() { setNumber(""); setSupplier(""); setNewSupplier(false); setClientId(""); setExpected(""); setSale(""); setItems([{ product_id: "", quantity: "" }]); }
   async function save() {
     const valid = items.filter((i) => i.product_id && Number(i.quantity) > 0);
     if (!number.trim()) return toast.error("Informe o número do pedido.");
