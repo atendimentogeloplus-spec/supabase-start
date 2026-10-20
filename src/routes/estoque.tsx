@@ -443,6 +443,7 @@ function Balances({ products, clients, movements }: Data) {
   const qc = useQueryClient();
   const [modality, setModality] = useState<"lisos" | "guarda">("lisos");
   const [clientId, setClientId] = useState(""); const [productId, setProductId] = useState("");
+  const [filterClient, setFilterClient] = useState("");
   const [qty, setQty] = useState(""); const [note, setNote] = useState("");
 
   const rows = useMemo(() => {
@@ -543,7 +544,13 @@ function Balances({ products, clients, movements }: Data) {
           {adjProduct && (!isG || adjClient) && <p className="text-xs text-muted-foreground">Saldo atual: {current}. Informe a quantidade correta; a diferença fica registrada como ajuste em Movimentações.</p>}
         </div>
       )}
-      {isG ? <Table head={["Cliente", "Produto", "Saldo"]} rows={view.map((r) => [cname(r.cid), pname(r.pid), String(r.v)])} />
+      {isG && (
+        <select className={sel + " max-w-xs"} value={filterClient} onChange={(e) => setFilterClient(e.target.value)}>
+          <option value="">Todos os clientes</option>
+          {clients.filter((c) => view.some((r) => r.cid === c.id)).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      )}
+      {isG ? <Table head={["Cliente", "Produto", "Saldo"]} rows={view.filter((r) => !filterClient || r.cid === filterClient).map((r) => [cname(r.cid), pname(r.pid), String(r.v)])} />
         : <Table head={["Produto", "Saldo"]} rows={view.map((r) => [pname(r.pid), String(r.v)])} />}
     </div>
   );
