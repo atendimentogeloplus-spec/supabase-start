@@ -8,6 +8,8 @@ import { daysSince, formatCurrency, heatClass, validateMove, type KanbanColumn, 
 import { toast } from "sonner";
 import { moveLead, useLeadTrackBase } from "@/lib/leadtrack-data";
 import { TopScroll } from "@/components/TopScroll";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,6 +32,8 @@ export const Route = createFileRoute("/")({
 function KanbanPage() {
   const qc = useQueryClient();
   const { columns, profiles, stalledDays } = useLeadTrackBase();
+  const { isAdmin } = useAuth();
+  const [ownerFilter, setOwnerFilter] = useState("");
 
   const { data: leads = [] } = useQuery({
     queryKey: ["leads"],
@@ -66,16 +70,25 @@ function KanbanPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-semibold">Kanban</h1>
-        <Link to="/leads" className="text-sm text-primary underline">
-          Ver lista de leads
-        </Link>
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <select className="h-9 rounded-md border bg-background px-2 text-sm" value={ownerFilter} onChange={(e) => setOwnerFilter(e.target.value)}>
+              <option value="">Todos os vendedores</option>
+              <option value="none">Sem responsável</option>
+              {profiles.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          )}
+          <Link to="/leads" className="text-sm text-primary underline">
+            Ver lista de leads
+          </Link>
+        </div>
       </div>
 
       <TopScroll className="flex gap-3 overflow-x-auto pb-4">
         {columns.filter((c) => !c.is_lost).map((column) => {
-          const items = leads.filter((l) => l.status === column.key);
+          const items = leads.filter((l) => l.status === column.key && (!ownerFilter || (ownerFilter === "none" ? !l.owner_id : l.owner_id === ownerFilter)));
           return (
             <div
               key={column.id}
