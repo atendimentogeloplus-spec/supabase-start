@@ -188,7 +188,14 @@ function Orders({ products, clients, orders, movements }: Data) {
   const today = new Date().toLocaleDateString("en-CA");
   const isLate = (o: Order) => !!o.expected_date && o.status !== "entregue" && o.expected_date < today;
   const count = (k: string) => k === "todos" ? orders.length : k === "atrasados" ? orders.filter(isLate).length : orders.filter((o) => o.status === k).length;
-  const shown = tab === "todos" ? orders : tab === "atrasados" ? orders.filter(isLate) : orders.filter((o) => o.status === tab);
+  const [q, setQ] = useState("");
+  const byTab = tab === "todos" ? orders : tab === "atrasados" ? orders.filter(isLate) : orders.filter((o) => o.status === tab);
+  const qn = q.trim().toLowerCase();
+  const shown = !qn ? byTab : byTab.filter((o) => {
+    const cn = clients.find((c) => c.id === o.client_id)?.name ?? "";
+    const pn = o.purchase_order_items.map((i) => products.find((p) => p.id === i.product_id)?.name ?? "").join(" ");
+    return [o.number, o.sale_number ?? "", o.supplier ?? "", cn, pn].join(" ").toLowerCase().includes(qn);
+  });
   async function setExpected(o: Order, v: string) {
     const { error } = await supabase.from("purchase_orders").update({ expected_date: v || null }).eq("id", o.id);
     if (error) return toast.error(error.message);
@@ -230,6 +237,7 @@ function Orders({ products, clients, orders, movements }: Data) {
           ))}
         </div>
       </div>
+      <Input placeholder="Pesquisar por número, cliente, fornecedor ou produto…" value={q} onChange={(e) => setQ(e.target.value)} className="md:max-w-md" />
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left"><tr>
