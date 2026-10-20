@@ -509,12 +509,14 @@ function Balances({ products, clients, movements }: Data) {
         <div className="grid gap-2 sm:grid-cols-5">
           <div className="flex items-center rounded-md border px-3 text-sm text-muted-foreground">{MOD[modality]}</div>
           {modality === "guarda" ? (
-            <select className={sel} value={clientId} onChange={(e) => setClientId(e.target.value)}>
+            <select className={sel} value={clientId} onChange={(e) => { setClientId(e.target.value); setProductId(""); }}>
               <option value="">Cliente…</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           ) : <div />}
-          <select className={sel} value={productId} onChange={(e) => setProductId(e.target.value)}>
-            <option value="">Produto…</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          <select className={sel} value={productId} onChange={(e) => setProductId(e.target.value)} disabled={isG && !clientId}>
+            <option value="">{isG && !clientId ? "Escolha o cliente…" : "Produto…"}</option>
+            {(isG ? products.filter((p) => rows.some((r) => r.mod === "guarda" && r.cid === clientId && r.pid === p.id && r.v > 0)) : products)
+              .map((p) => <option key={p.id} value={p.id}>{p.name}{isG ? ` (saldo ${rows.find((r) => r.mod === "guarda" && r.cid === clientId && r.pid === p.id)?.v ?? 0})` : ""}</option>)}
           </select>
           <Input type="number" min="0" placeholder="Quantidade" value={qty} onChange={(e) => setQty(e.target.value)} />
           <Button onClick={() => void exit()}>Registrar saída</Button>
