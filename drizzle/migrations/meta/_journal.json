@@ -92,6 +92,13 @@
       "when": 1792415279066,
       "tag": "0012_order_sale_number",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792543676899,
+      "tag": "0013_mute_developer_notifications",
+      "breakpoints": true
     }
   ]
 }
