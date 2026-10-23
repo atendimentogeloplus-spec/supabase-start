@@ -1,3 +1,4 @@
+import { matches, norm } from "@/lib/search";
 import { usePaged } from "@/lib/paginate";
 import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
@@ -71,12 +72,12 @@ function LeadsPage() {
     const term = search.trim().toLowerCase();
     const matchesTerm =
       !term ||
-      [l.contact_name, l.company, l.sector, l.phone, l.email].some((v) => v?.toLowerCase().includes(term));
+      matches([l.contact_name, l.company, l.sector, l.phone, l.email], term);
     return matchesTerm && (!statusFilter || l.status === statusFilter);
   });
   const pg = usePaged(filtered);
 
-  const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, " ");
+  const normalize = (v: string) => norm(v);
   const companyTerm = normalize(form.company);
   const companyMatches = companyTerm
     ? Array.from(new Set(leads.filter((l) => l.id !== editingId).map((l) => l.company).filter((c): c is string => !!c))).filter((c) =>

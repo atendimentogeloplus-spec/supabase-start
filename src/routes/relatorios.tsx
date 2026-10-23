@@ -1,3 +1,4 @@
+import { matches } from "@/lib/search";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -71,7 +72,7 @@ function ReportsPage() {
 
   const filtered = leads.filter((l) => {
     const term = search.trim().toLowerCase();
-    if (term && ![l.contact_name, l.company, l.sector, l.phone, l.email].some((v) => v?.toLowerCase().includes(term))) return false;
+    if (term && !matches([l.contact_name, l.company, l.sector, l.phone, l.email], term)) return false;
     if (status && l.status !== status) return false;
     if (owner && l.owner_id !== owner) return false;
     if (source && l.source_id !== source) return false;

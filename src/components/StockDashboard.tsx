@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchSelect } from "@/components/SearchSelect";
 import { AlertTriangle, CheckCircle2, Clock, FileDown, PackageSearch, Send, Truck } from "lucide-react";
 
 type Product = { id: string; name: string; unit: string };
@@ -193,13 +194,9 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
             <option value="lisos">Estoque de Lisos</option><option value="guarda">Estoque de Guarda</option>
           </select>
           {mod === "guarda" ? (
-            <select className={sel} value={cid} onChange={(e) => setCid(e.target.value)}>
-              <option value="">Cliente…</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            <SearchSelect value={cid} onChange={setCid} placeholder="Cliente…" options={clients.map((c) => ({ value: c.id, label: c.name }))} />
           ) : <div />}
-          <select className={sel} value={pid} onChange={(e) => setPid(e.target.value)}>
-            <option value="">Produto…</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          <SearchSelect value={pid} onChange={setPid} placeholder="Produto…" options={products.map((p) => ({ value: p.id, label: p.name }))} />
           <Input type="number" min="0" placeholder="Mínimo" value={qty} onChange={(e) => setQty(e.target.value)} />
           <Button onClick={() => void saveMin()}>Salvar mínimo</Button>
         </div>

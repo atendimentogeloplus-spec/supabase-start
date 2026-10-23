@@ -1,3 +1,4 @@
+import { matches } from "@/lib/search";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -80,7 +81,7 @@ function HistoricoPage() {
   const filtered = rows.filter((r) =>
     (!table || r.table_name === table) &&
     (!user || r.user_id === user) &&
-    (!term || [r.label, describe(r), name(r.user_id)].some((v) => v?.toLowerCase().includes(term))),
+    (!term || matches([r.label, describe(r), name(r.user_id)], term)),
   );
   const pg = usePaged(filtered);
 

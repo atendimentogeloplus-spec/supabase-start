@@ -1,3 +1,4 @@
+import { matches } from "@/lib/search";
 import { usePaged } from "@/lib/paginate";
 import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
@@ -79,7 +80,7 @@ function ClientesPage() {
 
   const q = search.trim().toLowerCase();
   const list = clients.filter((c) =>
-    !q || [c.name, c.document, c.contact_name, c.city, c.phone].some((v) => v?.toLowerCase().includes(q)),
+    !q || matches([c.name, c.document, c.contact_name, c.city, c.phone], q),
   );
   const pg = usePaged(list);
 
