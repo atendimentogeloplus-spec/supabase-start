@@ -54,6 +54,7 @@ function describe(r: Row): string {
     const keys = Object.keys(d);
     return keys.length ? `Campos: ${keys.join(", ")}` : "";
   }
+  if (r.action === "DELETE" && d["delete_reason"]) return `Justificativa: ${d["delete_reason"]}`;
   return "";
 }
 

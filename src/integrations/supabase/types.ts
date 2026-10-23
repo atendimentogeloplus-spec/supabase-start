@@ -528,6 +528,7 @@ export type Database = {
           client_id: string | null
           created_at: string
           created_by: string | null
+          delete_reason: string | null
           expected_date: string | null
           id: string
           last_received_at: string | null
@@ -544,6 +545,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           created_by?: string | null
+          delete_reason?: string | null
           expected_date?: string | null
           id?: string
           last_received_at?: string | null
@@ -560,6 +562,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           created_by?: string | null
+          delete_reason?: string | null
           expected_date?: string | null
           id?: string
           last_received_at?: string | null

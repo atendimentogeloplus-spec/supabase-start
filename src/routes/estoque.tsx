@@ -211,7 +211,12 @@ function Orders({ products, clients, orders, movements }: Data) {
   const [editing, setEditing] = useState<Order | null>(null);
   async function removeOrder(o: Order) {
     if (o.stock_modality) return toast.error("Este pedido já teve entrada no estoque e não pode ser excluído.");
-    if (!window.confirm(`Excluir o pedido ${o.number}? Essa ação não pode ser desfeita.`)) return;
+    if (!adm) {
+      const reason = window.prompt(`Justificativa para excluir o pedido ${o.number} (obrigatória):`)?.trim();
+      if (!reason) return toast.error("A justificativa é obrigatória para excluir.");
+      const { error: er } = await supabase.from("purchase_orders").update({ delete_reason: reason.slice(0, 500) }).eq("id", o.id);
+      if (er) return toast.error(er.message);
+    } else if (!window.confirm(`Excluir o pedido ${o.number}? Essa ação não pode ser desfeita.`)) return;
     const { error: e1 } = await supabase.from("purchase_order_items").delete().eq("order_id", o.id);
     if (e1) return toast.error(e1.message);
     const { error } = await supabase.from("purchase_orders").delete().eq("id", o.id);
