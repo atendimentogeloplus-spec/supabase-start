@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { adminUpdateUser } from "@/lib/users.functions";
+import { PermissionsGuide } from "@/components/PermissionsGuide";
 
 export const Route = createFileRoute("/usuarios")({
   head: () => ({
@@ -107,7 +108,10 @@ function UsuariosPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Usuários</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl font-semibold">Usuários</h1>
+        <PermissionsGuide />
+      </div>
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left">
