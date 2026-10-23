@@ -51,15 +51,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, 0);
     });
 
-    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
-      if (!mounted) return;
-      setSession(initialSession);
-      await loadProfile(initialSession?.user?.id);
-      setLoading(false);
-    });
+    // Nunca deixa a tela presa em "Carregando…"
+    const safety = setTimeout(() => { if (mounted) setLoading(false); }, 8000);
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session: initialSession } }) => {
+        if (!mounted) return;
+        setSession(initialSession);
+        try { await loadProfile(initialSession?.user?.id); } catch { /* segue mesmo assim */ }
+      })
+      .catch(() => {})
+      .finally(() => { clearTimeout(safety); if (mounted) setLoading(false); });
 
     return () => {
       mounted = false;
+      clearTimeout(safety);
       subscription.unsubscribe();
     };
   }, [loadProfile]);
