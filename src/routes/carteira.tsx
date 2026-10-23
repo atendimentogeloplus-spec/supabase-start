@@ -1,3 +1,4 @@
+import { matches } from "@/lib/search";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -48,7 +49,7 @@ function CarteiraPage() {
 
   const term = search.trim().toLowerCase();
   const filtered = leads.filter(
-    (l) => !term || [l.contact_name, l.company, l.phone, l.loss_reason].some((v) => v?.toLowerCase().includes(term)),
+    (l) => !term || matches([l.contact_name, l.company, l.phone, l.loss_reason], term),
   );
   const pg = usePaged(filtered);
   const name = (id: string | null) => profiles.find((p) => p.id === id)?.name ?? "—";

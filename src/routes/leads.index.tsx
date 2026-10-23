@@ -1,4 +1,4 @@
-import { matches } from "@/lib/search";
+import { matches, norm } from "@/lib/search";
 import { usePaged } from "@/lib/paginate";
 import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
@@ -77,7 +77,7 @@ function LeadsPage() {
   });
   const pg = usePaged(filtered);
 
-  const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, " ");
+  const normalize = (v: string) => norm(v);
   const companyTerm = normalize(form.company);
   const companyMatches = companyTerm
     ? Array.from(new Set(leads.filter((l) => l.id !== editingId).map((l) => l.company).filter((c): c is string => !!c))).filter((c) =>
