@@ -843,6 +843,7 @@ export type Database = {
         Args: { _auth: string; _endpoint: string; _p256dh: string }
         Returns: undefined
       }
+      undo_order_stock: { Args: { _order_id: string }; Returns: undefined }
     }
     Enums: {
       app_role:
