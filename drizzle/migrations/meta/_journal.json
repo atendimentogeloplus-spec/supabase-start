@@ -127,6 +127,13 @@
       "when": 1792715047472,
       "tag": "0017_order_delete_reason",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792715205335,
+      "tag": "0018_unique_order_number",
+      "breakpoints": true
     }
   ]
 }
