@@ -37,10 +37,11 @@ export const Route = createFileRoute("/estoque")({
 
 type Product = { id: string; name: string; sku: string | null; unit: string; active: boolean };
 type Client = { id: string; name: string };
-type OrderItem = { id: string; product_id: string; quantity: number };
+type OrderItem = { id: string; product_id: string; quantity: number; delivered_qty?: number };
 type Order = {
   id: string; number: string; sale_number?: string | null; supplier: string | null; client_id: string | null; status: string;
   stock_confirmed_at: string | null; stock_modality: string | null; created_at: string; expected_date: string | null;
+  last_received_at?: string | null;
   purchase_order_items: OrderItem[];
 };
 type Movement = {
@@ -49,7 +50,7 @@ type Movement = {
 };
 type Forecast = { client_id: string; mode: "auto" | "manual"; manual_date: string | null };
 
-const STATUS: Record<string, string> = { a_enviar: "A Enviar", enviado: "Enviado/Em produção", entregue: "Entregue" };
+const STATUS: Record<string, string> = { a_enviar: "A Enviar", enviado: "Enviado/Em produção", parcial: "Entrega parcial", entregue: "Entregue" };
 const MOD: Record<string, string> = { lisos: "Lisos", guarda: "Guarda" };
 const sel = "w-full rounded-md border bg-background px-2 py-2 text-sm";
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("pt-BR");
@@ -220,10 +221,10 @@ function Orders({ products, clients, orders, movements }: Data) {
   const cname = (id: string | null) => clients.find((c) => c.id === id)?.name ?? "—";
 
   async function setStatus(o: Order, status: string) {
+    if (status === "entregue" && !o.stock_modality) return setConfirming(o);
     const { error } = await supabase.from("purchase_orders").update({ status }).eq("id", o.id);
     if (error) return toast.error(error.message);
     await qc.invalidateQueries({ queryKey: ["purchase_orders"] });
-    if (status === "entregue" && !o.stock_confirmed_at) setConfirming({ ...o, status });
   }
 
   return (
@@ -259,28 +260,30 @@ function Orders({ products, clients, orders, movements }: Data) {
                   {isLate(o) && <span className="mt-1 inline-block rounded bg-destructive px-2 py-0.5 text-xs font-semibold text-destructive-foreground">Em atraso</span>}
                 </td>
                 <td className="p-2">
-                  <select className={sel} value={o.status} disabled={!!o.stock_confirmed_at} onChange={(e) => void setStatus(o, e.target.value)}>
-                    {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  <select className={sel} value={o.status} disabled={!!o.stock_modality} onChange={(e) => void setStatus(o, e.target.value)}>
+                    {Object.entries(STATUS).filter(([k]) => k !== "parcial" || o.status === "parcial").map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                   </select>
                 </td>
                 <td className="p-2">
-                  {o.stock_confirmed_at ? (
-                    <div>
-                      <span className="text-xs">Entrada em {MOD[o.stock_modality ?? ""]} · {fmtDate(o.stock_confirmed_at)}</span>
-                      {Date.now() - new Date(o.stock_confirmed_at).getTime() < 48 * 3600 * 1000 && (
-                        <Button size="sm" variant="outline" className="mt-1 block" onClick={async () => {
-                          if (!window.confirm(`Desfazer a entrega do pedido ${o.number}? Os itens saem do estoque e o pedido volta para "Enviado/Em produção".`)) return;
-                          const { error } = await supabase.rpc("undo_order_stock", { _order_id: o.id });
-                          if (error) return toast.error(error.message);
-                          toast.success("Entrega desfeita.");
-                          void qc.invalidateQueries({ queryKey: ["purchase_orders"] });
-                          void qc.invalidateQueries({ queryKey: ["stock_movements"] });
-                        }}>Desfazer entrega</Button>
-                      )}
+                  {o.stock_modality && (
+                    <div className="text-xs">
+                      {o.stock_confirmed_at ? <>Entrada em {MOD[o.stock_modality]} · {fmtDate(o.stock_confirmed_at)}</> : <>Parcial em {MOD[o.stock_modality]} · faltam {o.purchase_order_items.reduce((s, i) => s + Number(i.quantity) - Number(i.delivered_qty ?? 0), 0)}</>}
                     </div>
-                  ) : o.status === "entregue" ? (
-                    <Button size="sm" onClick={() => setConfirming(o)}>Confirmar entrada</Button>
-                  ) : <span className="text-xs text-muted-foreground">Aguardando entrega</span>}
+                  )}
+                  {o.status === "parcial" && <Button size="sm" className="mt-1 block" onClick={() => setConfirming(o)}>Concluir entrega</Button>}
+                  {o.stock_modality && o.last_received_at && Date.now() - new Date(o.last_received_at).getTime() < 48 * 3600 * 1000 && (
+                    <Button size="sm" variant="outline" className="mt-1 block" onClick={async () => {
+                      if (!window.confirm(`Desfazer a entrega do pedido ${o.number}? Tudo o que entrou no estoque por este pedido sai, e ele volta para "Enviado/Em produção".`)) return;
+                      const { error } = await supabase.rpc("undo_order_stock", { _order_id: o.id });
+                      if (error) return toast.error(error.message);
+                      toast.success("Entrega desfeita.");
+                      void qc.invalidateQueries({ queryKey: ["purchase_orders"] });
+                      void qc.invalidateQueries({ queryKey: ["stock_movements"] });
+                    }}>Desfazer entrega</Button>
+                  )}
+                  {!o.stock_modality && (o.status === "entregue"
+                    ? <Button size="sm" onClick={() => setConfirming(o)}>Confirmar entrada</Button>
+                    : <span className="text-xs text-muted-foreground">Aguardando entrega</span>)}
                 </td>
                 <td className="p-2 whitespace-nowrap text-right">
                   <Button size="sm" variant="ghost" onClick={() => setEditing(o)}><Pencil className="h-4 w-4" /></Button>
@@ -296,7 +299,7 @@ function Orders({ products, clients, orders, movements }: Data) {
       <NewOrderDialog open={open} onClose={() => setOpen(false)} products={products} clients={clients} />
       <NewOrderDialog open={!!editing} order={editing} onClose={() => setEditing(null)} products={products} clients={clients} />
       {confirming && (
-        <ConfirmDialog order={confirming} clients={clients} movements={movements} onClose={() => setConfirming(null)} />
+        <ConfirmDialog order={confirming} clients={clients} movements={movements} products={products} onClose={() => setConfirming(null)} />
       )}
     </div>
   );
@@ -408,23 +411,50 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
   );
 }
 
-function ConfirmDialog({ order, clients, movements, onClose }: { order: Order; clients: Client[]; movements: Movement[]; onClose: () => void }) {
+function ConfirmDialog({ order, clients, movements, products, onClose }: { order: Order; clients: Client[]; movements: Movement[]; products: Product[]; onClose: () => void }) {
   const qc = useQueryClient();
+  const fixed = !!order.stock_modality;
   const usesGuarda = !!order.client_id && movements.some((m) => m.modality === "guarda" && m.client_id === order.client_id);
-  const [modality, setModality] = useState<"lisos" | "guarda">(usesGuarda ? "guarda" : "lisos");
+  const [modality, setModality] = useState<"lisos" | "guarda">(fixed ? (order.stock_modality as "lisos" | "guarda") : usesGuarda ? "guarda" : "lisos");
   const [clientId, setClientId] = useState(order.client_id ?? "");
+  const pend = (i: OrderItem) => Number(i.quantity) - Number(i.delivered_qty ?? 0);
+  const open = order.purchase_order_items.filter((i) => pend(i) > 0);
+  const [kind, setKind] = useState<"total" | "parcial">("total");
+  const [qtys, setQtys] = useState<Record<string, string>>({});
   async function confirm() {
-    const { error } = await supabase.rpc("confirm_order_stock", { _order_id: order.id, _modality: modality, _client_id: (modality === "guarda" ? clientId : null) as string });
+    const items = open.map((i) => ({ item_id: i.id, qty: kind === "total" ? pend(i) : Number(qtys[i.id] || 0) }));
+    if (!items.some((i) => i.qty > 0)) return toast.error("Informe a quantidade entregue.");
+    if (items.some((i) => i.qty < 0 || i.qty > pend(open.find((x) => x.id === i.item_id)!))) return toast.error("Quantidade maior que o pendente.");
+    const { error } = await supabase.rpc("receive_order_stock", { _order_id: order.id, _modality: modality, _client_id: (modality === "guarda" ? clientId : null) as string, _items: items });
     if (error) return toast.error(error.message);
-    toast.success("Entrada confirmada.");
+    toast.success(kind === "total" ? "Entrada confirmada." : "Entrega parcial registrada.");
     void qc.invalidateQueries({ queryKey: ["purchase_orders"] });
     void qc.invalidateQueries({ queryKey: ["stock_movements"] });
     onClose();
   }
+  const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   return (
     <Dialog open onOpenChange={(v) => !v && onClose()}>
       <DialogContent>
-        <DialogHeader><DialogTitle>Confirmar entrada do pedido {order.number}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Entrega do pedido {order.number}</DialogTitle></DialogHeader>
+        <div className="flex gap-2">
+          {(["total", "parcial"] as const).map((k) => (
+            <Button key={k} type="button" variant={kind === k ? "default" : "outline"} className="flex-1" onClick={() => setKind(k)}>
+              {k === "total" ? "Entrega total" : "Entrega parcial"}
+            </Button>
+          ))}
+        </div>
+        <div className="space-y-2">
+          {open.map((i) => (
+            <div key={i.id} className="flex items-center gap-2 text-sm">
+              <div className="flex-1">{pname(i.product_id)}<div className="text-xs text-muted-foreground">Pendente: {pend(i)} de {i.quantity}</div></div>
+              {kind === "parcial" && <Input type="number" min="0" max={pend(i)} className="w-28" placeholder="Entregue" value={qtys[i.id] ?? ""} onChange={(e) => setQtys({ ...qtys, [i.id]: e.target.value })} />}
+            </div>
+          ))}
+        </div>
+        {fixed ? (
+          <p className="text-sm text-muted-foreground">Entra no Estoque de {MOD[order.stock_modality ?? ""]}{order.stock_modality === "guarda" ? ` (${clients.find((c) => c.id === order.client_id)?.name ?? "—"})` : ""}.</p>
+        ) : (<>
         <p className="text-sm text-muted-foreground">Escolha para qual estoque os itens vão.</p>
         {usesGuarda && <p className="text-xs text-primary">Este cliente já usa Estoque de Guarda — opção pré-selecionada.</p>}
         <div className="space-y-2">
@@ -437,6 +467,7 @@ function ConfirmDialog({ order, clients, movements, onClose }: { order: Order; c
             <SearchSelect value={clientId} onChange={setClientId} placeholder="Selecione o cliente…" options={clients.map((c) => ({ value: c.id, label: c.name }))} />
           )}
         </div>
+        </>)}
         <div className="flex justify-end gap-2"><Button variant="outline" onClick={onClose}>Agora não</Button><Button onClick={() => void confirm()}>Confirmar entrada</Button></div>
       </DialogContent>
     </Dialog>
