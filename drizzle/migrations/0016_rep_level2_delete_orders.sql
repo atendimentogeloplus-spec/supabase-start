@@ -1,0 +1,2 @@
+CREATE POLICY rep2_po_del ON public.purchase_orders FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'rep_level2'));
+CREATE POLICY rep2_poi_del ON public.purchase_order_items FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'rep_level2'));

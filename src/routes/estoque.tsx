@@ -205,6 +205,8 @@ function Orders({ products, clients, orders, movements }: Data) {
     void qc.invalidateQueries({ queryKey: ["purchase_orders"] });
   }
   const ordersPg = usePaged(shown);
+  const { isAdmin: adm, role: rl } = useAuth();
+  const canDelete = adm || rl === "rep_level2";
   const [confirming, setConfirming] = useState<Order | null>(null);
   const [editing, setEditing] = useState<Order | null>(null);
   async function removeOrder(o: Order) {
@@ -287,7 +289,7 @@ function Orders({ products, clients, orders, movements }: Data) {
                 </td>
                 <td className="p-2 whitespace-nowrap text-right">
                   <Button size="sm" variant="ghost" onClick={() => setEditing(o)}><Pencil className="h-4 w-4" /></Button>
-                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => void removeOrder(o)}><Trash2 className="h-4 w-4" /></Button>
+                  {canDelete && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => void removeOrder(o)}><Trash2 className="h-4 w-4" /></Button>}
                 </td>
               </tr>
             ))}
