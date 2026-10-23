@@ -14,6 +14,8 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StockDashboard, type StockMinimum } from "@/components/StockDashboard";
+import { SearchSelect } from "@/components/SearchSelect";
+import { matches } from "@/lib/search";
 
 export const Route = createFileRoute("/estoque")({
   head: () => ({
@@ -194,7 +196,7 @@ function Orders({ products, clients, orders, movements }: Data) {
   const shown = !qn ? byTab : byTab.filter((o) => {
     const cn = clients.find((c) => c.id === o.client_id)?.name ?? "";
     const pn = o.purchase_order_items.map((i) => products.find((p) => p.id === i.product_id)?.name ?? "").join(" ");
-    return [o.number, o.sale_number ?? "", o.supplier ?? "", cn, pn].join(" ").toLowerCase().includes(qn);
+    return matches([o.number, o.sale_number, o.supplier, cn, pn], qn);
   });
   async function setExpected(o: Order, v: string) {
     const { error } = await supabase.from("purchase_orders").update({ expected_date: v || null }).eq("id", o.id);
@@ -374,20 +376,14 @@ function NewOrderDialog({ open, onClose, products, clients, order }: { open: boo
               <option value="__new__">+ Novo fornecedor</option>
             </select>
           )}
-          <select className={sel} value={clientId} onChange={(e) => setClientId(e.target.value)}>
-            <option value="">Sem cliente vinculado</option>
-            {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <SearchSelect value={clientId} onChange={setClientId} placeholder="Sem cliente vinculado" options={clients.map((c) => ({ value: c.id, label: c.name }))} />
           <Input placeholder="Venda" value={sale} onChange={(e) => setSale(e.target.value)} />
           <label className="block text-sm">Data prevista de entrega
             <Input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} />
           </label>
           {items.map((it, idx) => (
             <div key={idx} className="flex gap-2">
-              <select className={sel} disabled={locked} value={it.product_id} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, product_id: e.target.value } : x))}>
-                <option value="">Produto…</option>
-                {products.filter((p) => p.active).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
+              <SearchSelect disabled={locked} value={it.product_id} onChange={(v) => setItems(items.map((x, i) => i === idx ? { ...x, product_id: v } : x))} placeholder="Produto…" options={products.filter((p) => p.active || p.id === it.product_id).map((p) => ({ value: p.id, label: p.name }))} />
               <Input type="number" min="0" placeholder="Qtd" className="w-24" disabled={locked} value={it.quantity} onChange={(e) => setItems(items.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
             </div>
           ))}
@@ -426,10 +422,7 @@ function ConfirmDialog({ order, clients, movements, onClose }: { order: Order; c
             </label>
           ))}
           {modality === "guarda" && (
-            <select className={sel} value={clientId} onChange={(e) => setClientId(e.target.value)}>
-              <option value="">Selecione o cliente…</option>
-              {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            <SearchSelect value={clientId} onChange={setClientId} placeholder="Selecione o cliente…" options={clients.map((c) => ({ value: c.id, label: c.name }))} />
           )}
         </div>
         <div className="flex justify-end gap-2"><Button variant="outline" onClick={onClose}>Agora não</Button><Button onClick={() => void confirm()}>Confirmar entrada</Button></div>
@@ -510,15 +503,11 @@ function Balances({ products, clients, movements }: Data) {
         <div className="grid gap-2 sm:grid-cols-5">
           <div className="flex items-center rounded-md border px-3 text-sm text-muted-foreground">{MOD[modality]}</div>
           {modality === "guarda" ? (
-            <select className={sel} value={clientId} onChange={(e) => { setClientId(e.target.value); setProductId(""); }}>
-              <option value="">Cliente…</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            <SearchSelect value={clientId} onChange={(v) => { setClientId(v); setProductId(""); }} placeholder="Cliente…" options={clients.map((c) => ({ value: c.id, label: c.name }))} />
           ) : <div />}
-          <select className={sel} value={productId} onChange={(e) => setProductId(e.target.value)} disabled={isG && !clientId}>
-            <option value="">{isG && !clientId ? "Escolha o cliente…" : "Produto…"}</option>
-            {(isG ? products.filter((p) => rows.some((r) => r.mod === "guarda" && r.cid === clientId && r.pid === p.id && r.v > 0)) : products)
-              .map((p) => <option key={p.id} value={p.id}>{p.name}{isG ? ` (saldo ${rows.find((r) => r.mod === "guarda" && r.cid === clientId && r.pid === p.id)?.v ?? 0})` : ""}</option>)}
-          </select>
+          <SearchSelect value={productId} onChange={setProductId} disabled={isG && !clientId} placeholder={isG && !clientId ? "Escolha o cliente…" : "Produto…"}
+            options={(isG ? products.filter((p) => rows.some((r) => r.mod === "guarda" && r.cid === clientId && r.pid === p.id && r.v > 0)) : products)
+              .map((p) => ({ value: p.id, label: `${p.name}${isG ? ` (saldo ${rows.find((r) => r.mod === "guarda" && r.cid === clientId && r.pid === p.id)?.v ?? 0})` : ""}` }))} />
           <Input type="number" min="0" placeholder="Quantidade" value={qty} onChange={(e) => setQty(e.target.value)} />
           <Button onClick={() => void exit()}>Registrar saída</Button>
         </div>
@@ -531,13 +520,9 @@ function Balances({ products, clients, movements }: Data) {
           <div className="grid gap-2 sm:grid-cols-5">
             <div className="flex items-center rounded-md border px-3 text-sm text-muted-foreground">{MOD[modality]}</div>
             {isG ? (
-              <select className={sel} value={adjClient} onChange={(e) => setAdjClient(e.target.value)}>
-                <option value="">Cliente…</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              <SearchSelect value={adjClient} onChange={setAdjClient} placeholder="Cliente…" options={clients.map((c) => ({ value: c.id, label: c.name }))} />
             ) : <div />}
-            <select className={sel} value={adjProduct} onChange={(e) => setAdjProduct(e.target.value)}>
-              <option value="">Produto…</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
+            <SearchSelect value={adjProduct} onChange={setAdjProduct} placeholder="Produto…" options={products.map((p) => ({ value: p.id, label: p.name }))} />
             <Input type="number" min="0" placeholder={adjProduct ? `Atual: ${current}` : "Quantidade correta"} value={adjQty} onChange={(e) => setAdjQty(e.target.value)} />
             <Button variant="outline" onClick={() => void adjust()}>Salvar ajuste</Button>
           </div>
@@ -545,10 +530,7 @@ function Balances({ products, clients, movements }: Data) {
         </div>
       )}
       {isG && (
-        <select className={sel + " max-w-xs"} value={filterClient} onChange={(e) => setFilterClient(e.target.value)}>
-          <option value="">Todos os clientes</option>
-          {clients.filter((c) => view.some((r) => r.cid === c.id)).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+        <SearchSelect className="max-w-xs" value={filterClient} onChange={setFilterClient} placeholder="Todos os clientes" options={clients.filter((c) => view.some((r) => r.cid === c.id)).map((c) => ({ value: c.id, label: c.name }))} />
       )}
       {isG ? <Table head={["Cliente", "Produto", "Saldo"]} rows={view.filter((r) => !filterClient || r.cid === filterClient).map((r) => [cname(r.cid), pname(r.pid), String(r.v)])} />
         : <Table head={["Produto", "Saldo"]} rows={view.map((r) => [pname(r.pid), String(r.v)])} />}
@@ -699,7 +681,7 @@ function StockManagement({ products, clients, movements }: Data) {
   }, [movements]);
 
   const s = q.trim().toLowerCase();
-  const rows = all.filter((r) => r.mod === mod && (mod === "lisos" || !cid || r.cid === cid) && (!s || pname(r.pid).toLowerCase().includes(s)))
+  const rows = all.filter((r) => r.mod === mod && (mod === "lisos" || !cid || r.cid === cid) && matches(pname(r.pid), s))
     .sort((a, b) => a.mod.localeCompare(b.mod) || cname(a.cid).localeCompare(cname(b.cid)) || pname(a.pid).localeCompare(pname(b.pid)));
 
   const byClient = new Map<string, { qty: number; items: number }>();
@@ -721,9 +703,7 @@ function StockManagement({ products, clients, movements }: Data) {
       <ModPicker value={mod} onChange={(v) => { setMod(v); setCid(""); }} />
       <div className="grid gap-2 sm:grid-cols-3">
         {mod === "guarda" && (
-          <select className={sel} value={cid} onChange={(e) => setCid(e.target.value)}>
-            <option value="">Todos os clientes</option>{guardaClients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <SearchSelect value={cid} onChange={setCid} placeholder="Todos os clientes" options={guardaClients.map((c) => ({ value: c.id, label: c.name }))} />
         )}
         <Input placeholder="Buscar produto…" value={q} onChange={(e) => setQ(e.target.value)} />
       </div>

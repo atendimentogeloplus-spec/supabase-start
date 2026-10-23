@@ -1,3 +1,4 @@
+import { matches } from "@/lib/search";
 import { usePaged } from "@/lib/paginate";
 import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
@@ -71,7 +72,7 @@ function LeadsPage() {
     const term = search.trim().toLowerCase();
     const matchesTerm =
       !term ||
-      [l.contact_name, l.company, l.sector, l.phone, l.email].some((v) => v?.toLowerCase().includes(term));
+      matches([l.contact_name, l.company, l.sector, l.phone, l.email], term);
     return matchesTerm && (!statusFilter || l.status === statusFilter);
   });
   const pg = usePaged(filtered);
