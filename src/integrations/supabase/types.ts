@@ -486,18 +486,21 @@ export type Database = {
       }
       purchase_order_items: {
         Row: {
+          delivered_qty: number
           id: string
           order_id: string
           product_id: string
           quantity: number
         }
         Insert: {
+          delivered_qty?: number
           id?: string
           order_id: string
           product_id: string
           quantity: number
         }
         Update: {
+          delivered_qty?: number
           id?: string
           order_id?: string
           product_id?: string
@@ -527,6 +530,7 @@ export type Database = {
           created_by: string | null
           expected_date: string | null
           id: string
+          last_received_at: string | null
           notes: string | null
           number: string
           sale_number: string | null
@@ -542,6 +546,7 @@ export type Database = {
           created_by?: string | null
           expected_date?: string | null
           id?: string
+          last_received_at?: string | null
           notes?: string | null
           number: string
           sale_number?: string | null
@@ -557,6 +562,7 @@ export type Database = {
           created_by?: string | null
           expected_date?: string | null
           id?: string
+          last_received_at?: string | null
           notes?: string | null
           number?: string
           sale_number?: string | null
@@ -828,6 +834,15 @@ export type Database = {
       is_protected_user: { Args: { _uid: string }; Returns: boolean }
       is_stockist: { Args: never; Returns: boolean }
       notify_stalled_leads: { Args: never; Returns: number }
+      receive_order_stock: {
+        Args: {
+          _client_id: string
+          _items: Json
+          _modality: string
+          _order_id: string
+        }
+        Returns: undefined
+      }
       register_stock_exit: {
         Args: {
           _client_id: string
