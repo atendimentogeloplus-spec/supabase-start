@@ -66,7 +66,7 @@ function useStockData() {
     if (error) throw error; return data as Client[];
   } });
   const orders = useQuery({ queryKey: ["purchase_orders"], queryFn: async () => {
-    const { data, error } = await fetchAll((f, t) => supabase.from("purchase_orders").select("*, purchase_order_items(id,product_id,quantity)").order("created_at", { ascending: false }).range(f, t));
+    const { data, error } = await fetchAll((f, t) => supabase.from("purchase_orders").select("*, purchase_order_items(id,product_id,quantity,delivered_qty)").order("created_at", { ascending: false }).range(f, t));
     if (error) throw error; return data as unknown as Order[];
   } });
   const movements = useQuery({ queryKey: ["stock_movements"], queryFn: async () => {
@@ -208,7 +208,7 @@ function Orders({ products, clients, orders, movements }: Data) {
   const [confirming, setConfirming] = useState<Order | null>(null);
   const [editing, setEditing] = useState<Order | null>(null);
   async function removeOrder(o: Order) {
-    if (o.stock_confirmed_at) return toast.error("Este pedido já teve entrada no estoque e não pode ser excluído.");
+    if (o.stock_modality) return toast.error("Este pedido já teve entrada no estoque e não pode ser excluído.");
     if (!window.confirm(`Excluir o pedido ${o.number}? Essa ação não pode ser desfeita.`)) return;
     const { error: e1 } = await supabase.from("purchase_order_items").delete().eq("order_id", o.id);
     if (e1) return toast.error(e1.message);
