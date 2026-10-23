@@ -265,7 +265,19 @@ function Orders({ products, clients, orders, movements }: Data) {
                 </td>
                 <td className="p-2">
                   {o.stock_confirmed_at ? (
-                    <span className="text-xs">Entrada em {MOD[o.stock_modality ?? ""]} · {fmtDate(o.stock_confirmed_at)}</span>
+                    <div>
+                      <span className="text-xs">Entrada em {MOD[o.stock_modality ?? ""]} · {fmtDate(o.stock_confirmed_at)}</span>
+                      {Date.now() - new Date(o.stock_confirmed_at).getTime() < 48 * 3600 * 1000 && (
+                        <Button size="sm" variant="outline" className="mt-1 block" onClick={async () => {
+                          if (!window.confirm(`Desfazer a entrega do pedido ${o.number}? Os itens saem do estoque e o pedido volta para "Enviado/Em produção".`)) return;
+                          const { error } = await supabase.rpc("undo_order_stock", { _order_id: o.id });
+                          if (error) return toast.error(error.message);
+                          toast.success("Entrega desfeita.");
+                          void qc.invalidateQueries({ queryKey: ["purchase_orders"] });
+                          void qc.invalidateQueries({ queryKey: ["stock_movements"] });
+                        }}>Desfazer entrega</Button>
+                      )}
+                    </div>
                   ) : o.status === "entregue" ? (
                     <Button size="sm" onClick={() => setConfirming(o)}>Confirmar entrada</Button>
                   ) : <span className="text-xs text-muted-foreground">Aguardando entrega</span>}
