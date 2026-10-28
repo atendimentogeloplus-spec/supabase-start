@@ -3,13 +3,13 @@ import { usePaged } from "@/lib/paginate";
 import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useLeadTrackBase } from "@/lib/leadtrack-data";
 import { useAuth } from "@/hooks/useAuth";
-import { daysSince, formatCurrency, heatClass, whatsappLeadLink, type Lead } from "@/lib/leadtrack";
+import { byOldestFirst, daysSince, formatCurrency, heatClass, whatsappLeadLink, type Lead } from "@/lib/leadtrack";
 import { AlertTriangle, MessageCircle, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,8 +66,11 @@ function LeadsPage() {
     },
   });
 
+  // Administrador: leads na ordem de entrada no sistema, do mais antigo para o mais recente.
+  const ordered = useMemo(() => (isAdmin ? [...leads].sort(byOldestFirst) : leads), [leads, isAdmin]);
+
   const lostKeys = columns.filter((c) => c.is_lost).map((c) => c.key);
-  const filtered = leads.filter((l) => {
+  const filtered = ordered.filter((l) => {
     if (lostKeys.includes(l.status)) return false;
     const term = search.trim().toLowerCase();
     const matchesTerm =

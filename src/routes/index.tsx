@@ -4,12 +4,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
-import { daysSince, formatCurrency, heatClass, validateMove, type KanbanColumn, type Lead } from "@/lib/leadtrack";
+import { byOldestFirst, daysSince, formatCurrency, heatClass, validateMove, type KanbanColumn, type Lead } from "@/lib/leadtrack";
 import { toast } from "sonner";
 import { moveLead, useLeadTrackBase } from "@/lib/leadtrack-data";
 import { TopScroll } from "@/components/TopScroll";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,6 +43,9 @@ function KanbanPage() {
       return data as Lead[];
     },
   });
+
+  // Administrador: cards na ordem de entrada no sistema, do mais antigo para o mais recente.
+  const ordered = useMemo(() => (isAdmin ? [...leads].sort(byOldestFirst) : leads), [leads, isAdmin]);
 
   async function handleMove(lead: Lead, column: KanbanColumn) {
     const { count } = await supabase
@@ -88,7 +91,7 @@ function KanbanPage() {
 
       <TopScroll className="flex gap-3 overflow-x-auto pb-4">
         {columns.filter((c) => !c.is_lost).map((column) => {
-          const items = leads.filter((l) => l.status === column.key && (!ownerFilter || (ownerFilter === "none" ? !l.owner_id : l.owner_id === ownerFilter)));
+          const items = ordered.filter((l) => l.status === column.key && (!ownerFilter || (ownerFilter === "none" ? !l.owner_id : l.owner_id === ownerFilter)));
           return (
             <div
               key={column.id}

@@ -79,6 +79,16 @@ export const STATUS_LABELS: Record<UserStatus, string> = {
   disabled: "Desativado",
 };
 
+/**
+ * Ordem de indicação / entrada no sistema: do lead mais antigo para o mais recente.
+ * Usa a data de criação e, se faltar, a de atualização.
+ */
+export function byOldestFirst(a: Lead, b: Lead): number {
+  const ka = a.created_at || a.updated_at || "";
+  const kb = b.created_at || b.updated_at || "";
+  return ka < kb ? -1 : ka > kb ? 1 : 0;
+}
+
 export function daysSince(date: string | null): number {
   if (!date) return 0;
   return Math.floor((Date.now() - new Date(date).getTime()) / 86400000);
