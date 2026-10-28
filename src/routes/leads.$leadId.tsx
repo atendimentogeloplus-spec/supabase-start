@@ -47,6 +47,7 @@ function LeadDetail() {
   const { columns, profiles, sources } = useLeadTrackBase();
   const [type, setType] = useState<InteractionType>("call");
   const [summary, setSummary] = useState("");
+  const [interactionDate, setInteractionDate] = useState("");
 
   const { data: lead } = useQuery({
     queryKey: ["lead", leadId],
@@ -88,18 +89,21 @@ function LeadDetail() {
   async function addInteraction(e: React.FormEvent) {
     e.preventDefault();
     if (!summary.trim()) return;
+    const when = interactionDate ? new Date(interactionDate) : new Date();
     const { error } = await supabase.from("interactions").insert({
       lead_id: leadId,
       user_id: user?.id ?? null,
       type,
       summary: summary.trim(),
+      created_at: when.toISOString(),
     });
     if (error) {
       toast.error(error.message);
       return;
     }
-    await supabase.from("leads").update({ last_interaction_at: new Date().toISOString() }).eq("id", leadId);
+    await supabase.from("leads").update({ last_interaction_at: when.toISOString() }).eq("id", leadId);
     setSummary("");
+    setInteractionDate("");
     toast.success("Interação registrada.");
     void qc.invalidateQueries({ queryKey: ["interactions", leadId] });
     void qc.invalidateQueries({ queryKey: ["lead", leadId] });
@@ -225,6 +229,17 @@ function LeadDetail() {
                   onChange={(e) => setSummary(e.target.value)}
                   required
                 />
+                <div className="space-y-1.5">
+                  <Label htmlFor="interaction-date">Data da interação (opcional)</Label>
+                  <input
+                    id="interaction-date"
+                    type="datetime-local"
+                    className="h-9 w-full rounded-md border bg-background px-2 text-sm"
+                    value={interactionDate}
+                    onChange={(e) => setInteractionDate(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">Se deixar em branco, usamos a data e hora de agora.</p>
+                </div>
                 <Button type="submit">Salvar interação</Button>
               </form>
             </CardContent>
