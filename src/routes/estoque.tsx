@@ -278,7 +278,7 @@ function Orders({ products, clients, orders, movements }: Data) {
                     </div>
                   )}
                   {o.status === "parcial" && <Button size="sm" className="mt-1 block" onClick={() => setConfirming(o)}>Concluir entrega</Button>}
-                  {o.stock_modality && o.last_received_at && Date.now() - new Date(o.last_received_at).getTime() < 48 * 3600 * 1000 && (
+                  {o.stock_modality && o.last_received_at && (adm || Date.now() - new Date(o.last_received_at).getTime() < 48 * 3600 * 1000) && (
                     <Button size="sm" variant="outline" className="mt-1 block" onClick={async () => {
                       if (!window.confirm(`Desfazer a entrega do pedido ${o.number}? Tudo o que entrou no estoque por este pedido sai, e ele volta para "Enviado/Em produção".`)) return;
                       const { error } = await supabase.rpc("undo_order_stock", { _order_id: o.id });

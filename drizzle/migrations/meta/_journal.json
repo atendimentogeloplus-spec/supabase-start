@@ -134,6 +134,13 @@
       "when": 1792715205335,
       "tag": "0018_unique_order_number",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793218520540,
+      "tag": "0019_admin_reopen_orders",
+      "breakpoints": true
     }
   ]
 }
