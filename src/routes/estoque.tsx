@@ -698,7 +698,10 @@ function ModPicker({ value, onChange }: { value: "lisos" | "guarda"; onChange: (
   );
 }
 
-function Table({ head, rows: all }: { head: string[]; rows: string[][] }) {
+function Table({ head, rows: all0, limit }: { head: string[]; rows: string[][]; limit?: number }) {
+  const [open, setOpen] = useState(false);
+  const cut = !!limit && !open && all0.length > limit;
+  const all = cut ? all0.slice(0, limit) : all0;
   const pg = usePaged(all);
   const rows = pg.rows;
   return (
@@ -712,14 +715,19 @@ function Table({ head, rows: all }: { head: string[]; rows: string[][] }) {
         </tbody>
       </table>
     </div>
-    <Pager {...pg} />
+    {limit && all0.length > limit ? (
+      <button type="button" className="mt-2 text-sm font-medium text-primary hover:underline" onClick={() => setOpen((o) => !o)}>
+        {open ? "Ver menos" : `Ver mais (${all0.length - limit})`}
+      </button>
+    ) : null}
+    {!cut && <Pager {...pg} />}
     </div>
   );
 }
 
 /* ---------------- Gestão do estoque ---------------- */
 function StockManagement({ products, clients, movements }: Data) {
-  const [mod, setMod] = useState<"lisos" | "guarda">("lisos");
+  const [mod, setMod] = useState<"lisos" | "guarda">("guarda");
   const [cid, setCid] = useState("");
   const [q, setQ] = useState("");
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
@@ -784,17 +792,17 @@ function StockManagement({ products, clients, movements }: Data) {
       </div>
       {mod === "guarda" && (
         <section className="space-y-2"><h2 className="font-semibold">Guarda por cliente ({byClient.size} clientes)</h2>
-          <Table head={["Cliente", "Produtos", "Quantidade"]}
+          <Table limit={5} head={["Cliente", "Produtos", "Quantidade"]}
             rows={[...byClient.entries()].sort((a, b) => b[1].qty - a[1].qty).map(([c, v]) => [cname(c), String(v.items), fmtNum(v.qty)])} />
         </section>
       )}
       <section className="space-y-2"><h2 className="font-semibold">Por produto</h2>
-        <Table head={["Produto", "Quantidade"]}
+        <Table limit={5} head={["Produto", "Quantidade"]}
           rows={[...byProduct.entries()].map(([p, v]) => [`${pname(p)} ${punit(p) ? `(${punit(p)})` : ""}`, fmtNum(mod === "lisos" ? v.lisos : v.guarda)])} />
       </section>
       {mod === "guarda" && (
         <section className="space-y-2"><h2 className="font-semibold">Detalhado por cliente</h2>
-          <Table head={["Cliente", "Produto", "Saldo"]}
+          <Table limit={5} head={["Cliente", "Produto", "Saldo"]}
             rows={rows.map((r) => [cname(r.cid), pname(r.pid), fmtNum(r.v)])} />
         </section>
       )}
