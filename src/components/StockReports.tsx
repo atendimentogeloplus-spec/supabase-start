@@ -195,10 +195,11 @@ export function OrdersReportButton({ products, clients, orders }: { products: Pr
       const body = list.map((o) => [
         o.number, fmtDate(o.created_at), o.expected_date ? fmtDate(o.expected_date + "T12:00:00") : "—", o.supplier ?? "—", cname(o.client_id),
         o.purchase_order_items.map((i) => `${fmtNum(i.quantity)} × ${pname(i.product_id)}${i.delivered_qty ? ` (entregue ${fmtNum(i.delivered_qty)})` : ""}`).join("; "),
-        ORDER_STATUS[o.status] ?? o.status,
+        (ORDER_STATUS[o.status] ?? o.status) + (late(o) ? " (Em atraso)" : ""),
       ]);
       const all = chosen.length === Object.keys(ORDER_STATUS).length;
-      const sub = `${all ? "Todos os pedidos" : chosen.map((s) => ORDER_STATUS[s]).join(", ")} • ${list.length} pedido(s)`;
+      const names = [...chosen.map((s) => ORDER_STATUS[s]), ...(lateOnly ? ["Em atraso"] : [])];
+      const sub = `${all ? "Todos os pedidos" : names.join(", ")} • ${list.length} pedido(s)`;
       const sections = [{ title: "Pedidos", head: ["Pedido", "Data", "Previsão", "Fornecedor", "Cliente", "Itens", "Status"], body }];
       const file = `relatorio-pedidos-${today()}.${fmt}`;
       if (fmt === "pdf") await makePdf("Relatório de Pedidos", sub, sections, file);
@@ -225,6 +226,10 @@ export function OrdersReportButton({ products, clients, orders }: { products: Pr
                   {label}
                 </label>
               ))}
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={lateOnly} onChange={(e) => setLateOnly(e.target.checked)} />
+                Em atraso
+              </label>
             </div>
             <button type="button" className="text-xs underline text-muted-foreground" onClick={() => setChosen(Object.keys(ORDER_STATUS))}>Marcar todos</button>
             <FormatButtons busy={busy} run={(f) => void run(f)} />
