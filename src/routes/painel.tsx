@@ -42,19 +42,22 @@ function PainelPage() {
 
   const wonKeys = columns.filter((c) => c.is_won).map((c) => c.key);
   const lostKeys = columns.filter((c) => c.is_lost).map((c) => c.key);
-  const won = leads.filter((l) => wonKeys.includes(l.status));
+  const won = leads.filter((l) => wonKeys.includes(l.status) || !!(l as Lead & { converted_at?: string | null }).converted_at);
   const lost = leads.filter((l) => lostKeys.includes(l.status));
-  const openLeads = leads.filter((l) => !wonKeys.includes(l.status) && !lostKeys.includes(l.status));
+  const openLeads = leads.filter((l) => !won.includes(l) && !wonKeys.includes(l.status) && !lostKeys.includes(l.status));
   const stalled = openLeads.filter((l) => daysSince(l.last_interaction_at ?? l.updated_at) >= stalledDays);
   const closed = won.length + lost.length;
   const conversion = closed ? Math.round((won.length / closed) * 100) : 0;
   const pipeline = openLeads.reduce((sum, l) => sum + (l.estimated_value ?? 0), 0);
 
   const cards = [
+    { label: "Total de leads atribuídos", value: String(leads.filter((l) => !!l.owner_id).length) },
     { label: "Leads em aberto", value: String(openLeads.length) },
     { label: "Valor em negociação", value: formatCurrency(pipeline) },
     { label: "Taxa de conversão", value: `${conversion}%` },
     { label: `Parados (${stalledDays}+ dias)`, value: String(stalled.length) },
+    { label: "Fechados (ganho)", value: String(won.length) },
+    { label: "Perdidos", value: String(lost.length) },
   ];
 
   return (
