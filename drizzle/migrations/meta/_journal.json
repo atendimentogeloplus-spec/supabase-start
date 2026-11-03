@@ -141,6 +141,13 @@
       "when": 1793218520540,
       "tag": "0019_admin_reopen_orders",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793710499576,
+      "tag": "0020_rep_level2_stock_exit",
+      "breakpoints": true
     }
   ]
 }
