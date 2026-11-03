@@ -102,7 +102,7 @@ function EstoquePage() {
         <TabsList className="-mx-3 flex h-auto w-[calc(100%+1.5rem)] justify-start overflow-x-auto [&>*]:shrink-0 rounded-none px-3 [scrollbar-width:none] md:mx-0 md:w-auto md:flex-wrap md:rounded-md md:px-1">
           {showPanel && <TabsTrigger value="painel">Painel</TabsTrigger>}
           <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
-          {!isRep && <TabsTrigger value="saldos">Saídas</TabsTrigger>}
+          {(!isRep || role === "rep_level2") && <TabsTrigger value="saldos">Saídas</TabsTrigger>}
           <TabsTrigger value="gestao">Gestão do estoque</TabsTrigger>
           {!isStockist && <TabsTrigger value="clientes">Previsão por cliente</TabsTrigger>}
           {!isRep && <TabsTrigger value="movs">Movimentações</TabsTrigger>}
@@ -110,7 +110,7 @@ function EstoquePage() {
         </TabsList>
         {showPanel && <TabsContent value="painel"><StockDashboard {...d} /></TabsContent>}
         <TabsContent value="pedidos"><Orders {...d} /></TabsContent>
-        {!isRep && <TabsContent value="saldos"><Balances {...d} /></TabsContent>}
+        {(!isRep || role === "rep_level2") && <TabsContent value="saldos"><Balances {...d} /></TabsContent>}
         <TabsContent value="gestao"><StockManagement {...d} /></TabsContent>
         {!isStockist && <TabsContent value="clientes"><ClientForecasts {...d} /></TabsContent>}
         {!isRep && <TabsContent value="movs"><MovementList {...d} /></TabsContent>}
