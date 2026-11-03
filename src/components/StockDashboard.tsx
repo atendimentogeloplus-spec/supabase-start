@@ -125,14 +125,23 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
     </div>
   );
 
-  const orderTable = (list: Order[]) => (
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const cut = <T,>(key: string, list: T[]) => (expanded[key] ? list : list.slice(0, 5));
+  const more = (key: string, total: number) =>
+    total > 5 ? (
+      <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setExpanded((e) => ({ ...e, [key]: !e[key] }))}>
+        {expanded[key] ? "Ver menos" : `Ver mais (${total - 5})`}
+      </Button>
+    ) : null;
+
+  const orderTable = (list: Order[], key: string) => (<>
     <div className="overflow-x-auto rounded-md border">
       <table className="w-full text-sm">
         <thead className="bg-muted/50 text-left"><tr>
           <th className="p-2">Pedido</th><th className="p-2">Fornecedor</th><th className="p-2">Cliente</th><th className="p-2">Itens</th><th className="p-2">Status</th>
         </tr></thead>
         <tbody>
-          {list.map((o) => (
+          {cut(key, list).map((o) => (
             <tr key={o.id} className="border-t align-top">
               <td className="p-2 font-medium">{o.number}<div className="text-xs text-muted-foreground">{fmtDate(o.created_at)}</div></td>
               <td className="p-2">{o.supplier ?? "—"}</td><td className="p-2">{cname(o.client_id)}</td>
@@ -143,16 +152,17 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
         </tbody>
       </table>
     </div>
-  );
+    {more(key, list.length)}
+  </>);
 
-  const alertTable = (list: typeof alerts, showClient: boolean) => (
+  const alertTable = (list: typeof alerts, showClient: boolean, key: string) => (<>
     <div className="overflow-x-auto rounded-md border">
       <table className="w-full text-sm">
         <thead className="bg-muted/50 text-left"><tr>
           <th className="p-2">Produto</th>{showClient && <th className="p-2">Cliente</th>}<th className="p-2">Saldo</th><th className="p-2">Mínimo</th><th className="p-2">Situação</th>
         </tr></thead>
         <tbody>
-          {list.map((a) => (
+          {cut(key, list).map((a) => (
             <tr key={a.id} className="border-t">
               <td className="p-2">{pname(a.product_id)}</td>{showClient && <td className="p-2">{cname(a.client_id)}</td>}
               <td className="p-2">{a.cur}</td><td className="p-2">{a.min_qty}</td>
@@ -163,7 +173,8 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
         </tbody>
       </table>
     </div>
-  );
+    {more(key, list.length)}
+  </>);
 
   return (
     <div className="space-y-5">
@@ -177,14 +188,14 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
         {card(<AlertTriangle className="h-4 w-4" />, "Alertas de estoque mínimo", alerts.length, alerts.length ? "text-destructive" : "")}
       </div>
 
-      <section className="space-y-2"><h2 className="font-semibold">Pedidos a enviar</h2>{orderTable(toSend)}</section>
-      <section className="space-y-2"><h2 className="font-semibold">Pedidos enviados / em produção</h2>{orderTable(inProgress)}</section>
+      <section className="space-y-2"><h2 className="font-semibold">Pedidos a enviar</h2>{orderTable(toSend, 'send')}</section>
+      <section className="space-y-2"><h2 className="font-semibold">Pedidos enviados / em produção</h2>{orderTable(inProgress, 'prog')}</section>
       {awaitingEntry.length > 0 && (
-        <section className="space-y-2"><h2 className="font-semibold">Entregues aguardando confirmação de entrada</h2>{orderTable(awaitingEntry)}</section>
+        <section className="space-y-2"><h2 className="font-semibold">Entregues aguardando confirmação de entrada</h2>{orderTable(awaitingEntry, 'await')}</section>
       )}
 
-      <section className="space-y-2"><h2 className="flex items-center gap-2 font-semibold"><PackageSearch className="h-4 w-4" />Estoque de Lisos próximo do mínimo</h2>{alertTable(lisosAlerts, false)}</section>
-      <section className="space-y-2"><h2 className="flex items-center gap-2 font-semibold"><PackageSearch className="h-4 w-4" />Estoque dos clientes (Guarda) próximo do mínimo</h2>{alertTable(guardaAlerts, true)}</section>
+      <section className="space-y-2"><h2 className="flex items-center gap-2 font-semibold"><PackageSearch className="h-4 w-4" />Estoque de Lisos próximo do mínimo</h2>{alertTable(lisosAlerts, false, 'lisos')}</section>
+      <section className="space-y-2"><h2 className="flex items-center gap-2 font-semibold"><PackageSearch className="h-4 w-4" />Estoque dos clientes (Guarda) próximo do mínimo</h2>{alertTable(guardaAlerts, true, 'guarda')}</section>
 
       <section className="space-y-2 rounded-md border p-3">
         <h2 className="font-semibold">Definir estoque mínimo</h2>
@@ -205,7 +216,7 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left"><tr><th className="p-2">Estoque</th><th className="p-2">Cliente</th><th className="p-2">Produto</th><th className="p-2">Saldo</th><th className="p-2">Mínimo</th><th className="p-2" /></tr></thead>
               <tbody>
-                {levels.map((l) => (
+                {cut('levels', levels).map((l) => (
                   <tr key={l.id} className="border-t">
                     <td className="p-2">{l.modality === "lisos" ? "Lisos" : "Guarda"}</td><td className="p-2">{cname(l.client_id)}</td>
                     <td className="p-2">{pname(l.product_id)}</td><td className="p-2">{l.cur}</td><td className="p-2">{l.min_qty}</td>
@@ -219,6 +230,7 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
             </table>
           </div>
         )}
+        {more('levels', levels.length)}
       </section>
     </div>
   );
