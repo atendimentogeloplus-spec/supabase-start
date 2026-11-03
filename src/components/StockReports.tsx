@@ -181,21 +181,25 @@ export function OrdersReportButton({ products, clients, orders }: { products: Pr
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [chosen, setChosen] = useState<string[]>(Object.keys(ORDER_STATUS));
+  const [lateOnly, setLateOnly] = useState(false);
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string | null) => (id ? clients.find((c) => c.id === id)?.name ?? "—" : "—");
 
   async function run(fmt: "pdf" | "csv") {
-    if (!chosen.length) return void toast.error("Escolha ao menos um status.");
+    if (!chosen.length && !lateOnly) return void toast.error("Escolha ao menos um status.");
     setBusy(true);
     try {
-      const list = orders.filter((o) => chosen.includes(o.status)).sort((a, b) => a.created_at.localeCompare(b.created_at));
+      const td = today();
+      const late = (o: Order) => !!o.expected_date && o.status !== "entregue" && o.expected_date < td;
+      const list = orders.filter((o) => chosen.includes(o.status) || (lateOnly && late(o))).sort((a, b) => a.created_at.localeCompare(b.created_at));
       const body = list.map((o) => [
         o.number, fmtDate(o.created_at), o.expected_date ? fmtDate(o.expected_date + "T12:00:00") : "—", o.supplier ?? "—", cname(o.client_id),
         o.purchase_order_items.map((i) => `${fmtNum(i.quantity)} × ${pname(i.product_id)}${i.delivered_qty ? ` (entregue ${fmtNum(i.delivered_qty)})` : ""}`).join("; "),
-        ORDER_STATUS[o.status] ?? o.status,
+        (ORDER_STATUS[o.status] ?? o.status) + (late(o) ? " (Em atraso)" : ""),
       ]);
       const all = chosen.length === Object.keys(ORDER_STATUS).length;
-      const sub = `${all ? "Todos os pedidos" : chosen.map((s) => ORDER_STATUS[s]).join(", ")} • ${list.length} pedido(s)`;
+      const names = [...chosen.map((s) => ORDER_STATUS[s]), ...(lateOnly ? ["Em atraso"] : [])];
+      const sub = `${all ? "Todos os pedidos" : names.join(", ")} • ${list.length} pedido(s)`;
       const sections = [{ title: "Pedidos", head: ["Pedido", "Data", "Previsão", "Fornecedor", "Cliente", "Itens", "Status"], body }];
       const file = `relatorio-pedidos-${today()}.${fmt}`;
       if (fmt === "pdf") await makePdf("Relatório de Pedidos", sub, sections, file);
@@ -222,6 +226,10 @@ export function OrdersReportButton({ products, clients, orders }: { products: Pr
                   {label}
                 </label>
               ))}
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={lateOnly} onChange={(e) => setLateOnly(e.target.checked)} />
+                Em atraso
+              </label>
             </div>
             <button type="button" className="text-xs underline text-muted-foreground" onClick={() => setChosen(Object.keys(ORDER_STATUS))}>Marcar todos</button>
             <FormatButtons busy={busy} run={(f) => void run(f)} />
