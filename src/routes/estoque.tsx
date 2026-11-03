@@ -1,3 +1,4 @@
+import { StockReportButton, OrdersReportButton } from "@/components/StockReports";
 import { fmtNum } from "@/lib/leadtrack";
 import { usePaged } from "@/lib/paginate";
 import { Pager } from "@/components/Pager";
@@ -239,6 +240,7 @@ function Orders({ products, clients, orders, movements }: Data) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <Button className="w-full md:w-auto" onClick={() => setOpen(true)}>Novo pedido</Button>
+        <OrdersReportButton products={products} clients={clients} orders={orders} />
         <div className="flex w-full gap-1 overflow-x-auto rounded-md bg-muted p-1 [scrollbar-width:none] [&>*]:shrink-0 [&>*]:whitespace-nowrap md:ml-auto md:w-auto md:flex-wrap">
           {[["todos", "Todos"], ...Object.entries(STATUS), ["atrasados", "Em atraso"]].map(([k, label]) => (
             <button key={k} type="button" onClick={() => setTab(k)}
@@ -535,7 +537,10 @@ function Balances({ products, clients, movements }: Data) {
   const isG = modality === "guarda";
   return (
     <div className="space-y-4">
-      <ModPicker value={modality} onChange={setModality} />
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <ModPicker value={modality} onChange={setModality} />
+        <StockReportButton products={products} clients={clients} movements={movements} defaultModality={modality} />
+      </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-md border bg-primary/10 p-3">
           <div className="text-sm text-muted-foreground">Estoque de {MOD[modality]}</div>
@@ -751,7 +756,10 @@ function StockManagement({ products, clients, movements }: Data) {
 
   return (
     <div className="space-y-5">
-      <ModPicker value={mod} onChange={(v) => { setMod(v); setCid(""); }} />
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <ModPicker value={mod} onChange={(v) => { setMod(v); setCid(""); }} />
+        <StockReportButton products={products} clients={clients} movements={movements} defaultModality={mod} />
+      </div>
       <div className="grid gap-2 sm:grid-cols-3">
         {mod === "guarda" && (
           <SearchSelect value={cid} onChange={setCid} placeholder="Todos os clientes" options={guardaClients.map((c) => ({ value: c.id, label: c.name }))} />
