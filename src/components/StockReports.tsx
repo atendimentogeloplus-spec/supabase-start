@@ -181,14 +181,17 @@ export function OrdersReportButton({ products, clients, orders }: { products: Pr
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [chosen, setChosen] = useState<string[]>(Object.keys(ORDER_STATUS));
+  const [lateOnly, setLateOnly] = useState(false);
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string | null) => (id ? clients.find((c) => c.id === id)?.name ?? "—" : "—");
 
   async function run(fmt: "pdf" | "csv") {
-    if (!chosen.length) return void toast.error("Escolha ao menos um status.");
+    if (!chosen.length && !lateOnly) return void toast.error("Escolha ao menos um status.");
     setBusy(true);
     try {
-      const list = orders.filter((o) => chosen.includes(o.status)).sort((a, b) => a.created_at.localeCompare(b.created_at));
+      const td = today();
+      const late = (o: Order) => !!o.expected_date && o.status !== "entregue" && o.expected_date < td;
+      const list = orders.filter((o) => chosen.includes(o.status) || (lateOnly && late(o))).sort((a, b) => a.created_at.localeCompare(b.created_at));
       const body = list.map((o) => [
         o.number, fmtDate(o.created_at), o.expected_date ? fmtDate(o.expected_date + "T12:00:00") : "—", o.supplier ?? "—", cname(o.client_id),
         o.purchase_order_items.map((i) => `${fmtNum(i.quantity)} × ${pname(i.product_id)}${i.delivered_qty ? ` (entregue ${fmtNum(i.delivered_qty)})` : ""}`).join("; "),
