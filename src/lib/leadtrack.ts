@@ -149,3 +149,10 @@ export function validateMove(
   }
   return null;
 }
+
+/** Número no padrão brasileiro: 1.301.166,7 */
+export function fmtNum(v: number | string | null | undefined): string {
+  if (v == null || v === "") return "—";
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toLocaleString("pt-BR", { maximumFractionDigits: 3 }) : String(v);
+}
