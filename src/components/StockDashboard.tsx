@@ -1,3 +1,4 @@
+import { fmtNum } from "@/lib/leadtrack";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -34,7 +35,7 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
   const qc = useQueryClient();
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
   const cname = (id: string | null) => (id ? clients.find((c) => c.id === id)?.name ?? "—" : "—");
-  const items = (o: Order) => o.purchase_order_items.map((i) => `${i.quantity} × ${pname(i.product_id)}`).join(", ");
+  const items = (o: Order) => o.purchase_order_items.map((i) => `${fmtNum(i.quantity)} × ${pname(i.product_id)}`).join(", ");
 
   const toSend = orders.filter((o) => o.status === "a_enviar");
   const inProgress = orders.filter((o) => o.status === "enviado" || o.status === "em_producao");
@@ -108,7 +109,7 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
       section("Pedidos a enviar", oHead, toSend.map(oRow));
       section("Pedidos enviados / em produção", oHead, inProgress.map(oRow));
       section("Entregues aguardando confirmação de entrada", oHead, awaitingEntry.map(oRow));
-      const aRow = (a: (typeof alerts)[number]) => [pname(a.product_id), cname(a.client_id), String(a.cur), String(a.min_qty), a.level === "abaixo" ? "Abaixo do mínimo" : "Próximo do mínimo"];
+      const aRow = (a: (typeof alerts)[number]) => [pname(a.product_id), cname(a.client_id), fmtNum(a.cur), fmtNum(a.min_qty), a.level === "abaixo" ? "Abaixo do mínimo" : "Próximo do mínimo"];
       section("Estoque de Lisos próximo do mínimo", ["Produto", "Cliente", "Saldo", "Mínimo", "Situação"], lisosAlerts.map(aRow));
       section("Estoque de Guarda (clientes) próximo do mínimo", ["Produto", "Cliente", "Saldo", "Mínimo", "Situação"], guardaAlerts.map(aRow));
       doc.save(`painel-estoque-${new Date().toISOString().slice(0, 10)}.pdf`);
@@ -165,7 +166,7 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
           {cut(key, list).map((a) => (
             <tr key={a.id} className="border-t">
               <td className="p-2">{pname(a.product_id)}</td>{showClient && <td className="p-2">{cname(a.client_id)}</td>}
-              <td className="p-2">{a.cur}</td><td className="p-2">{a.min_qty}</td>
+              <td className="p-2">{fmtNum(a.cur)}</td><td className="p-2">{fmtNum(a.min_qty)}</td>
               <td className={`p-2 font-medium ${a.level === "abaixo" ? "text-destructive" : "text-warning"}`}>{a.level === "abaixo" ? "Abaixo do mínimo" : "Próximo do mínimo"}</td>
             </tr>
           ))}
@@ -219,7 +220,7 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
                 {cut('levels', levels).map((l) => (
                   <tr key={l.id} className="border-t">
                     <td className="p-2">{l.modality === "lisos" ? "Lisos" : "Guarda"}</td><td className="p-2">{cname(l.client_id)}</td>
-                    <td className="p-2">{pname(l.product_id)}</td><td className="p-2">{l.cur}</td><td className="p-2">{l.min_qty}</td>
+                    <td className="p-2">{pname(l.product_id)}</td><td className="p-2">{fmtNum(l.cur)}</td><td className="p-2">{fmtNum(l.min_qty)}</td>
                     <td className="p-2 text-right">
                       {l.level === "ok" && <CheckCircle2 className="mr-2 inline h-4 w-4 text-success" />}
                       <Button size="sm" variant="ghost" onClick={() => void removeMin(l.id)}>Remover</Button>

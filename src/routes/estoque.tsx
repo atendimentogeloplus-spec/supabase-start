@@ -1,3 +1,4 @@
+import { fmtNum } from "@/lib/leadtrack";
 import { usePaged } from "@/lib/paginate";
 import { Pager } from "@/components/Pager";
 import { fetchAll } from "@/lib/paginate";
@@ -261,7 +262,7 @@ function Orders({ products, clients, orders, movements }: Data) {
                 <td className="p-2">{o.supplier ?? "—"}</td>
                 <td className="p-2">{cname(o.client_id)}</td>
                 <td className="p-2">{o.sale_number || "—"}</td>
-                <td className="p-2">{o.purchase_order_items.map((i) => <div key={i.id}>{i.quantity} × {pname(i.product_id)}</div>)}</td>
+                <td className="p-2">{o.purchase_order_items.map((i) => <div key={i.id}>{fmtNum(i.quantity)} × {pname(i.product_id)}</div>)}</td>
                 <td className="p-2">
                   <Input type="date" className="h-8 w-36" value={o.expected_date ?? ""} onChange={(e) => void setExpected(o, e.target.value)} />
                   {isLate(o) && <span className="mt-1 inline-block rounded bg-destructive px-2 py-0.5 text-xs font-semibold text-destructive-foreground">Em atraso</span>}
@@ -454,7 +455,7 @@ function ConfirmDialog({ order, clients, movements, products, onClose }: { order
         <div className="space-y-2">
           {open.map((i) => (
             <div key={i.id} className="flex items-center gap-2 text-sm">
-              <div className="flex-1">{pname(i.product_id)}<div className="text-xs text-muted-foreground">Pendente: {pend(i)} de {i.quantity}</div></div>
+              <div className="flex-1">{pname(i.product_id)}<div className="text-xs text-muted-foreground">Pendente: {fmtNum(pend(i))} de {fmtNum(i.quantity)}</div></div>
               {kind === "parcial" && <Input type="number" min="0" max={pend(i)} className="w-28" placeholder="Entregue" value={qtys[i.id] ?? ""} onChange={(e) => setQtys({ ...qtys, [i.id]: e.target.value })} />}
             </div>
           ))}
@@ -573,17 +574,17 @@ function Balances({ products, clients, movements }: Data) {
               <SearchSelect value={adjClient} onChange={setAdjClient} placeholder="Cliente…" options={clients.map((c) => ({ value: c.id, label: c.name }))} />
             ) : <div />}
             <SearchSelect value={adjProduct} onChange={setAdjProduct} placeholder="Produto…" options={products.map((p) => ({ value: p.id, label: p.name }))} />
-            <Input type="number" min="0" placeholder={adjProduct ? `Atual: ${current}` : "Quantidade correta"} value={adjQty} onChange={(e) => setAdjQty(e.target.value)} />
+            <Input type="number" min="0" placeholder={adjProduct ? `Atual: ${fmtNum(current)}` : "Quantidade correta"} value={adjQty} onChange={(e) => setAdjQty(e.target.value)} />
             <Button variant="outline" onClick={() => void adjust()}>Salvar ajuste</Button>
           </div>
-          {adjProduct && (!isG || adjClient) && <p className="text-xs text-muted-foreground">Saldo atual: {current}. Informe a quantidade correta; a diferença fica registrada como ajuste em Movimentações.</p>}
+          {adjProduct && (!isG || adjClient) && <p className="text-xs text-muted-foreground">Saldo atual: {fmtNum(current)}. Informe a quantidade correta; a diferença fica registrada como ajuste em Movimentações.</p>}
         </div>
       )}
       {isG && (
         <SearchSelect className="max-w-xs" value={filterClient} onChange={setFilterClient} placeholder="Todos os clientes" options={clients.filter((c) => view.some((r) => r.cid === c.id)).map((c) => ({ value: c.id, label: c.name }))} />
       )}
-      {isG ? <Table head={["Cliente", "Produto", "Saldo"]} rows={view.filter((r) => !filterClient || r.cid === filterClient).map((r) => [cname(r.cid), pname(r.pid), String(r.v)])} />
-        : <Table head={["Produto", "Saldo"]} rows={view.map((r) => [pname(r.pid), String(r.v)])} />}
+      {isG ? <Table head={["Cliente", "Produto", "Saldo"]} rows={view.filter((r) => !filterClient || r.cid === filterClient).map((r) => [cname(r.cid), pname(r.pid), fmtNum(r.v)])} />
+        : <Table head={["Produto", "Saldo"]} rows={view.map((r) => [pname(r.pid), fmtNum(r.v)])} />}
     </div>
   );
 }
@@ -627,7 +628,7 @@ function ClientForecasts({ products, clients, movements, forecasts }: Data) {
               return (
                 <tr key={c.id} className="border-t">
                   <td className="p-2 font-medium">{c.name}</td>
-                  <td className="p-2">{total}</td>
+                  <td className="p-2">{fmtNum(total)}</td>
                   <td className="p-2">{exits[0] ? fmtDate(exits[0].created_at) : "—"}</td>
                   <td className="p-2">
                     {date ? <>{date.toLocaleDateString("pt-BR")} <span className={left! <= 3 ? "text-destructive" : "text-muted-foreground"}>({left! <= 0 ? "vencida" : `${left} dias`})</span></>
@@ -654,7 +655,7 @@ function ClientForecasts({ products, clients, movements, forecasts }: Data) {
           <DialogContent className="max-w-2xl">
             <DialogHeader><DialogTitle>Histórico — {clients.find((c) => c.id === selected)?.name}</DialogTitle></DialogHeader>
             <Table head={["Data", "Tipo", "Produto", "Qtd", "Obs."]}
-              rows={movements.filter((m) => m.client_id === selected).map((m) => [fmtDate(m.created_at), m.kind === "entrada" ? "Entrada" : "Saída", pname(m.product_id), String(m.quantity), m.note ?? ""])} />
+              rows={movements.filter((m) => m.client_id === selected).map((m) => [fmtDate(m.created_at), m.kind === "entrada" ? "Entrada" : "Saída", pname(m.product_id), fmtNum(m.quantity), m.note ?? ""])} />
           </DialogContent>
         </Dialog>
       )}
@@ -668,7 +669,7 @@ function MovementList({ products, clients, movements }: Data) {
   const cname = (id: string | null) => clients.find((c) => c.id === id)?.name ?? "—";
   const [mod, setMod] = useState<"lisos" | "guarda">("lisos");
   const list = movements.filter((m) => m.modality === mod);
-  const base = (m: Movement) => [new Date(m.created_at).toLocaleString("pt-BR"), m.kind === "entrada" ? "Entrada" : "Saída", pname(m.product_id), String(m.quantity)];
+  const base = (m: Movement) => [new Date(m.created_at).toLocaleString("pt-BR"), m.kind === "entrada" ? "Entrada" : "Saída", pname(m.product_id), fmtNum(m.quantity)];
   return (
     <div className="space-y-3">
       <ModPicker value={mod} onChange={setMod} />
@@ -760,7 +761,7 @@ function StockManagement({ products, clients, movements }: Data) {
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-md border bg-primary/10 p-3">
           <div className="text-sm text-muted-foreground">Estoque de {MOD[mod]}</div>
-          <div className="mt-1 text-2xl font-semibold">{total(mod)}</div>
+          <div className="mt-1 text-2xl font-semibold">{fmtNum(total(mod))}</div>
         </div>
         <div className="rounded-md border bg-card p-3">
           <div className="text-sm text-muted-foreground">Produtos com saldo</div>
@@ -776,17 +777,17 @@ function StockManagement({ products, clients, movements }: Data) {
       {mod === "guarda" && (
         <section className="space-y-2"><h2 className="font-semibold">Guarda por cliente ({byClient.size} clientes)</h2>
           <Table head={["Cliente", "Produtos", "Quantidade"]}
-            rows={[...byClient.entries()].sort((a, b) => b[1].qty - a[1].qty).map(([c, v]) => [cname(c), String(v.items), String(v.qty)])} />
+            rows={[...byClient.entries()].sort((a, b) => b[1].qty - a[1].qty).map(([c, v]) => [cname(c), String(v.items), fmtNum(v.qty)])} />
         </section>
       )}
       <section className="space-y-2"><h2 className="font-semibold">Por produto</h2>
         <Table head={["Produto", "Quantidade"]}
-          rows={[...byProduct.entries()].map(([p, v]) => [`${pname(p)} ${punit(p) ? `(${punit(p)})` : ""}`, String(mod === "lisos" ? v.lisos : v.guarda)])} />
+          rows={[...byProduct.entries()].map(([p, v]) => [`${pname(p)} ${punit(p) ? `(${punit(p)})` : ""}`, fmtNum(mod === "lisos" ? v.lisos : v.guarda)])} />
       </section>
       {mod === "guarda" && (
         <section className="space-y-2"><h2 className="font-semibold">Detalhado por cliente</h2>
           <Table head={["Cliente", "Produto", "Saldo"]}
-            rows={rows.map((r) => [cname(r.cid), pname(r.pid), String(r.v)])} />
+            rows={rows.map((r) => [cname(r.cid), pname(r.pid), fmtNum(r.v)])} />
         </section>
       )}
     </div>
