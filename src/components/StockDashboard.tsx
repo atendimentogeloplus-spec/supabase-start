@@ -109,7 +109,7 @@ export function StockDashboard({ products, clients, orders, movements, minimums 
       section("Pedidos a enviar", oHead, toSend.map(oRow));
       section("Pedidos enviados / em produção", oHead, inProgress.map(oRow));
       section("Entregues aguardando confirmação de entrada", oHead, awaitingEntry.map(oRow));
-      const aRow = (a: (typeof alerts)[number]) => [pname(a.product_id), cname(a.client_id), String(a.cur), String(a.min_qty), a.level === "abaixo" ? "Abaixo do mínimo" : "Próximo do mínimo"];
+      const aRow = (a: (typeof alerts)[number]) => [pname(a.product_id), cname(a.client_id), fmtNum(a.cur), fmtNum(a.min_qty), a.level === "abaixo" ? "Abaixo do mínimo" : "Próximo do mínimo"];
       section("Estoque de Lisos próximo do mínimo", ["Produto", "Cliente", "Saldo", "Mínimo", "Situação"], lisosAlerts.map(aRow));
       section("Estoque de Guarda (clientes) próximo do mínimo", ["Produto", "Cliente", "Saldo", "Mínimo", "Situação"], guardaAlerts.map(aRow));
       doc.save(`painel-estoque-${new Date().toISOString().slice(0, 10)}.pdf`);
