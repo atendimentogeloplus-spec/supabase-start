@@ -33,6 +33,7 @@ type LostLead = Lead & { first_owner_id: string | null };
 function CarteiraPage() {
   const { columns, profiles } = useLeadTrackBase();
   const [search, setSearch] = useState("");
+  const [reason, setReason] = useState("");
   const lostKeys = columns.filter((c) => c.is_lost).map((c) => c.key);
 
   const { data: leads = [] } = useQuery({
@@ -48,8 +49,10 @@ function CarteiraPage() {
   });
 
   const term = search.trim().toLowerCase();
+  const reasonOf = (l: Lead) => (l.loss_reason ?? "").split(" — ")[0].trim() || "Sem motivo";
+  const reasons = [...new Set(leads.map(reasonOf))].sort();
   const filtered = leads.filter(
-    (l) => !term || matches([l.contact_name, l.company, l.phone, l.loss_reason], term),
+    (l) => (!term || matches([l.contact_name, l.company, l.phone, l.loss_reason], term)) && (!reason || reasonOf(l) === reason),
   );
   const pg = usePaged(filtered);
   const name = (id: string | null) => profiles.find((p) => p.id === id)?.name ?? "—";
@@ -58,6 +61,10 @@ function CarteiraPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="mr-auto text-xl font-semibold">Carteira geral</h1>
+        <select className="h-9 w-full rounded-md border bg-background px-2 text-sm sm:w-56" value={reason} onChange={(e) => setReason(e.target.value)}>
+          <option value="">Todos os motivos</option>
+          {reasons.map((r) => <option key={r} value={r}>{r} ({leads.filter((l) => reasonOf(l) === r).length})</option>)}
+        </select>
         <Input placeholder="Buscar por nome, empresa, motivo…" className="w-full sm:w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
       <div className="overflow-x-auto rounded-lg border">

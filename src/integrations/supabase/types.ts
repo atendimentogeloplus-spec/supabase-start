@@ -375,6 +375,7 @@ export type Database = {
           is_read: boolean
           lead_id: string | null
           pushed_at: string | null
+          ref: string | null
           title: string
           type: string
           user_id: string
@@ -386,6 +387,7 @@ export type Database = {
           is_read?: boolean
           lead_id?: string | null
           pushed_at?: string | null
+          ref?: string | null
           title: string
           type: string
           user_id: string
@@ -397,6 +399,7 @@ export type Database = {
           is_read?: boolean
           lead_id?: string | null
           pushed_at?: string | null
+          ref?: string | null
           title?: string
           type?: string
           user_id?: string
@@ -836,6 +839,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_protected_user: { Args: { _uid: string }; Returns: boolean }
       is_stockist: { Args: never; Returns: boolean }
+      notify_replenishment: { Args: never; Returns: number }
       notify_stalled_leads: { Args: never; Returns: number }
       receive_order_stock: {
         Args: {
@@ -855,6 +859,20 @@ export type Database = {
           _quantity: number
         }
         Returns: undefined
+      }
+      replenishment_forecasts: {
+        Args: never
+        Returns: {
+          client_id: string
+          daily_rate: number
+          has_new_order: boolean
+          last_date: string
+          last_qty: number
+          mode: string
+          next_date: string
+          product_id: string
+          shipments: number
+        }[]
       }
       restore_from_trash: { Args: { _id: string }; Returns: undefined }
       save_push_subscription: {

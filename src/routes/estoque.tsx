@@ -595,18 +595,15 @@ function Balances({ products, clients, movements }: Data) {
 }
 
 /* ---------------- Previsão por cliente ---------------- */
-function autoForecast(exits: Movement[]) {
-  const days = [...new Set(exits.map((m) => new Date(m.created_at).toISOString().slice(0, 10)))].sort();
-  if (days.length < 2) return null;
-  const t = days.map((d) => new Date(d).getTime());
-  const avg = (t[t.length - 1] - t[0]) / (t.length - 1);
-  return new Date(t[t.length - 1] + avg);
-}
+type Repl = { client_id: string; product_id: string; shipments: number; last_date: string; last_qty: number; daily_rate: number | null; next_date: string | null; mode: string; has_new_order: boolean };
 
 function ClientForecasts({ products, clients, movements, forecasts }: Data) {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
-  const guardaClients = clients.filter((c) => movements.some((m) => m.modality === "guarda" && m.client_id === c.id));
+  const repl = useQuery({ queryKey: ["replenishment_forecasts", movements.length, forecasts], queryFn: async () => {
+    const { data, error } = await supabase.rpc("replenishment_forecasts" as never);
+    if (error) throw error; return (data ?? []) as unknown as Repl[];
+  } });
 
   async function saveForecast(clientId: string, mode: "auto" | "manual", manual_date: string | null) {
     const { error } = await supabase.from("client_forecasts").upsert({ client_id: clientId, mode, manual_date });
@@ -615,50 +612,53 @@ function ClientForecasts({ products, clients, movements, forecasts }: Data) {
   }
 
   const pname = (id: string) => products.find((p) => p.id === id)?.name ?? "—";
+  const cname = (id: string) => clients.find((c) => c.id === id)?.name ?? "—";
+  const rows = [...(repl.data ?? [])].sort((a, b) => cname(a.client_id).localeCompare(cname(b.client_id)) || pname(a.product_id).localeCompare(pname(b.product_id)));
   return (
     <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">A previsão é calculada por produto de cada cliente, pelo ritmo real de consumo entre as remessas (as compras dos últimos 3 meses pesam mais). A vendedora do cliente recebe aviso 35, 15 e 5 dias antes, até que um novo pedido seja feito.</p>
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left"><tr>
-            <th className="p-2">Cliente</th><th className="p-2">Enviado ao cliente (Separado)</th><th className="p-2">Última remessa</th>
+            <th className="p-2">Cliente</th><th className="p-2">Produto</th><th className="p-2">Última remessa</th><th className="p-2">Consumo/dia</th>
             <th className="p-2">Previsão</th><th className="p-2">Modo</th><th className="p-2" />
           </tr></thead>
           <tbody>
-            {guardaClients.map((c) => {
-              const exits = movements.filter((m) => m.modality === "guarda" && m.kind === "saida" && m.client_id === c.id);
-              const f = forecasts.find((x) => x.client_id === c.id) ?? { client_id: c.id, mode: "auto" as const, manual_date: null };
-              const date = f.mode === "manual" ? (f.manual_date ? new Date(f.manual_date + "T12:00:00") : null) : autoForecast(exits);
+            {rows.map((r) => {
+              const f = forecasts.find((x) => x.client_id === r.client_id) ?? { client_id: r.client_id, mode: "auto" as const, manual_date: null };
+              const date = r.next_date ? new Date(r.next_date + "T12:00:00") : null;
               const left = date ? Math.ceil((date.getTime() - Date.now()) / DAY) : null;
-              const total = exits.reduce((s, m) => s + m.quantity, 0);
               return (
-                <tr key={c.id} className="border-t">
-                  <td className="p-2 font-medium">{c.name}</td>
-                  <td className="p-2">{fmtNum(total)}</td>
-                  <td className="p-2">{exits[0] ? fmtDate(exits[0].created_at) : "—"}</td>
+                <tr key={r.client_id + r.product_id} className="border-t">
+                  <td className="p-2 font-medium">{cname(r.client_id)}</td>
+                  <td className="p-2">{pname(r.product_id)}</td>
+                  <td className="p-2">{fmtDate(r.last_date + "T12:00:00")} · {fmtNum(r.last_qty)}</td>
+                  <td className="p-2">{r.daily_rate ? fmtNum(r.daily_rate) : "—"}</td>
                   <td className="p-2">
-                    {date ? <>{date.toLocaleDateString("pt-BR")} <span className={left! <= 3 ? "text-destructive" : "text-muted-foreground"}>({left! <= 0 ? "vencida" : `${left} dias`})</span></>
+                    {r.has_new_order ? <span className="text-muted-foreground">Novo pedido feito</span>
+                      : date ? <>{date.toLocaleDateString("pt-BR")} <span className={left! <= 5 ? "text-destructive" : "text-muted-foreground"}>({left! <= 0 ? "vencida" : `${left} dias`})</span></>
                       : <span className="text-muted-foreground">{f.mode === "auto" ? "Histórico insuficiente" : "Sem data"}</span>}
                   </td>
                   <td className="p-2">
                     <div className="flex gap-1">
-                      <select className={sel} value={f.mode} onChange={(e) => void saveForecast(c.id, e.target.value as "auto" | "manual", f.manual_date)}>
+                      <select className={sel} value={f.mode} onChange={(e) => void saveForecast(r.client_id, e.target.value as "auto" | "manual", f.manual_date)}>
                         <option value="auto">Automática</option><option value="manual">Manual</option>
                       </select>
-                      {f.mode === "manual" && <Input type="date" value={f.manual_date ?? ""} onChange={(e) => void saveForecast(c.id, "manual", e.target.value || null)} />}
+                      {f.mode === "manual" && <Input type="date" value={f.manual_date ?? ""} onChange={(e) => void saveForecast(r.client_id, "manual", e.target.value || null)} />}
                     </div>
                   </td>
-                  <td className="p-2"><Button size="sm" variant="outline" onClick={() => setSelected(c.id)}>Histórico</Button></td>
+                  <td className="p-2"><Button size="sm" variant="outline" onClick={() => setSelected(r.client_id)}>Histórico</Button></td>
                 </tr>
               );
             })}
-            {guardaClients.length === 0 && <tr><td colSpan={6} className="p-4 text-center text-muted-foreground">Nenhum cliente com Estoque de Guarda.</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={7} className="p-4 text-center text-muted-foreground">{repl.isLoading ? "Carregando…" : "Nenhum cliente com Estoque de Guarda."}</td></tr>}
           </tbody>
         </table>
       </div>
       {selected && (
         <Dialog open onOpenChange={(v) => !v && setSelected(null)}>
           <DialogContent className="max-w-2xl">
-            <DialogHeader><DialogTitle>Histórico — {clients.find((c) => c.id === selected)?.name}</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Histórico — {cname(selected)}</DialogTitle></DialogHeader>
             <Table head={["Data", "Tipo", "Produto", "Qtd", "Obs."]}
               rows={movements.filter((m) => m.client_id === selected).map((m) => [fmtDate(m.created_at), m.kind === "entrada" ? "Entrada" : "Saída", pname(m.product_id), fmtNum(m.quantity), m.note ?? ""])} />
           </DialogContent>
