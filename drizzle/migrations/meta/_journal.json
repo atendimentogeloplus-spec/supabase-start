@@ -148,6 +148,13 @@
       "when": 1793710499576,
       "tag": "0020_rep_level2_stock_exit",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794247312567,
+      "tag": "0021_replenishment_forecast",
+      "breakpoints": true
     }
   ]
 }
